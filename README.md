@@ -48,8 +48,6 @@ Create a d2s project in the current directory
 d2s init
 ```
 
-
-
 # Development setup
 
 ```bash

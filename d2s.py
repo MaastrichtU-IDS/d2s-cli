@@ -42,7 +42,12 @@ def init():
     
     with open('.d2sconfig', 'w') as configfile:
         config.write(configfile)
-    click.echo('[ Your d2s environment config has been stored in the .d2sconfig file ]')
+    
+    click.echo()
+    click.echo('[ Your d2s project has been created! ]')
+    click.echo('[ The project configuration is stored in the .d2sconfig file ]')
+    click.echo()
+    click.echo('[ You can now run `d2s update` to pull and build all images ]')
 
 
 @cli.command()
