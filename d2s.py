@@ -1,6 +1,7 @@
 import os
 import click
 import configparser
+import fileinput
 import cwltool.factory
 
 @click.group()
@@ -27,6 +28,11 @@ def init():
 
     if click.confirm('Do you want to download the template workflows and datasets?'):
         os.system('git clone --recursive https://github.com/MaastrichtU-IDS/d2s-transform-template.git .')
+        # Replace /data/d2s-workspace volume in docker-compose.
+        with fileinput.FileInput('d2s-cwl-workflows/docker-compose.yaml', inplace=True, backup='.bck') as file:
+            for line in file:
+                print(line.replace('/data/d2s-workspace', workspace), end='')
+
         # Copy load.sh in workspace for Virtuoso bulk load
         os.system('mkdir -p ' + workspace + '/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh ' + workspace + '/virtuoso')
         graphdb_path = click.prompt('Enter path to the GraphDB distribution 8.10.1 zip file. Default', default='~/graphdb-free-8.10.1-dist.zip')
@@ -44,7 +50,7 @@ def update():
     """Update d2s docker images"""
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml pull')
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml build graphdb')
-    click.echo('All images pulled.')
+    click.echo('[ All images pulled and built ]')
 
 
 @cli.command()
