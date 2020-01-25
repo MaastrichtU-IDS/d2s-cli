@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "d2s"
 version = "0.1.0"
-description = "A commandline interface for the Data2Services framework"
+description = "A commandline interface for the Data2Services framework. See https://d2s.semanticscience.org/"
 authors = ["Vincent Emonet <vincent.emonet@maastrichtuniversity.nl>"]
 
 [tool.poetry.dependencies]
