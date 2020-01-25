@@ -3,7 +3,7 @@
 ### With pip
 
 ```bash
-pip install d2s
+pip install d2s cwlref-runner
 ```
 
 > Use [pip](https://pypi.org/project/pip/), pip3 or [pipx](https://pipxproject.github.io/pipx/) depending on your preferences.
@@ -20,19 +20,19 @@ Enable commandline autocompletion in the terminal
 
 > Highly recommended, it makes `d2s` much more user-friendly
 
-* Bash
+* **Bash**: add the import autocomplete line to `.bashrc`
 ```bash
-nano .bashrc
-# Add the following line:
-eval "$(_D2S_COMPLETE=source d2s)"
+echo 'eval "$(_D2S_COMPLETE=source d2s)"' > ~/.bashrc
 ```
 
-* ZSH
+> `nano .bashrc` if issues with the import 
+
+* **ZSH**: add the import autocomplete line to `.zshrc`
 ```bash
-nano .zshrc
-# Add the following line:
-eval "$(_D2S_COMPLETE=source_zsh d2s)"
+echo 'eval "$(_D2S_COMPLETE=source_zsh d2s)"' > ~/.zshrc
 ```
+
+> `nano .zshrc` if issues with the import 
 
 ## Try it
 
