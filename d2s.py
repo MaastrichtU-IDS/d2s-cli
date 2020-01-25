@@ -3,6 +3,7 @@ import click
 import configparser
 import fileinput
 import cwltool.factory
+import cwltool.context
 
 @click.group()
 def cli():
@@ -15,6 +16,8 @@ def get_services_list(ctx, args, incomplete):
     'drill', 'postgres']
 def get_datasets_list(ctx, args, incomplete):
     return os.listdir("./datasets")
+def get_workflows_list(ctx, args, incomplete):
+    return os.listdir("./d2s-cwl-workflows/workflows")
 
 @cli.command()
 def init():
@@ -25,7 +28,7 @@ def init():
     click.echo()
     click.echo('[ Create ' + workspace + ' ] -- Your password might be required to set ownerships.')
     click.echo()
-    os.system('sudo mkdir -p ' + workspace)
+    os.system('sudo mkdir -p ' + workspace + '/output/tmp-outdir')
     os.system('sudo chown -R ${USER} ' + workspace)
 
     d2s_repository_url = click.prompt('Enter the URL of the d2s git repository to clone in the current directory. Default', default='https://github.com/MaastrichtU-IDS/d2s-transform-template.git')
@@ -41,6 +44,7 @@ def init():
     os.system('mkdir -p ' + workspace + '/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh ' + workspace + '/virtuoso')
 
     # Copy GraphDB zip file to the right folder in d2s-cwl-workflows
+    click.echo('Download zip file at')
     graphdb_path = click.prompt('Enter the path to the GraphDB distribution 8.10.1 zip file used to build its image. Default', default='~/graphdb-free-8.10.1-dist.zip')
     os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
     
@@ -112,7 +116,7 @@ def stop(services, all):
 @cli.command()
 def status():
     """Show running services"""
-    os.system('docker ps')
+    os.system('docker ps --format="table {{.Names}}\t{{.Ports}}\t{{.Status}}\t{{.Networks}}"')
 
 @cli.command()
 @click.argument('datasets', nargs=-1, autocompletion=get_datasets_list)
@@ -128,11 +132,24 @@ def download(datasets):
         print('[ ' + dataset + ' downloaded ]')
 
 @cli.command()
-@click.argument('workflow')
-@click.argument('dataset')
+@click.argument('workflow', autocompletion=get_workflows_list)
+@click.argument('dataset', autocompletion=get_datasets_list)
 def run(workflow, dataset):
-    """Run CWL workflows"""
-    # cwl_factory = cwltool.factory.Factory()
-    # run_workflow = cwl_factory.make(workflow) # the .cwl file
-    # result = run_workflow(inp=dataset)  # the config yaml
+    """Run CWL workflows (defined in datasets/*/config.yaml)"""
+    config = configparser.ConfigParser()
+    config.read('.d2sconfig')
+    workspace = config['d2s']['workspace']
+    cwl_workflow_path = 'd2s-cwl-workflows/workflows/' + workflow
+    dataset_config_path = 'datasets/' + dataset + '/config.yml'
+    # Define cwl-runner workspace
+    runtime_context = cwltool.context.RuntimeContext()
+    runtime_context.custom_net = 'd2s-cwl-workflows_network'
+    runtime_context.outdir = workspace + '/output'
+    runtime_context.tmp_outdir_prefix = workspace + '/output/tmp-outdir/'
+    runtime_context.tmpdir_prefix = workspace + '/output/tmp-outdir/tmp-'
+    factory = cwltool.factory.Factory(runtime_context=runtime_context)
+    # Run CWL workflow
+    run_workflow = cwl_factory.make(cwl_workflow_path) # the .cwl file
+    result = run_workflow(inp=dataset_config_path)  # the config yaml
     print('Running!')
+    print(result)
