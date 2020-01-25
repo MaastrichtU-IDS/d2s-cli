@@ -69,14 +69,12 @@ Script to build and publish automatically:
 ./publish_pip.sh
 ```
 
-Build packages
+Or do it manually: 
 
 ```bash
+# Build packages
 python3 setup.py sdist bdist_wheel
-```
-
-Publish the built dist directory
-```bash
+# Publish the built dist directory
 twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 ```
 
