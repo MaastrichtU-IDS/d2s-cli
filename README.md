@@ -39,3 +39,14 @@ Install the tool
 pip install d2s
 ```
 
+# Try with setuptools
+
+```bash
+# Install package
+pip install package && pip freeze > requirements.txt
+```
+
+Install `d2s` as cli in local
+```bash
+pip3 install --editable .
+```

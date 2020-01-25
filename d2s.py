@@ -3,11 +3,11 @@ import os
 import cwltool.factory
 
 @click.group()
-def main():
+def cli():
    pass
 
 
-@main.command()
+@cli.command()
 # @click.option(
 #     '--workspace', '-w',
 #     help='Path to the working directory. Default: /data/d2s-workspace',
@@ -23,13 +23,13 @@ def init():
         click.echo('Template set.')
     print('[ /data/d2s-workspace created ]')
 
-@main.command()
+@cli.command()
 def update():
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml pull')
     print('All images pulled.')
 
 
-@main.command()
+@cli.command()
 @click.argument('services')
 # @click.option(
 #     '--api-key', '-a',
@@ -40,7 +40,7 @@ def start(services):
     print('started!!')
 
 
-@main.command()
+@cli.command()
 @click.argument('workflow')
 @click.argument('dataset')
 # @click.option(
@@ -53,7 +53,3 @@ def run(workflow, dataset):
     # result = run_workflow(inp=dataset)  # the config yaml
     print('started!!')
 
-
-
-if __name__ == "__main__":
-    main()
