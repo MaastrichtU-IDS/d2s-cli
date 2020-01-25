@@ -48,9 +48,9 @@ def start(services):
 #     help='your API key for the OpenWeatherMap API',
 # )
 def run(workflow, dataset):
-    cwl_factory = cwltool.factory.Factory()
-    run_workflow = cwl_factory.make(workflow) # the .cwl file
-    result = run_workflow(inp=dataset)  # the config yaml
+    # cwl_factory = cwltool.factory.Factory()
+    # run_workflow = cwl_factory.make(workflow) # the .cwl file
+    # result = run_workflow(inp=dataset)  # the config yaml
     print('started!!')
 
 
