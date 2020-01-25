@@ -192,7 +192,7 @@ def dataset():
     config = configparser.ConfigParser()
     dataset_id = click.prompt('Enter the identifier of your datasets, e.g. wikipathways (lowercase, no space or weird characters)')
     dataset_name = click.prompt('Enter a human-readable name for your datasets, e.g. WikiPathways')
-    dataset_description = click.prompt('Curated and Reactome pathways Model for pathway databases')
+    dataset_description = click.prompt('Enter a description for this dataset')
 
     dataset_folder_path = 'datasets/' + dataset_id
     os.system('cp -r d2s-cwl-workflows/support/template/dataset ' + dataset_folder_path)
