@@ -43,6 +43,7 @@ def init():
 def update():
     """Update d2s docker images"""
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml pull')
+    os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml build graphdb')
     click.echo('All images pulled.')
 
 
@@ -69,11 +70,12 @@ def start(services):
     """Start services (triplestores, databases, interfaces)"""
     services_string = " ".join(services)
     print(services_string)
-    os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --build --force-recreate ' + services_string)
+    os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate ' + services_string)
     click.echo('[ ' + services_string + ' started ]')
     if 'graphdb' in services:
         if click.confirm('Do you want to create the test repository in GraphDB?'):   
             os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-cwl-workflows/support/graphdb-test-repo-config.ttl" -H "Content-Type: multipart/form-data"')
+            click.echo('Note: [ Empty reply from server ] means the repository test has been properly created')
 
 
 @cli.command()
