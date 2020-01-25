@@ -78,10 +78,10 @@ def config():
     config.read('.d2sconfig')
     # print(config['d2s']['workspace'])
     for section_name in config.sections():
-        print('[', section_name, ']')
+        click.echo('[', section_name, ']')
         # print('  Options:', config.options(section_name))
         for name, value in config.items(section_name):
-            print('  %s = %s' % (name, value))
+            click.echo('  %s = %s' % (name, value))
     click.echo()
 
 
