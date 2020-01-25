@@ -20,25 +20,25 @@ def init():
     """Create workspace dir and download workflows examples in current dir"""
     config = configparser.ConfigParser()
     workspace = click.prompt('Enter the absolute path to the working directory. Default', default='/data/d2s-workspace')
-    config['local'] = {'workspace': workspace}
+    config['d2s'] = {'workspace': workspace}
 
     click.echo('[ Create ' + workspace + ' ] -- Your password might be required to set ownerships')
     os.system('sudo mkdir -p ' + workspace)
     os.system('sudo chown -R ${USER} ' + workspace)
 
-    if click.confirm('Do you want to download the template workflows and datasets?'):
-        os.system('git clone --recursive https://github.com/MaastrichtU-IDS/d2s-transform-template.git .')
-        # Replace /data/d2s-workspace volume in docker-compose.
-        with fileinput.FileInput('d2s-cwl-workflows/docker-compose.yaml', inplace=True, backup='.bck') as file:
-            for line in file:
-                print(line.replace('/data/d2s-workspace', workspace), end='')
+    d2s_repository_url = click.prompt('Enter the URL to the d2s git repository to clone in the current directory. Default', default='https://github.com/MaastrichtU-IDS/d2s-transform-template.git')
+    config['d2s']['url'] = d2s_repository_url
 
-        # Copy load.sh in workspace for Virtuoso bulk load
-        os.system('mkdir -p ' + workspace + '/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh ' + workspace + '/virtuoso')
-        graphdb_path = click.prompt('Enter path to the GraphDB distribution 8.10.1 zip file. Default', default='~/graphdb-free-8.10.1-dist.zip')
-        os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
-        # Remove link to the GitHub repo and create new repo?
-        # os.system('rm -rf .git && git init && git add . && git commit -m "d2s init"')
+    os.system('git clone --recursive ' + d2s_repository_url + ' .')
+    # Replace /data/d2s-workspace volume in docker-compose.
+    with fileinput.FileInput('d2s-cwl-workflows/docker-compose.yaml', inplace=True, backup='.bck') as file:
+        for line in file:
+            print(line.replace('/data/d2s-workspace', workspace), end='')
+
+    # Copy load.sh in workspace for Virtuoso bulk load
+    os.system('mkdir -p ' + workspace + '/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh ' + workspace + '/virtuoso')
+    graphdb_path = click.prompt('Enter the path to the GraphDB distribution 8.10.1 zip file used to build its image. Default', default='~/graphdb-free-8.10.1-dist.zip')
+    os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
     
     with open('.d2sconfig', 'w') as configfile:
         config.write(configfile)
