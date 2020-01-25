@@ -190,9 +190,14 @@ def new():
 def dataset():
     """Create a new dataset from template in datasets folder"""
     config = configparser.ConfigParser()
+    # TODO: make it an array of obj
     dataset_id = click.prompt('Enter the identifier of your datasets, e.g. wikipathways (lowercase, no space or weird characters)')
     dataset_name = click.prompt('Enter a human-readable name for your datasets, e.g. WikiPathways')
     dataset_description = click.prompt('Enter a description for this dataset')
+    publisher_name = click.prompt('Enter complete name for the institutions publishing the data and its affiliation, e.g. Institute of Data Science at Maastricht University')
+    publisher_url = click.prompt('Enter a valid URL for the publisher homepage')
+    source_license = click.prompt('Enter a valid URL to the license informations about the original dataset, e.g. http://creativecommons.org/licenses/by-nc/4.0/legalcode')
+    rdf_license = click.prompt('Enter a valid URL to the license informations about the RDF distribution of the dataset')
 
     dataset_folder_path = 'datasets/' + dataset_id
     os.system('cp -r d2s-cwl-workflows/support/template/dataset ' + dataset_folder_path)
@@ -203,5 +208,7 @@ def dataset():
             with open(fpath) as f:
                 file_content = f.read()
             file_content = file_content.replace("$dataset_id", dataset_id).replace("$dataset_name", dataset_name).replace("$dataset_description", dataset_description)
+            file_content = file_content.replace("$publisher_name", publisher_name).replace("$publisher_url", publisher_url)
+            file_content = file_content.replace("$source_license", source_license).replace("$rdf_license", rdf_license)
             with open(fpath, "w") as f:
                 f.write(file_content)
