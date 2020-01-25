@@ -8,25 +8,28 @@ import cwltool.factory
 def cli():
    pass
 
-# Used for services autocompletion
+# Used for autocompletion
 def get_services_list(ctx, args, incomplete):
     return ['virtuoso', 'graphdb', 'blazegraph', 'comunica',
     'browse-local-virtuoso', 'browse-local-graphdb', 'browse-local-blazegraph', 
     'drill', 'postgres']
-
+# TODO: make it dynamic with ls
+def get_datasets_list(ctx, args, incomplete):
+    return ['cohd', 'drugbank', 'stitch', 'eggnog']
 
 @cli.command()
 def init():
     """Create workspace dir and download workflows examples in current dir"""
     config = configparser.ConfigParser()
-    workspace = click.prompt('Enter the absolute path to the working directory. Default', default='/data/d2s-workspace')
+    workspace = click.prompt('Enter the absolute path to the working directory (for workflow processing files). Default', default='/data/d2s-workspace')
     config['d2s'] = {'workspace': workspace}
-
-    click.echo('[ Create ' + workspace + ' ] -- Your password might be required to set ownerships')
+    click.echo()
+    click.echo('[ Create ' + workspace + ' ] -- Your password might be required to set ownerships.')
+    click.echo()
     os.system('sudo mkdir -p ' + workspace)
     os.system('sudo chown -R ${USER} ' + workspace)
 
-    d2s_repository_url = click.prompt('Enter the URL to the d2s git repository to clone in the current directory. Default', default='https://github.com/MaastrichtU-IDS/d2s-transform-template.git')
+    d2s_repository_url = click.prompt('Enter the URL of the d2s git repository to clone in the current directory. Default', default='https://github.com/MaastrichtU-IDS/d2s-transform-template.git')
     config['d2s']['url'] = d2s_repository_url
 
     os.system('git clone --recursive ' + d2s_repository_url + ' .')
@@ -37,6 +40,8 @@ def init():
 
     # Copy load.sh in workspace for Virtuoso bulk load
     os.system('mkdir -p ' + workspace + '/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh ' + workspace + '/virtuoso')
+
+    # Copy GraphDB zip file to the right folder in d2s-cwl-workflows
     graphdb_path = click.prompt('Enter the path to the GraphDB distribution 8.10.1 zip file used to build its image. Default', default='~/graphdb-free-8.10.1-dist.zip')
     os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
     
@@ -66,7 +71,7 @@ def config():
     click.echo()
     config = configparser.ConfigParser()
     config.read('.d2sconfig')
-    # print(config['local']['workspace'])
+    # print(config['d2s']['workspace'])
     for section_name in config.sections():
         print('[', section_name, ']')
         # print('  Options:', config.options(section_name))
@@ -110,6 +115,18 @@ def status():
     """Show running services"""
     os.system('docker ps')
 
+@cli.command()
+@click.argument('datasets', nargs=-1, autocompletion=get_datasets_list)
+def download(datasets):
+    """Download a dataset to process with CWL workflows"""
+    config = configparser.ConfigParser()
+    config.read('.d2sconfig')
+    for dataset in datasets:
+        os.system('docker run -it -v $(pwd):/srv \
+            -v ' + config['d2s']['workspace'] + ':/data \
+            umids/d2s-bash-exec:latest \
+            /srv/datasets/' + dataset + '/download/download.sh input/' + dataset)
+        print('[ ' + dataset + ' downloaded ]')
 
 @cli.command()
 @click.argument('workflow')
