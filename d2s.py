@@ -13,30 +13,31 @@ def cli():
 #     help='Path to the working directory. Default: /data/d2s-workspace',
 # )
 def init():
-    # value = click.prompt('Please enter a number', default='/data/d2s-workspace')
-    print('[ Create /data/d2s-workspace ] -- Your password might be required to set ownerships')
-    os.system('sudo mkdir -p /data/d2s-workspace')
-    os.system('sudo chown -R ${USER} /data/d2s-workspace')
-    print('Do you want to download the template workflows and datasets?')
-    if click.confirm('Do you want to continue?'):
+    workspace = click.prompt('Enter the absolute path to the working directory. Default', default='/data/d2s-workspace')
+    os.system('echo "' + workspace + '" > .d2s')
+    click.echo('[ Create ' + workspace + ' ] -- Your password might be required to set ownerships')
+    os.system('sudo mkdir -p ' + workspace)
+    os.system('sudo chown -R ${USER} ' + workspace)
+    if click.confirm('Do you want to download the template workflows and datasets?'):
         os.system('git clone --recursive https://github.com/MaastrichtU-IDS/d2s-transform-template.git .')
-        click.echo('Template set.')
-    print('[ /data/d2s-workspace created ]')
+    click.echo('[ Your Data2Services environment has been stored in the .d2s file ]')
 
 @cli.command()
 def update():
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml pull')
-    print('All images pulled.')
+    click.echo('All images pulled.')
 
 
 @cli.command()
-@click.argument('services')
+@click.argument('services', nargs=-1)
 # @click.option(
 #     '--api-key', '-a',
 #     help='your API key for the OpenWeatherMap API',
 # )
 def start(services):
-    os.system('docker-compose --version')
+    for service in services:
+        click.echo(service)
+    # os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --build --force-recreate virtuoso drill graphdb browse-local-virtuoso browse-local-graphdb')
     print('started!!')
 
 
