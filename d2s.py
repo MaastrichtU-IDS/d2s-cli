@@ -13,7 +13,7 @@ def init():
     """Create workspace dir and download workflows examples in current dir"""
     config = configparser.ConfigParser()
     workspace = click.prompt('Enter the absolute path to the working directory. Default', default='/data/d2s-workspace')
-    config['local'] = {'Workspace': workspace}
+    config['local'] = {'workspace': workspace}
 
     click.echo('[ Create ' + workspace + ' ] -- Your password might be required to set ownerships')
     os.system('sudo mkdir -p ' + workspace)
@@ -28,11 +28,29 @@ def init():
         config.write(configfile)
     click.echo('[ Your d2s environment config has been stored in the .d2sconfig file ]')
 
+
 @cli.command()
 def update():
-    """Update Data2Services docker images"""
+    """Update d2s docker images"""
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml pull')
     click.echo('All images pulled.')
+
+
+@cli.command()
+def config():
+    """Show d2s configuration"""
+    click.echo()
+    click.echo('Configuration is stored in the .d2sconfig file')
+    click.echo()
+    config = configparser.ConfigParser()
+    config.read('.d2sconfig')
+    # print(config['local']['workspace'])
+    for section_name in config.sections():
+        print('[', section_name, ']')
+        # print('  Options:', config.options(section_name))
+        for name, value in config.items(section_name):
+            print('  %s = %s' % (name, value))
+    click.echo()
 
 
 @cli.command()
@@ -72,4 +90,3 @@ def run(workflow, dataset):
     # run_workflow = cwl_factory.make(workflow) # the .cwl file
     # result = run_workflow(inp=dataset)  # the config yaml
     print('Running!!')
-
