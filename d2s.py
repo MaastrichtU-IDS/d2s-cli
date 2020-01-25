@@ -7,6 +7,12 @@ import cwltool.factory
 def cli():
    pass
 
+# Used for services autocompletion
+def get_services_list(ctx, args, incomplete):
+    return ['virtuoso', 'graphdb', 'blazegraph', 'comunica',
+    'browse-local-virtuoso', 'browse-local-graphdb', 'browse-local-blazegraph', 
+    'drill', 'postgres']
+
 
 @cli.command()
 def init():
@@ -54,7 +60,7 @@ def config():
 
 
 @cli.command()
-@click.argument('services', nargs=-1)
+@click.argument('services', nargs=-1, autocompletion=get_services_list)
 def start(services):
     """Start services (databases, interfaces)"""
     # for service in services:
@@ -66,7 +72,7 @@ def start(services):
 
 
 @cli.command()
-@click.argument('services', nargs=-1)
+@click.argument('services', nargs=-1, autocompletion=get_services_list)
 @click.option(
     '--all/--no-all', default=False, 
     help='Stop all services')
