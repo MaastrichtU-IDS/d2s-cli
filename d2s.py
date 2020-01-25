@@ -73,9 +73,9 @@ def update():
     """Update d2s docker images"""
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml pull')
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml build graphdb')
-    click.echo('[ All images pulled and built ]')
-    click.echo()
-    click.echo('[ You can now run `d2s start virtuoso graphdb` to start virtuoso and graphdb triplestores ]')
+    click.echo(click.style('[d2s]', bold=True) + ' All images pulled and built.')
+    click.echo(click.style('[d2s]', bold=True) + ' You can now run ' 
+        + click.style('d2s start virtuoso graphdb', bold=True) + ' to start virtuoso and graphdb triplestores.')
 
 
 @cli.command()
