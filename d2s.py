@@ -35,6 +35,9 @@ def init():
     config['d2s']['url'] = d2s_repository_url
 
     os.system('git clone --recursive ' + d2s_repository_url + ' .')
+    if not os.path.exists('./d2s-cwl-workflows'):
+        os.system('git submodule add --recursive https://github.com/MaastrichtU-IDS/d2s-cwl-workflows.git')
+
     # Replace /data/d2s-workspace volume in docker-compose.
     with fileinput.FileInput('d2s-cwl-workflows/docker-compose.yaml', inplace=True, backup='.bck') as file:
         for line in file:
@@ -44,7 +47,9 @@ def init():
     os.system('mkdir -p ' + workspace + '/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh ' + workspace + '/virtuoso')
 
     # Copy GraphDB zip file to the right folder in d2s-cwl-workflows
-    click.echo('Download zip file at')
+    click.echo()
+    click.echo('[ Download GraphDB version 8.10.1 zip file at  https://ontotext.com/products/graphdb/ ]')
+    click.echo()
     graphdb_path = click.prompt('Enter the path to the GraphDB distribution 8.10.1 zip file used to build its image. Default', default='~/graphdb-free-8.10.1-dist.zip')
     os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
     
