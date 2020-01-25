@@ -64,6 +64,8 @@ def update():
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml pull')
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml build graphdb')
     click.echo('[ All images pulled and built ]')
+    click.echo()
+    click.echo('[ You can now run `d2s start virtuoso graphdb` to start virtuoso and graphdb triplestores ]')
 
 
 @cli.command()
@@ -95,6 +97,8 @@ def start(services):
         if click.confirm('Do you want to create the test repository in GraphDB?'):   
             os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-cwl-workflows/support/graphdb-test-repo-config.ttl" -H "Content-Type: multipart/form-data"')
             click.echo('Note: [ Empty reply from server ] means the repository test has been properly created')
+    click.echo()
+    click.echo('[ You can now run `d2s download drugbank` to download drugbank sample data to run a first workflow ]')
 
 
 @cli.command()
@@ -124,12 +128,16 @@ def download(datasets):
     """Download a dataset to process with CWL workflows"""
     config = configparser.ConfigParser()
     config.read('.d2sconfig')
+    workspace = config['d2s']['workspace']
     for dataset in datasets:
         os.system('docker run -it -v $(pwd):/srv \
-            -v ' + config['d2s']['workspace'] + ':/data \
+            -v ' + workspace + ':/data \
             umids/d2s-bash-exec:latest \
             /srv/datasets/' + dataset + '/download/download.sh input/' + dataset)
         print('[ ' + dataset + ' downloaded ]')
+    click.echo()
+    click.echo('[ Datasets downloaded in ' + workspace + '/input/$dataset_id ]')
+    click.echo('[ You can now run `d2s run workflow-xml.cwl drugbank` to run drugbank transformation workflow ]')
 
 @cli.command()
 @click.argument('workflow', autocompletion=get_workflows_list)
@@ -147,7 +155,7 @@ def run(workflow, dataset):
     runtime_context.outdir = workspace + '/output'
     runtime_context.tmp_outdir_prefix = workspace + '/output/tmp-outdir/'
     runtime_context.tmpdir_prefix = workspace + '/output/tmp-outdir/tmp-'
-    factory = cwltool.factory.Factory(runtime_context=runtime_context)
+    cwl_factory = cwltool.factory.Factory(runtime_context=runtime_context)
     # Run CWL workflow
     run_workflow = cwl_factory.make(cwl_workflow_path) # the .cwl file
     result = run_workflow(inp=dataset_config_path)  # the config yaml
