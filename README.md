@@ -50,3 +50,14 @@ Install `d2s` as cli in local
 ```bash
 pip3 install --editable .
 ```
+
+Build packages
+```bash
+python3 setup.py sdist bdist_wheel
+```
+
+Publish
+```bash
+pipx install twine
+twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
+```
