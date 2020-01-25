@@ -39,6 +39,11 @@ Install the tool
 pip install d2s
 ```
 
+Requirements
+* docker-compose
+* git
+* curl
+
 # Try with setuptools
 
 ```bash

@@ -1,5 +1,5 @@
-import click
 import os
+import click
 import configparser
 import cwltool.factory
 
@@ -27,6 +27,10 @@ def init():
 
     if click.confirm('Do you want to download the template workflows and datasets?'):
         os.system('git clone --recursive https://github.com/MaastrichtU-IDS/d2s-transform-template.git .')
+        # Copy load.sh in workspace for Virtuoso bulk load
+        os.system('mkdir -p ' + workspace + '/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh ' + workspace + '/virtuoso')
+        graphdb_path = click.prompt('Enter path to the GraphDB distribution 8.10.1 zip file. Default', default='~/graphdb-free-8.10.1-dist.zip')
+        os.system('cp ' + graphdb_path + './d2s-cwl-workflows/support/graphdb')
         # Remove link to the GitHub repo and create new repo?
         # os.system('rm -rf .git && git init && git add . && git commit -m "d2s init"')
     
@@ -62,13 +66,14 @@ def config():
 @cli.command()
 @click.argument('services', nargs=-1, autocompletion=get_services_list)
 def start(services):
-    """Start services (databases, interfaces)"""
-    # for service in services:
-    #     click.echo(service)
+    """Start services (triplestores, databases, interfaces)"""
     services_string = " ".join(services)
     print(services_string)
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --build --force-recreate ' + services_string)
     click.echo('[ ' + services_string + ' started ]')
+    if 'graphdb' in services:
+        if click.confirm('Do you want to create the test repository in GraphDB?'):   
+            os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-cwl-workflows/support/graphdb-test-repo-config.ttl" -H "Content-Type: multipart/form-data"')
 
 
 @cli.command()
