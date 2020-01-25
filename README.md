@@ -63,7 +63,14 @@ Install `d2s` as cli in local for dev. `d2s` will be updated directly on change.
 pip3 install --editable .
 ```
 
+Script to build and publish automatically:
+
+```bash
+./publish_pip.sh
+```
+
 Build packages
+
 ```bash
 python3 setup.py sdist bdist_wheel
 ```
