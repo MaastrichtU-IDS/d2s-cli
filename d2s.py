@@ -126,7 +126,7 @@ def services():
 @cli.command()
 @click.argument('datasets', nargs=-1, autocompletion=get_datasets_list)
 def download(datasets):
-    """Download a dataset to process with CWL workflows"""
+    """Download a dataset to be processed running CWL workflows"""
     config = configparser.ConfigParser()
     config.read('.d2sconfig')
     workspace = config['d2s']['workspace']
