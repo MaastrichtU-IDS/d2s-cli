@@ -30,7 +30,7 @@ def init():
         # Copy load.sh in workspace for Virtuoso bulk load
         os.system('mkdir -p ' + workspace + '/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh ' + workspace + '/virtuoso')
         graphdb_path = click.prompt('Enter path to the GraphDB distribution 8.10.1 zip file. Default', default='~/graphdb-free-8.10.1-dist.zip')
-        os.system('cp ' + graphdb_path + './d2s-cwl-workflows/support/graphdb')
+        os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
         # Remove link to the GitHub repo and create new repo?
         # os.system('rm -rf .git && git init && git add . && git commit -m "d2s init"')
     
