@@ -88,6 +88,12 @@ def stop(services, all):
 
 
 @cli.command()
+def status():
+    """Show running services"""
+    os.system('docker ps')
+
+
+@cli.command()
 @click.argument('workflow')
 @click.argument('dataset')
 def run(workflow, dataset):
