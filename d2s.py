@@ -183,13 +183,13 @@ def run(workflow, dataset):
 
 
 @cli.group()
-def new():
+def generate():
    pass
 
-@new.command()
+@generate.command()
 def dataset():
     """Create a new dataset from template in datasets folder"""
-    config = configparser.ConfigParser()
+    # config = configparser.ConfigParser()
     # TODO: make it an array of obj
     dataset_id = click.prompt('Enter the identifier of your datasets, e.g. wikipathways (lowercase, no space or weird characters)')
     dataset_name = click.prompt('Enter a human-readable name for your datasets, e.g. WikiPathways')
@@ -212,3 +212,9 @@ def dataset():
             file_content = file_content.replace("$source_license", source_license).replace("$rdf_license", rdf_license)
             with open(fpath, "w") as f:
                 f.write(file_content)
+
+@generate.command()
+@click.argument('dataset', autocompletion=get_datasets_list)
+def mappings(dataset):
+    """Generate mappings for the given dataset"""
+    
