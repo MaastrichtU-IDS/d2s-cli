@@ -180,3 +180,28 @@ def run(workflow, dataset):
     # result = run_workflow(inp=dataset_config_file.read())  # the config yaml
     # print('Running!')
     # print(result)
+
+
+@cli.group()
+def new():
+   pass
+
+@new.command()
+def dataset():
+    """Create a new dataset from template in datasets folder"""
+    config = configparser.ConfigParser()
+    dataset_id = click.prompt('Enter the identifier of your datasets, e.g. wikipathways (lowercase, no space or weird characters)')
+    dataset_name = click.prompt('Enter a human-readable name for your datasets, e.g. WikiPathways')
+    dataset_description = click.prompt('Curated and Reactome pathways Model for pathway databases')
+
+    dataset_folder_path = 'datasets/' + dataset_id
+    os.system('cp -r d2s-cwl-workflows/support/template/dataset ' + dataset_folder_path)
+    
+    for dname, dirs, files in os.walk(dataset_folder_path):
+        for fname in files:
+            fpath = os.path.join(dname, fname)
+            with open(fpath) as f:
+                file_content = f.read()
+            file_content = file_content.replace("$dataset_id", dataset_id).replace("$dataset_name", dataset_name).replace("$dataset_description", dataset_description)
+            with open(fpath, "w") as f:
+                f.write(file_content)
