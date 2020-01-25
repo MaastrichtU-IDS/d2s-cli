@@ -6,7 +6,7 @@
 pip install d2s cwlref-runner
 ```
 
-> Use [pip](https://pypi.org/project/pip/), pip3 or [pipx](https://pipxproject.github.io/pipx/) depending on your preferences.
+> Use [pip](https://pypi.org/project/pip/), pip3 or [pipx](https://pipxproject.github.io/pipx/) depending on your system preferences.
 
 Requirements:
 
@@ -22,14 +22,14 @@ Enable commandline autocompletion in the terminal
 
 * **Bash**: add the import autocomplete line to `.bashrc`
 ```bash
-echo 'eval "$(_D2S_COMPLETE=source d2s)"' > ~/.bashrc
+echo 'eval "$(_D2S_COMPLETE=source d2s)"' >> ~/.bashrc
 ```
 
 > `nano .bashrc` if issues with the import 
 
 * **ZSH**: add the import autocomplete line to `.zshrc`
 ```bash
-echo 'eval "$(_D2S_COMPLETE=source_zsh d2s)"' > ~/.zshrc
+echo 'eval "$(_D2S_COMPLETE=source_zsh d2s)"' >> ~/.zshrc
 ```
 
 > `nano .zshrc` if issues with the import 
@@ -84,3 +84,4 @@ You might need to install twine
 pipx install twine
 ```
 
+> If you experience issues with Bash or ZSH because `d2s` is not defined when installing for dev. Then add `pip3 install --editable develop/d2s-cli` to `.zshrc`
