@@ -51,6 +51,20 @@ Install `d2s` as cli in local
 pip3 install --editable .
 ```
 
+Enable autocompletion
+
+* Bash
+```bash
+vim .bashrc
+eval "$(_D2S_COMPLETE=source d2s)"
+```
+
+* ZSH
+```bash
+vim .zshrc
+eval "$(_D2S_COMPLETE=source_zsh d2s)"
+```
+
 Build packages
 ```bash
 python3 setup.py sdist bdist_wheel
