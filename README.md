@@ -13,5 +13,11 @@ poetry install
 Add dependencies:
 
 ```bash
-poetry add click colorama requests
+poetry add click cwltool
+```
+
+Run using Poetry
+
+```bash
+poetry run d2s start virtuoso
 ```

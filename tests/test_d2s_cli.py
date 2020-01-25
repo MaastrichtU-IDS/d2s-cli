@@ -1,4 +1,4 @@
-from d2s_cli import __version__
+from d2s import __version__
 
 
 def test_version():

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "d2s-cli"
+name = "d2s"
 version = "0.1.0"
 description = "A commandline interface for the Data2Services framework"
 authors = ["Vincent Emonet <vincent.emonet@maastrichtuniversity.nl>"]
@@ -8,6 +8,7 @@ authors = ["Vincent Emonet <vincent.emonet@maastrichtuniversity.nl>"]
 python = "^3.7"
 click = "^7.0"
 funcy = "^1.14"
+cwltool = "^2.0.20200122124526"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -15,3 +16,6 @@ pytest = "^5.2"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+[tool.poetry.scripts]
+d2s = "d2s.cli:main"
