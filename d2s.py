@@ -13,9 +13,8 @@ def get_services_list(ctx, args, incomplete):
     return ['virtuoso', 'graphdb', 'blazegraph', 'comunica',
     'browse-local-virtuoso', 'browse-local-graphdb', 'browse-local-blazegraph', 
     'drill', 'postgres']
-# TODO: make it dynamic with ls
 def get_datasets_list(ctx, args, incomplete):
-    return ['cohd', 'drugbank', 'stitch', 'eggnog']
+    return os.listdir("./datasets")
 
 @cli.command()
 def init():
@@ -136,4 +135,4 @@ def run(workflow, dataset):
     # cwl_factory = cwltool.factory.Factory()
     # run_workflow = cwl_factory.make(workflow) # the .cwl file
     # result = run_workflow(inp=dataset)  # the config yaml
-    print('Running!!')
+    print('Running!')
