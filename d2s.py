@@ -153,8 +153,6 @@ def download(datasets):
         click.echo(click.style('[d2s] ' + dataset, bold=True) + ' downloaded in ' 
         + click.style(workspace + '/input/' + dataset, bold=True))
     click.echo()
-    click.echo(click.style('[d2s]', bold=True) + ' Datasets downloaded in ' 
-        + click.style(workspace + '/input/$dataset_id', bold=True))
     click.echo(click.style('[d2s]', bold=True) + ' You can now run ' 
         + click.style('d2s run workflow-csv.cwl cohd', bold=True) 
         + ' to run cohd transformation workflow ]')
