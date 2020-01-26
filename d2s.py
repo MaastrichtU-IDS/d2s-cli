@@ -176,18 +176,17 @@ def run(workflow, dataset, copy_mappings):
     # Trying to fix issue where virtuoso bulk load only the first dataset run
     # It needs restart to work a second time
     click.echo(click.style('[d2s] ', bold=True) 
-        + 'Clear Virtuoso content and delete file in ' 
+        + 'Restart Virtuoso and delete file in ' 
         + click.style(workspace + '/output', bold=True))
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml stop virtuoso')
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate virtuoso')
-    # os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml restart virtuoso')
-    # os.system('docker exec -it d2s-cwl-workflows_virtuoso_1 isql-v -U dba -P dba exec="RDF_GLOBAL_RESET ();"')
     # Delete previous output
     os.system('rm -r ' + workspace + '/output/*')
     os.system('rm -r ' + workspace + '/virtuoso/*.nq_vload.log')
     os.system('rm -r ' + workspace + '/virtuoso/*.nq')
     
     cwl_command = 'cwl-runner --custom-net d2s-cwl-workflows_network --outdir {0}/output --tmp-outdir-prefix={0}/output/tmp-outdir/ --tmpdir-prefix={0}/output/tmp-outdir/tmp- {1} {2}'.format(workspace,cwl_workflow_path,dataset_config_path)
+    click.echo()
     click.echo(click.style('[d2s] ', bold=True) 
         + 'Running CWL worklow...')
     click.echo(cwl_command)
@@ -220,7 +219,7 @@ def run(workflow, dataset, copy_mappings):
     run_time = datetime.datetime.now() - start_time
     click.echo(click.style('[d2s] ', bold=True) 
             + 'The workflow took '
-            + click.style(str(datetime.timedelta(seconds=run_time.total_seconds())), bold=True)
+            + click.style(str(datetime.timedelta(seconds=run_time.total_seconds())), bold=True))
             # + click.style(time.strftime("%H:%M:%S", run_time), bold=True))
 
     # Loading the datatset config.yml file don't work
@@ -285,8 +284,4 @@ def dataset():
     click.echo(click.style('[d2s]', bold=True) + ' Or run ' 
         + click.style('d2s update', bold=True) + ' to pull and build all images')
 
-# @generate.command()
-# @click.argument('dataset', autocompletion=get_datasets_list)
-# def mappings(dataset):
-#     """Generate mappings for the given dataset"""
     
