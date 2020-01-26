@@ -68,8 +68,8 @@ def init():
     click.echo(click.style('[d2s]', bold=True) + ' Your d2s project has been created!')
     click.echo(click.style('[d2s]', bold=True) + ' The project configuration is stored in the ' 
         + click.style('.d2sconfig', bold=True) + ' file')
-    click.echo(click.style('[d2s]', bold=True) + ' You can now run ' 
-        + click.style('d2s update', bold=True) + ' to pull and build all images')
+    click.echo(click.style('[d2s]', bold=True) + ' You can now pull and build all images:') 
+    click.secho('d2s update', bold=True)
 
 
 @cli.command()
@@ -78,8 +78,8 @@ def update():
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml pull')
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml build graphdb')
     click.echo(click.style('[d2s]', bold=True) + ' All images pulled and built.')
-    click.echo(click.style('[d2s]', bold=True) + ' You can now run ' 
-        + click.style('d2s start virtuoso graphdb', bold=True) + ' to start virtuoso and graphdb triplestores.')
+    click.echo(click.style('[d2s]', bold=True) + ' You can now start virtuoso and graphdb triplestores:')
+    click.secho('d2s start virtuoso graphdb', bold=True)
 
 
 @cli.command()
@@ -112,8 +112,9 @@ def start(services):
             # click.echo(click.style('[d2s]', bold=True) 
             # + ' Note: ' + click.style('Empty reply from server', bold=True, bg='red') 
             # + ' means the repository test has been properly created')
-    click.echo(click.style('[d2s]', bold=True) + ' You can now run ' 
-        + click.style('d2s download cohd', bold=True) + ' to download cohd sample data to run a first workflow')
+    click.echo(click.style('[d2s]', bold=True) 
+        + ' You can now download cohd sample data to run a first workflow:')
+    click.secho('d2s download cohd', bold=True)
 
 
 @cli.command()
@@ -153,9 +154,8 @@ def download(datasets):
         click.echo(click.style('[d2s] ' + dataset, bold=True) + ' downloaded in ' 
         + click.style(workspace + '/input/' + dataset, bold=True))
     click.echo()
-    click.echo(click.style('[d2s]', bold=True) + ' You can now run ' 
-        + click.style('d2s run workflow-csv.cwl cohd', bold=True) 
-        + ' to run cohd transformation workflow ]')
+    click.echo(click.style('[d2s]', bold=True) + ' You can now run the transformation workflow:')
+    click.secho('d2s run workflow-csv.cwl cohd', bold=True)
 
 @cli.command()
 @click.argument('workflow', autocompletion=get_workflows_list)
