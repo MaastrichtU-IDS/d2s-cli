@@ -106,11 +106,12 @@ def start(services):
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate ' + services_string)
     click.echo(click.style('[d2s] ', bold=True) + services_string + ' started.')
     if 'graphdb' in services:
-        if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the test repository in GraphDB?'):   
+        if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the ' 
+        + click.style('test repository', bold=True) + ' in GraphDB?'):
             os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-cwl-workflows/support/graphdb-test-repo-config.ttl" -H "Content-Type: multipart/form-data"')
-            click.echo(click.style('[d2s]', bold=True) 
-            + ' Note: ' + click.style('Empty reply from server', bold=True, bg='red') 
-            + ' means the repository test has been properly created')
+            # click.echo(click.style('[d2s]', bold=True) 
+            # + ' Note: ' + click.style('Empty reply from server', bold=True, bg='red') 
+            # + ' means the repository test has been properly created')
     click.echo(click.style('[d2s]', bold=True) + ' You can now run ' 
         + click.style('d2s download cohd', bold=True) + ' to download cohd sample data to run a first workflow')
 
@@ -149,12 +150,14 @@ def download(datasets):
             -v ' + workspace + ':/data \
             umids/d2s-bash-exec:latest \
             /srv/datasets/' + dataset + '/download/download.sh input/' + dataset)
-        click.echo(click.style('[d2s] ', bold=True) + dataset + ' downloaded.')
+        click.echo(click.style('[d2s] ' + dataset, bold=True) + ' downloaded in ' 
+        + click.style(workspace + '/input/' + dataset, bold=True))
     click.echo()
-    click.echo(click.style('[d2s]', bold=True) + ' Datasets downloaded in ' + workspace + '/input/$dataset_id')
-    click.echo(click.style('[d2s]', bold=True) + 'You can now run ' 
+    click.echo(click.style('[d2s]', bold=True) + ' Datasets downloaded in ' 
+        + click.style(workspace + '/input/$dataset_id', bold=True))
+    click.echo(click.style('[d2s]', bold=True) + ' You can now run ' 
         + click.style('d2s run workflow-csv.cwl cohd', bold=True) 
-        + 'to run cohd transformation workflow ]')
+        + ' to run cohd transformation workflow ]')
 
 @cli.command()
 @click.argument('workflow', autocompletion=get_workflows_list)
