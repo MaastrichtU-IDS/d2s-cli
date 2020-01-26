@@ -68,8 +68,8 @@ def init():
     click.echo(click.style('[d2s]', bold=True) + ' Your d2s project has been created!')
     click.echo(click.style('[d2s]', bold=True) + ' The project configuration is stored in the ' 
         + click.style('.d2sconfig', bold=True) + ' file')
-    click.echo(click.style('[d2s]', bold=True) + ' You can now run ' + click.style('d2s update', bold=True) 
-        + ' to pull and build all images')
+    click.echo(click.style('[d2s]', bold=True) + ' You can now run ' 
+        + click.style('d2s update', bold=True) + ' to pull and build all images')
 
 
 @cli.command()
@@ -85,8 +85,8 @@ def update():
 @cli.command()
 def config():
     """Show d2s configuration"""
-    click.echo()
-    click.echo('Configuration is stored in the .d2sconfig file')
+    click.echo(click.style('[d2s]', bold=True) + ' Configuration is stored in the ' 
+        + click.style('.d2sconfig', bold=True) + ' file:')
     click.echo()
     config = configparser.ConfigParser()
     config.read('.d2sconfig')
@@ -95,8 +95,7 @@ def config():
         click.echo('[' + section_name + ']')
         # print('  Options:', config.options(section_name))
         for name, value in config.items(section_name):
-            click.echo('  %s = %s' % (name, value))
-    click.echo()
+            click.echo('  ' + name + ' = ' + click.style(value, bold=True))
 
 
 @cli.command()
@@ -214,13 +213,20 @@ def dataset():
     """Create a new dataset from template in datasets folder"""
     # config = configparser.ConfigParser()
     # TODO: make it an array of obj
-    dataset_id = click.prompt('Enter the identifier of your datasets, e.g. wikipathways (lowercase, no space or weird characters)')
-    dataset_name = click.prompt('Enter a human-readable name for your datasets, e.g. WikiPathways')
-    dataset_description = click.prompt('Enter a description for this dataset')
-    publisher_name = click.prompt('Enter complete name for the institutions publishing the data and its affiliation, e.g. Institute of Data Science at Maastricht University')
-    publisher_url = click.prompt('Enter a valid URL for the publisher homepage')
-    source_license = click.prompt('Enter a valid URL to the license informations about the original dataset, e.g. http://creativecommons.org/licenses/by-nc/4.0/legalcode')
-    rdf_license = click.prompt('Enter a valid URL to the license informations about the RDF distribution of the dataset')
+    dataset_id = click.prompt(click.style('[?]', bold=True) 
+        + ' Enter the identifier of your datasets, e.g. wikipathways (lowercase, no space or weird characters)')
+    dataset_name = click.prompt(click.style('[?]', bold=True) 
+        + ' Enter a human-readable name for your datasets, e.g. WikiPathways')
+    dataset_description = click.prompt(click.style('[?]', bold=True) 
+        + ' Enter a description for this dataset')
+    publisher_name = click.prompt(click.style('[?]', bold=True) 
+        + ' Enter complete name for the institutions publishing the data and its affiliation, e.g. Institute of Data Science at Maastricht University')
+    publisher_url = click.prompt(click.style('[?]', bold=True) 
+        + ' Enter a valid URL for the publisher homepage')
+    source_license = click.prompt(click.style('[?]', bold=True) 
+        + ' Enter a valid URL to the license informations about the original dataset, e.g. http://creativecommons.org/licenses/by-nc/4.0/legalcode')
+    rdf_license = click.prompt(click.style('[?]', bold=True) 
+        + ' Enter a valid URL to the license informations about the RDF distribution of the dataset')
 
     dataset_folder_path = 'datasets/' + dataset_id
     os.system('cp -r d2s-cwl-workflows/support/template/dataset ' + dataset_folder_path)
@@ -235,6 +241,13 @@ def dataset():
             file_content = file_content.replace("$source_license", source_license).replace("$rdf_license", rdf_license)
             with open(fpath, "w") as f:
                 f.write(file_content)
+    click.echo()
+    click.echo(click.style('[d2s]', bold=True) + ' The config, metadata and mapping files for the ' 
+        + click.style(dataset_id + ' dataset', bold=True) 
+        + ' has been generated in ' + click.style('datasets/' + dataset_id, bold=True))
+    click.echo(click.style('[d2s]', bold=True) + ' Start edit them in ' + click.style('datasets/' + dataset_id, bold=True))
+    click.echo(click.style('[d2s]', bold=True) + ' Or run ' 
+        + click.style('d2s update', bold=True) + ' to pull and build all images')
 
 # @generate.command()
 # @click.argument('dataset', autocompletion=get_datasets_list)
