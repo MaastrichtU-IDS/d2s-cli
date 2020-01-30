@@ -31,6 +31,9 @@ def init():
 
     config = configparser.ConfigParser()
     config['d2s'] = {}
+    
+    # os.system('echo "UID=$UID" > .env')
+    # os.system('echo "GID=$GID" >> .env')
 
     click.echo(click.style('[d2s] ', bold=True) + 'You can generate a new project on GitHub using the provided template:')
     click.secho('https://github.com/MaastrichtU-IDS/d2s-transform-template/generate', bold=True)
