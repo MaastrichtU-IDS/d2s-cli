@@ -127,6 +127,7 @@ def start(services):
             # click.echo(click.style('[d2s]', bold=True) 
             # + ' Note: ' + click.style('Empty reply from server', bold=True, bg='red') 
             # + ' means the repository test has been properly created')
+    click.echo()
     click.echo(click.style('[d2s]', bold=True) 
         + ' You can now download data to run a first workflow:')
     click.secho('d2s download', bold=True)
