@@ -162,10 +162,6 @@ def services():
 @click.argument('datasets', nargs=-1, autocompletion=get_datasets_list)
 def download(datasets):
     """Download a dataset to be processed"""
-    config = configparser.ConfigParser()
-    config.read('.d2sconfig')
-    # workspace = config['d2s']['workspace']
-    # -v $PWD/workspace:/data \
     for dataset in datasets:
         os.system('docker run -it -v $PWD:/srv \
             umids/d2s-bash-exec:latest \
@@ -237,7 +233,6 @@ def run(workflow, dataset, copy_mappings):
     click.echo(click.style('[d2s] ', bold=True) 
             + 'Workflow runtime: '
             + click.style(str(datetime.timedelta(seconds=run_time.total_seconds())), bold=True))
-            # + click.style(time.strftime("%H:%M:%S", run_time), bold=True))
 
     # Loading the datatset config.yml file don't work
     # dataset_config_file = open('datasets/' + dataset + '/config.yml', 'r')
@@ -264,6 +259,7 @@ def generate():
 def dataset():
     """Create a new dataset from template in datasets folder"""
     # config = configparser.ConfigParser()
+    # Automatically fill data about the workflow (git repo URL of mappings)
     # TODO: make it an array of obj
     dataset_id = click.prompt(click.style('[?]', bold=True) 
         + ' Enter the identifier of your datasets, e.g. wikipathways (lowercase, no space or weird characters)')
@@ -274,13 +270,13 @@ def dataset():
     publisher_name = click.prompt(click.style('[?]', bold=True) 
         + ' Enter complete name for the institutions publishing the data and its affiliation, e.g. Institute of Data Science at Maastricht University')
     publisher_url = click.prompt(click.style('[?]', bold=True) 
-        + ' Enter a valid URL for the publisher homepage', 
+        + ' Enter a valid URL for the publisher homepage. Default', 
         default='https://maastrichtuniversity.nl/ids')
     source_license = click.prompt(click.style('[?]', bold=True) 
-        + ' Enter a valid URL to the license informations about the original dataset', 
+        + ' Enter a valid URL to the license informations about the original dataset. Default', 
         default='http://creativecommons.org/licenses/by-nc/4.0/legalcode')
     rdf_license = click.prompt(click.style('[?]', bold=True) 
-        + ' Enter a valid URL to the license informations about the RDF distribution of the dataset', 
+        + ' Enter a valid URL to the license informations about the RDF distribution of the dataset. Default', 
         default='http://creativecommons.org/licenses/by-nc/4.0/legalcode')
 
     dataset_folder_path = 'datasets/' + dataset_id
