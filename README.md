@@ -1,5 +1,7 @@
 ## Install 
 
+See the [d2s documentation website](https://d2s.semanticscience.org/docs/d2s-installation).
+
 ### With pip
 
 ```bash
