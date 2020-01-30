@@ -162,11 +162,11 @@ def download(datasets):
     config = configparser.ConfigParser()
     config.read('.d2sconfig')
     # workspace = config['d2s']['workspace']
+    # -v $PWD/workspace:/data \
     for dataset in datasets:
-        os.system('docker run -it -v $(pwd):/srv \
-            -v $PWD/workspace:/data \
+        os.system('docker run -it -v $PWD:/srv \
             umids/d2s-bash-exec:latest \
-            /srv/datasets/' + dataset + '/download/download.sh input/' + dataset)
+            /srv/datasets/' + dataset + '/download/download.sh workspace/input/' + dataset)
         click.echo(click.style('[d2s] ' + dataset, bold=True) + ' downloaded in ' 
         + click.style('workspace/input/' + dataset, bold=True))
     click.echo()
