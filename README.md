@@ -1,3 +1,5 @@
+A commandline interface to orchestrate the integration of heterogenous data sources under a common [RDF Knowledge Graph](https://www.w3.org/RDF/) using [CWL workflows](https://www.commonwl.org/), and the deployment of user-facing services over the integrated data using [Docker](https://www.docker.com/).
+
 ## Install 
 
 See the [d2s documentation website](https://d2s.semanticscience.org/docs/d2s-installation).
