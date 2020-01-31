@@ -13,13 +13,14 @@ def cli():
 
 # Used for autocompletion
 def get_services_list(ctx, args, incomplete):
-    return ['virtuoso', 'graphdb', 'blazegraph', 'comunica',
+    return filter(lambda x: x.startswith(incomplete), ['virtuoso', 'graphdb', 'blazegraph', 'comunica',
     'browse-local-virtuoso', 'browse-local-graphdb', 'browse-local-blazegraph', 
-    'drill', 'postgres']
+    'drill', 'postgres'])
 def get_datasets_list(ctx, args, incomplete):
-    return os.listdir("./datasets")
+    return filter(lambda x: x.startswith(incomplete), os.listdir("./datasets"))
 def get_workflows_list(ctx, args, incomplete):
-    return os.listdir("./d2s-cwl-workflows/workflows")
+    print(incomplete)
+    return filter(lambda x: x.startswith(incomplete), os.listdir("./d2s-cwl-workflows/workflows"))
 
 @cli.command()
 def init():
