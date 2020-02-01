@@ -4,4 +4,4 @@ rm -r dist/
 
 python3 setup.py sdist bdist_wheel
 
-twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
+twine upload --verbose --repository-url https://upload.pypi.org/legacy/ dist/*

@@ -25,6 +25,7 @@ Enable commandline autocompletion in the terminal
 > Highly recommended, it makes `d2s` much more user-friendly
 
 * **Bash**: add the import autocomplete line to `.bashrc`
+
 ```bash
 echo 'eval "$(_D2S_COMPLETE=source d2s)"' >> ~/.bashrc
 ```
@@ -32,6 +33,7 @@ echo 'eval "$(_D2S_COMPLETE=source d2s)"' >> ~/.bashrc
 > `nano .bashrc` if issues with the import 
 
 * **ZSH**: add the import autocomplete line to `.zshrc`
+
 ```bash
 echo 'eval "$(_D2S_COMPLETE=source_zsh d2s)"' >> ~/.zshrc
 ```
@@ -89,3 +91,18 @@ pipx install twine
 ```
 
 > If you experience issues with Bash or ZSH because `d2s` is not defined when installing for dev. Then add `pip3 install --editable develop/d2s-cli` to `.zshrc`
+
+You might need to install Python3.7
+
+```bash
+sudo apt-get install python3.7 python3.7-venv
+# Set python3 to use 3.7
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
+sudo update-alternatives --config python3
+```
+
+If you face issue uploading the package on pypi
+
+```bash
+twine check dist/d2s-*-py3-none-any.whl
+```

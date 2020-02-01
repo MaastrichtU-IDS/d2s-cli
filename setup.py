@@ -1,13 +1,13 @@
-from setuptools import setup
+from setuptools import setup, Extension
 import setuptools
 
 setup(
     name='d2s',
-    version='0.1.6',
+    version='0.1.7',
     url="https://github.com/MaastrichtU-IDS/d2s-cli",
     author="Vincent Emonet",
     author_email="vincent.emonet@gmail.com",
-    description="A Command Line Interface to orchestrate the integration of heterogenous data and the deployment of services consuming the integrated data. See https://d2s.semanticscience.org/",
+    description="A Command Line Interface to orchestrate the integration of heterogenous data and the deployment of services consuming the integrated data. See https://d2s.semanticscience.org",
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     packages=setuptools.find_packages(),
