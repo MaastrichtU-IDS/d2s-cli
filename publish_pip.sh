@@ -1,7 +1,5 @@
 #!/bin/bash
 
-rm -r dist/
+docker build -t publish-d2s-cli .
 
-python3 setup.py sdist bdist_wheel
-
-twine upload --verbose --repository-url https://upload.pypi.org/legacy/ dist/*
+docker run -it publish-d2s-cli

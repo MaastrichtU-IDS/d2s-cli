@@ -69,18 +69,18 @@ Install `d2s` as cli in local for dev. `d2s` will be updated directly on change.
 pip3 install --editable .
 ```
 
-Script to build and publish automatically:
+Recommended script to build and publish automatically using Docker:
 
 ```bash
 ./publish_pip.sh
 ```
 
-Or do it manually: 
+Or do it locally 
 
 ```bash
-# Build packages
+# Build packages in dist/
 python3 setup.py sdist bdist_wheel
-# Publish the built dist directory
+# Publish the built dist/ directory
 twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 ```
 
