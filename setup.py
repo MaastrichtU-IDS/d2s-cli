@@ -21,9 +21,9 @@ setup(
             'd2s=d2s:cli'
         ]
     },
-    classifiers=(
+    classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-    )
+        "License :: OSI Approved :: MIT License"
+    ]
 )
 
