@@ -19,7 +19,6 @@ def get_services_list(ctx, args, incomplete):
 def get_datasets_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./datasets"))
 def get_workflows_list(ctx, args, incomplete):
-    print(incomplete)
     return filter(lambda x: x.startswith(incomplete), os.listdir("./d2s-cwl-workflows/workflows"))
 
 @cli.command()
