@@ -95,7 +95,7 @@ pipx install twine
 You might need to install Python3.7
 
 ```bash
-sudo apt-get install python3.7 python3.7-venv
+sudo apt-get install python3.7 python3.7-venv python3.7-dev
 # Set python3 to use 3.7
 sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
 sudo update-alternatives --config python3
