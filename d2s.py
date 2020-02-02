@@ -23,7 +23,8 @@ def get_workflows_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./d2s-cwl-workflows/workflows"))
 
 @cli.command()
-def init():
+@click.pass_context
+def init(ctx):
     """Initialize a project in the current directory"""
     if os.path.exists('.d2sconfig'):
         click.echo(click.style('[d2s]', bold=True) + ' A ' + click.style('.d2sconfig', bold=True) 
@@ -41,6 +42,7 @@ def init():
     click.echo(click.style('[d2s] ', bold=True) + 'Or use the default template repository.')
     d2s_repository_url = click.prompt(click.style('[?]', bold=True) + ' Enter the URL of the d2s git repository to clone in the current directory. Default', default='https://github.com/MaastrichtU-IDS/d2s-transform-template.git')
     config['d2s']['url'] = d2s_repository_url
+    click.echo(click.style('[d2s] ', bold=True) + 'Cloning the repository...')
 
     os.system('git clone --quiet --recursive ' + d2s_repository_url + ' .')
     click.echo(click.style('[d2s]', bold=True) + ' Git repository cloned.')
@@ -84,8 +86,8 @@ def init():
     click.echo(click.style('[d2s]', bold=True) + ' Your d2s project has been created!')
     click.echo(click.style('[d2s]', bold=True) + ' The project configuration is stored in the ' 
         + click.style('.d2sconfig', bold=True) + ' file')
-    click.echo(click.style('[d2s]', bold=True) + ' You can now pull and build all images:') 
-    click.secho('d2s update', bold=True)
+    click.echo(click.style('[d2s]', bold=True) + ' Running ' + click.style('d2s update', bold=True) + '...')
+    ctx.invoke(update)
 
 
 @cli.command()
@@ -94,7 +96,7 @@ def update():
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml pull')
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml build graphdb')
     click.echo(click.style('[d2s]', bold=True) + ' All images pulled and built.')
-    click.echo(click.style('[d2s]', bold=True) + ' You can now start services (e.g. drill, and triplestore virtuoso and graphdb:')
+    click.echo(click.style('[d2s]', bold=True) + ' You can now start services (e.g. drill, and triplestore virtuoso and graphdb):')
     click.secho('d2s start virtuoso graphdb drill', bold=True)
 
 
