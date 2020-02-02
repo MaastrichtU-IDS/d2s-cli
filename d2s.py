@@ -300,5 +300,8 @@ def dataset():
         + click.style(dataset_id + ' dataset', bold=True) 
         + ' has been generated')
     click.echo(click.style('[d2s]', bold=True) + ' Start edit them in ' + click.style('datasets/' + dataset_id, bold=True))
+    if click.confirm(click.style('[?]', bold=True) + ' Do you want to open the ' 
+        + click.style('download', bold=True) + ' file to edit it?'):
+        os.system('nano ' + dataset_folder_path + '/download/download.sh')
 
     
