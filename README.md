@@ -66,7 +66,7 @@ pip install package && pip freeze > requirements.txt
 Install `d2s` as cli in local for dev. `d2s` will be updated directly on change.
 
 ```bash
-pip3 install --editable .
+pip install --editable .
 ```
 
 Recommended script to build and publish automatically using Docker:
@@ -90,7 +90,7 @@ You might need to install twine
 pipx install twine
 ```
 
-> If you experience issues with Bash or ZSH because `d2s` is not defined when installing for dev. Then add `pip3 install --editable develop/d2s-cli` to `.zshrc`
+> If you experience issues with Bash or ZSH because `d2s` is not defined when installing for dev. Then add `pip install --editable develop/d2s-cli` to `.zshrc`
 
 You might need to install Python3.7 for dev (dev with python3.6 should work though)
 
