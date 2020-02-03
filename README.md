@@ -14,7 +14,8 @@ pip install d2s cwlref-runner
 
 Requirements:
 
-* docker-compose
+* [Python 3](https://d2s.semanticscience.org/docs/d2s-installation#install-pip)
+* [docker-compose](https://docs.docker.com/compose/install/)
 * git
 * curl
 
