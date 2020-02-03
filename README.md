@@ -1,10 +1,10 @@
-A commandline interface to orchestrate the integration of heterogenous data sources under a common [RDF Knowledge Graph](https://www.w3.org/RDF/) using [CWL workflows](https://www.commonwl.org/), and the deployment of user-facing services over the integrated data using [Docker](https://www.docker.com/).
+A Command Line Interface to orchestrate the integration of heterogenous data sources under a common [RDF Knowledge Graph](https://www.w3.org/RDF/) using [CWL workflows](https://www.commonwl.org/), and the deployment of user-facing services over the integrated data using [Docker](https://www.docker.com/) ([SPARQL](https://yasgui.triply.cc/), [GraphQL-LD](https://comunica.github.io/Article-ISWC2018-Demo-GraphQlLD/), [OpenAPI](https://www.openapis.org/), [Web UI](https://github.com/MaastrichtU-IDS/into-the-graph)).
 
-## Install 
+## Installation 
 
-See the [d2s documentation website](https://d2s.semanticscience.org/docs/d2s-installation).
+More detailed instruction on the [d2s documentation website](https://d2s.semanticscience.org/docs/d2s-installation).
 
-### With pip
+### Install with pip
 
 ```bash
 pip install d2s cwlref-runner
@@ -92,7 +92,7 @@ pipx install twine
 
 > If you experience issues with Bash or ZSH because `d2s` is not defined when installing for dev. Then add `pip3 install --editable develop/d2s-cli` to `.zshrc`
 
-You might need to install Python3.7
+You might need to install Python3.7 for dev (dev with python3.6 should work though)
 
 ```bash
 sudo apt-get install python3.7 python3.7-venv python3.7-dev
@@ -100,6 +100,14 @@ sudo apt-get install python3.7 python3.7-venv python3.7-dev
 sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
 sudo update-alternatives --config python3
 ```
+
+> Warning: on Ubuntu updating to python3.7 by default can break the `gnome-terminal`. Fix by changing the python version used by the `gnome-terminal`
+>
+> ```bash
+> vim /usr/bin/gnome-terminal
+> 
+> #!/usr/bin/python3.6
+> ```
 
 If you face issue uploading the package on pypi
 
