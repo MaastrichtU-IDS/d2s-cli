@@ -14,7 +14,7 @@ pip install d2s cwlref-runner
 
 Requirements:
 
-* [Python 3](https://d2s.semanticscience.org/docs/d2s-installation#install-pip)
+* [Python 3.6](https://d2s.semanticscience.org/docs/d2s-installation#install-pip)
 * [docker-compose](https://docs.docker.com/compose/install/)
 * git
 * curl
@@ -93,19 +93,17 @@ pipx install twine
 
 > If you experience issues with Bash or ZSH because `d2s` is not defined when installing for dev. Then add `pip install --editable develop/d2s-cli` to `.zshrc`
 
-You might need to install Python3.7 for dev (dev with python3.6 should work though)
+You might need to install Python3.6 for dev (dev with python3.6 should work though)
 
 ```bash
-sudo apt-get install python3.7 python3.7-venv python3.7-dev
-# Set python3 to use 3.7
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
+sudo apt-get install python3.6 python3.6-venv python3.6-dev
+# Set python3 to use 3.6
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1
 sudo update-alternatives --config python3
 ```
 
-> Warning: on Ubuntu updating to python3.7 by default can break the `gnome-terminal`. Fix by changing the python version used by the `gnome-terminal`
->
 > ```bash
-> vim /usr/bin/gnome-terminal
+>vim /usr/bin/gnome-terminal
 > 
 > #!/usr/bin/python3.6
 > ```
