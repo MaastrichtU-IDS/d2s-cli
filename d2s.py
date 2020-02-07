@@ -147,11 +147,11 @@ def stop(services, all):
     """Stop services (--all to stop all services)"""
     if all:
         os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml down')
-        click.echo(click.style('[d2s]', bold=True) + ' All services stopped.')
+        click.echo(click.style('[d2s] ', bold=True) + 'All services stopped.')
     else:
         services_string = " ".join(services)
         os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml stop ' + services_string)
-        click.echo(click.style('[d2s]', bold=True) + services_string + ' stopped.')
+        click.echo(click.style('[d2s] ', bold=True) + services_string + ' stopped.')
 
 
 @cli.command()
