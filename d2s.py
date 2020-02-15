@@ -20,6 +20,8 @@ def get_datasets_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./datasets"))
 def get_workflows_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./d2s-cwl-workflows/workflows"))
+def get_workflow_history(ctx, args, incomplete):
+    return filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/workflow-history"))
 
 @cli.command()
 @click.pass_context
@@ -166,6 +168,17 @@ def workflows():
     os.system('echo "PID    CPU  Mem Start    Command"')
     os.system('ps ax -o pid,%cpu,%mem,start,command | grep "[c]wl-runner"')
 
+@cli.command()
+@click.argument('workflow', autocompletion=get_workflow_history)
+@click.option(
+    '--watch/--display', default=False, 
+    help='Watch running workflow')
+def workflow(workflow, watch):
+    """Display workflows logs"""
+    if (watch):
+        os.system('watch tail -n 30 workspace/workflow-history/' + workflow)
+    else:
+        os.system('less +G workspace/workflow-history/' + workflow)
 
 @cli.command()
 @click.argument('datasets', nargs=-1, autocompletion=get_datasets_list)
