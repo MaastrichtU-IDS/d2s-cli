@@ -21,7 +21,9 @@ def get_datasets_list(ctx, args, incomplete):
 def get_workflows_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./d2s-cwl-workflows/workflows"))
 def get_workflow_history(ctx, args, incomplete):
-    return filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/workflow-history"))
+    # Sorted from latest to oldest
+    files = list(filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/workflow-history")))
+    return sorted(files, key=lambda x: os.path.getmtime("./workspace/workflow-history/" + x), reverse=True)
 def get_running_workflows(ctx, args, incomplete):
     # Only show workflow logs that have been modified in the last minute
     files = filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/workflow-history"))
