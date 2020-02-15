@@ -229,7 +229,8 @@ def run(workflow, dataset, get_mappings, detached):
         cwl_command = ''
     cwl_command = cwl_command +'cwl-runner --custom-net d2s-cwl-workflows_network --outdir {0}/output --tmp-outdir-prefix={0}/output/tmp-outdir/ --tmpdir-prefix={0}/output/tmp-outdir/tmp- {1} {2}'.format('workspace',cwl_workflow_path,dataset_config_path)
     if (detached):
-        cwl_command = cwl_command + ' > workspace/workflow-history/' + workflow + '-' + dataset + '-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.txt &'
+        log_filename = workflow + '-' + dataset + '-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.txt'
+        cwl_command = cwl_command + ' > workspace/workflow-history/' + log_filename + ' &'
     click.echo()
     click.echo(click.style('[d2s] ', bold=True) 
         + 'Running CWL worklow...')
@@ -260,10 +261,19 @@ def run(workflow, dataset, get_mappings, detached):
         click.echo(click.style('[d2s] ', bold=True) 
             + 'Access GraphDB at '
             + click.style('http://localhost:7200', bold=True))
-    run_time = datetime.datetime.now() - start_time
-    click.echo(click.style('[d2s] ', bold=True) 
-            + 'Workflow runtime: '
-            + click.style(str(datetime.timedelta(seconds=run_time.total_seconds())), bold=True))
+    if (detached):
+        click.echo(click.style('[d2s] ', bold=True) 
+                + 'Watch your workflow running: '
+                + click.style('d2s workflow ' + log_filename + ' --watch'), bold=True))
+        click.echo(click.style('[d2s] ', bold=True) 
+                + 'Or display the complete workflow logs: '
+                + click.style('d2s workflow ' + log_filename), bold=True))
+    else:
+        run_time = datetime.datetime.now() - start_time
+        click.echo(click.style('[d2s] ', bold=True) 
+                + 'Workflow runtime: '
+                + click.style(str(datetime.timedelta(seconds=run_time.total_seconds())), bold=True))
+
 
     # Loading the datatset config.yml file don't work
     # dataset_config_file = open('datasets/' + dataset + '/config.yml', 'r')
