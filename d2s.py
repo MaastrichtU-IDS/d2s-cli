@@ -184,7 +184,7 @@ def watch(workflow):
 
 @cli.command()
 @click.argument('workflow', autocompletion=get_workflow_history)
-def log(workflow, watch):
+def log(workflow):
     """Display logs of a workflow"""
     os.system('less +G workspace/workflow-history/' + workflow)
 
