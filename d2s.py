@@ -263,11 +263,11 @@ def run(workflow, dataset, get_mappings, detached):
             + click.style('http://localhost:7200', bold=True))
     if (detached):
         click.echo(click.style('[d2s] ', bold=True) 
-                + 'Watch your workflow running: '
-                + click.style('d2s workflow ' + log_filename + ' --watch'), bold=True))
+            + 'Watch your workflow running: ')
+        click.secho('d2s workflow ' + log_filename + ' --watch', bold=True)
         click.echo(click.style('[d2s] ', bold=True) 
-                + 'Or display the complete workflow logs: '
-                + click.style('d2s workflow ' + log_filename), bold=True))
+            + 'Or display the complete workflow logs: ')
+        click.secho('d2s workflow ' + log_filename, bold=True)
     else:
         run_time = datetime.datetime.now() - start_time
         click.echo(click.style('[d2s] ', bold=True) 
