@@ -159,6 +159,12 @@ def services():
     """List running services"""
     os.system('docker ps --format="table {{.Names}}\t{{.Ports}}\t{{.Status}}\t{{.Networks}}"')
 
+@cli.command()
+def workflows():
+    """List running workflows"""
+    os.system('echo "PID    CPU  Mem Start    Command"')
+    os.system('ps ax -o pid,%cpu,%mem,start,command | grep "[d]2s run"')
+    
 
 @cli.command()
 @click.argument('datasets', nargs=-1, autocompletion=get_datasets_list)
