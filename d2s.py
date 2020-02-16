@@ -81,10 +81,10 @@ def init(ctx):
     click.echo()
     # Copy GraphDB zip file to the right folder in d2s-cwl-workflows
     click.echo(click.style('[d2s]', bold=True) + ' For the next step you should have ' 
-        + click.style('downloaded GraphDB version 8.10.1 standalone zip', bold=True) 
+        + click.style('downloaded GraphDB version 9.1.1 standalone zip', bold=True) 
         + ' distribution at ' 
         + click.style('https://ontotext.com/products/graphdb/', bold=True))
-    graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 8.10.1 zip file used to build its image. Default', default='~/graphdb-free-8.10.1-dist.zip')
+    graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 9.1.1 zip file used to build its image. Default', default='~/graphdb-free-9.1.1-dist.zip')
     os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
     
     with open('.d2sconfig', 'w') as configfile:
