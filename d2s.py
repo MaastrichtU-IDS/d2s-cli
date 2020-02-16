@@ -28,6 +28,9 @@ def get_running_workflows(ctx, args, incomplete):
     # Only show workflow logs that have been modified in the last minute
     files = filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/workflow-history"))
     return filter(lambda x: datetime.datetime.fromtimestamp(os.path.getmtime("./workspace/workflow-history/" + x)) > (datetime.datetime.now() - datetime.timedelta(minutes=1)), files)
+def get_running_processes(ctx, args, incomplete):
+    # Show running processes to be stopped
+    return [os.system("ps ax | grep -v time | grep '[c]wl-runner' | awk '{print $1}'")]
 
 @cli.command()
 @click.pass_context
@@ -40,7 +43,6 @@ def init(ctx):
 
     config = configparser.ConfigParser()
     config['d2s'] = {}
-    
     # os.system('echo "UID=$UID" > .env')
     # os.system('echo "GID=$GID" >> .env')
 
@@ -168,11 +170,22 @@ def services():
     """List running services"""
     os.system('docker ps --format="table {{.Names}}\t{{.Ports}}\t{{.Status}}\t{{.Networks}}"')
 
+
 @cli.command()
 def process_running():
     """List running workflows processes"""
     os.system('echo "PID    CPU  Mem Start    Command"')
     os.system('ps ax -o pid,%cpu,%mem,start,command | grep -v time | grep "[c]wl-runner"')
+
+@cli.command()
+@click.argument('process', autocompletion=get_running_processes)
+def process_stop(process):
+    """Stop a running workflows process"""
+    if (process == "0"):
+        click.echo(click.style('[d2s] ', bold=True) + 'No process to stop.')
+    else:
+        os.system('kill -9 ' + process)
+        click.echo(click.style('[d2s] ', bold=True) + 'Process ' + click.style(process, bold=True) + ' stopped.')
 
 
 @cli.command()
