@@ -172,7 +172,7 @@ def services():
 def process_running():
     """List running workflows processes"""
     os.system('echo "PID    CPU  Mem Start    Command"')
-    os.system('ps ax -o pid,%cpu,%mem,start,command | grep "[c]wl-runner"')
+    os.system('ps ax -o pid,%cpu,%mem,start,command | grep -v time | grep "[c]wl-runner"')
 
 
 @cli.command()
