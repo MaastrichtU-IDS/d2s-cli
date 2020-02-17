@@ -16,7 +16,7 @@ def get_services_list(ctx, args, incomplete):
     # TODO: automate
     return filter(lambda x: x.startswith(incomplete), ['virtuoso', 'graphdb', 'blazegraph', 'comunica',
     'browse-local-virtuoso', 'browse-local-graphdb', 'browse-local-blazegraph', 
-    'api', 'drill', 'postgres', 'proxy'])
+    'api', 'drill', 'postgres', 'proxy', 'filebrowser'])
 def get_datasets_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./datasets"))
 def get_workflows_list(ctx, args, incomplete):
@@ -63,6 +63,7 @@ def init(ctx):
     # Create workspace directories
     os.system('mkdir -p workspace/output/tmp-outdir')
     os.system('mkdir -p workspace/workflow-history')
+    os.system('mkdir -p workspace/download/releases/1')
 
     # Copy load.sh in workspace for Virtuoso bulk load
     os.system('mkdir -p workspace/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/virtuoso')
