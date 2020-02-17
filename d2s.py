@@ -189,12 +189,17 @@ def log(workflow):
 @click.argument('datasets', nargs=-1, autocompletion=get_datasets_list)
 def download(datasets):
     """Download a dataset to be processed"""
+    start_time = datetime.datetime.now()
     for dataset in datasets:
         os.system('docker run -it -v $PWD:/srv \
             umids/d2s-bash-exec:latest \
             /srv/datasets/' + dataset + '/download/download.sh workspace/input/' + dataset)
-        click.echo(click.style('[d2s] ' + dataset, bold=True) + ' downloaded in ' 
+        click.echo(click.style('[d2s] ' + dataset, bold=True) + ' dataset downloaded at ' 
         + click.style('workspace/input/' + dataset, bold=True))
+    run_time = datetime.datetime.now() - start_time
+    click.echo(click.style('[d2s] ', bold=True) 
+            + 'Datasets downloaded in: '
+            + click.style(str(datetime.timedelta(seconds=run_time.total_seconds())), bold=True))
     click.echo()
     click.echo(click.style('[d2s]', bold=True) + ' You can now run the transformation workflow:')
     click.secho('d2s run', bold=True)
