@@ -25,9 +25,10 @@ def get_workflow_history(ctx, args, incomplete):
     files = list(filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/workflow-history")))
     return sorted(files, key=lambda x: os.path.getmtime("./workspace/workflow-history/" + x), reverse=True)
 def get_running_workflows(ctx, args, incomplete):
-    # Only show workflow logs that have been modified in the last minute
+    # Only show workflow logs that have been modified in the last 2 minutes
+    # TODO: Will not work for workflow with SPARQL queries longer than 2 minutes
     files = filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/workflow-history"))
-    return filter(lambda x: datetime.datetime.fromtimestamp(os.path.getmtime("./workspace/workflow-history/" + x)) > (datetime.datetime.now() - datetime.timedelta(minutes=1)), files)
+    return filter(lambda x: datetime.datetime.fromtimestamp(os.path.getmtime("./workspace/workflow-history/" + x)) > (datetime.datetime.now() - datetime.timedelta(minutes=2)), files)
 def get_running_processes(ctx, args, incomplete):
     # Show running processes to be stopped
     return [os.system("ps ax | grep -v time | grep '[c]wl-runner' | awk '{print $1}'")]
