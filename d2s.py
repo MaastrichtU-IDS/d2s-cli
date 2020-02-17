@@ -13,7 +13,7 @@ def cli():
 
 # Used for autocompletion
 def get_services_list(ctx, args, incomplete):
-    # TODO: automate
+    # TODO: automate by parsing the docker-compose.yaml
     return filter(lambda x: x.startswith(incomplete), ['virtuoso', 'graphdb', 'blazegraph', 'comunica',
     'browse-local-virtuoso', 'browse-local-graphdb', 'browse-local-blazegraph', 
     'api', 'drill', 'postgres', 'proxy', 'filebrowser'])
@@ -229,7 +229,7 @@ def run(workflow, dataset, get_mappings, detached):
         + click.style('workspace/output', bold=True))
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml stop virtuoso')
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate virtuoso')
-    # Delete previous output
+    # Delete previous output (not archived)
     os.system('rm -r workspace/output/*')
     os.system('rm -r workspace/virtuoso/*.nq')
     
@@ -272,6 +272,7 @@ def run(workflow, dataset, get_mappings, detached):
             + 'Access GraphDB at '
             + click.style('http://localhost:7200', bold=True))
     if (detached):
+        click.echo()
         click.echo(click.style('[d2s] ', bold=True) 
             + 'Watch your workflow running: ')
         click.secho('d2s watch ' + log_filename, bold=True)
