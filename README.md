@@ -41,6 +41,12 @@ echo 'eval "$(_D2S_COMPLETE=source_zsh d2s)"' >> ~/.zshrc
 
 > `nano .zshrc` if issues with the import 
 
+### Upgrade pip package
+
+```bash
+pip install --upgrade d2s 
+```
+
 ## Try it
 
 Display the default help command
