@@ -116,10 +116,23 @@ def config():
 
 @cli.command()
 @click.argument('services', nargs=-1, autocompletion=get_services_list)
-def start(services):
+@click.option(
+    '-d', '--deploy', default='', 
+    help='Use custom deployment config')
+def start(services, deploy):
     """Start services"""
     services_string = " ".join(services)
-    os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate ' + services_string)
+    if deploy == 'trek':
+        print('trek')
+        print('docker-compose -f d2s-cwl-workflows/docker-compose.yaml -f d2s-cwl-workflows/docker-compose.'
+        + deploy + '.yaml up -d --force-recreate ' + services_string)
+        os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml -f d2s-cwl-workflows/docker-compose.'
+        + deploy + '.yaml up -d --force-recreate ' + services_string)
+    else:
+        print('no trek')
+        os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate ' + services_string)
+
+        
     click.echo(click.style('[d2s] ', bold=True) + services_string + ' started.')
     if 'graphdb' in services:
         if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the ' 
@@ -143,6 +156,7 @@ def stop(services, all):
     """Stop services (--all to stop all services)"""
     if all:
         os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml down')
+        os.system('sudo rm -rf workspace/virtuoso')
         click.echo(click.style('[d2s] ', bold=True) + 'All services stopped.')
     else:
         services_string = " ".join(services)
