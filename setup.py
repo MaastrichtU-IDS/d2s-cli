@@ -3,7 +3,7 @@ import setuptools
 
 setup(
     name='d2s',
-    version='0.1.11',
+    version='0.1.12',
     license="MIT License",
     url="https://github.com/MaastrichtU-IDS/d2s-cli",
     author="Vincent Emonet",
@@ -14,7 +14,7 @@ setup(
     packages=setuptools.find_packages(),
     py_modules=['d2s'],
     install_requires=[
-        'Click', 'cwltool',
+        'Click', 'cwltool', 'configparser'
     ],
     entry_points={
         'console_scripts': [
