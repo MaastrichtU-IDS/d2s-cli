@@ -16,30 +16,35 @@ Requirements:
 
 * [Python 3.6](https://d2s.semanticscience.org/docs/d2s-installation#install-pip)
 * [docker-compose](https://docs.docker.com/compose/install/)
-* git
-* curl
+* git, curl, time (bash)
 
 ### Enable autocompletion
 
 Enable commandline autocompletion in the terminal
 
-> Highly recommended, it makes `d2s` much more user-friendly
+> Highly recommended, it makes `d2s` much more user-friendly 
 
-* **Bash**: add the import autocomplete line to `.bashrc`
-
-```bash
-echo 'eval "$(_D2S_COMPLETE=source d2s)"' >> ~/.bashrc
-```
-
-> `nano .bashrc` if issues with the import 
-
-* **ZSH**: add the import autocomplete line to `.zshrc`
+* **ZSH**: add the import autocomplete line to the `~/.zshrc` file.
 
 ```bash
 echo 'eval "$(_D2S_COMPLETE=source_zsh d2s)"' >> ~/.zshrc
 ```
 
-> `nano .zshrc` if issues with the import 
+> Set your terminal to use [ZSH](https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH) by default:
+>
+> ```shell
+> chsh -s /bin/zsh
+> ```
+
+> A [oh-my-zsh](https://ohmyz.sh/) theme can be easily chosen for a personalized experience. See [the zsh-theme-biradate](https://github.com/vemonet/zsh-theme-biradate) to easily install a simple theme and configure your terminal in a few minutes.
+
+* **Bash**: add the import autocomplete line to the `~/.bashrc` file.
+
+```bash
+echo 'eval "$(_D2S_COMPLETE=source d2s)"' >> ~/.bashrc
+```
+
+> **To be tested.**
 
 ### Upgrade pip package
 
