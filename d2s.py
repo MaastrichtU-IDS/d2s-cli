@@ -122,14 +122,11 @@ def config():
 def start(services, deploy):
     """Start services"""
     services_string = " ".join(services)
-    if deploy == 'trek':
-        print('trek')
-        print('docker-compose -f d2s-cwl-workflows/docker-compose.yaml -f d2s-cwl-workflows/docker-compose.'
-        + deploy + '.yaml up -d --force-recreate ' + services_string)
+    if deploy:
+        os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate ' + services_string)
         os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml -f d2s-cwl-workflows/docker-compose.'
         + deploy + '.yaml up -d --force-recreate ' + services_string)
     else:
-        print('no trek')
         os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate ' + services_string)
 
         
