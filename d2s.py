@@ -240,10 +240,15 @@ def run(workflow, dataset, get_mappings, detached):
         + click.style('workspace/output', bold=True))
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml stop virtuoso')
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate virtuoso')
+    # TODO: fix dirty Virtuoso deployment 
+    # Virtuoso unable to handle successive bulk load + permission issues + load.sh in the virtuoso containers
+    # I don't know how, they managed to not put it in the container... They had one job...
+
     # Delete previous output (not archived)
     os.system('rm -r workspace/output/*')
     os.system('rm -r workspace/virtuoso/*.nq')
     # Make sure the load.sh script is in the Virtuoso folder
+    os.system('sudo chmod -R 777 workspace/virtuoso')
     os.system('mkdir -p workspace/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/virtuoso')
     
     if (detached):
