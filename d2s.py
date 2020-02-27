@@ -243,6 +243,7 @@ def run(workflow, dataset, get_mappings, detached):
     # Delete previous output (not archived)
     os.system('rm -r workspace/output/*')
     os.system('rm -r workspace/virtuoso/*.nq')
+    os.system('mkdir -p workspace/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/virtuoso')
     
     if (detached):
         cwl_command = 'nohup time '
