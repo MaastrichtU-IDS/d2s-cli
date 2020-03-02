@@ -42,8 +42,8 @@ def init(ctx, projectname):
     """Initialize a project in the provided folder name"""
     # if os.path.exists('.d2sconfig'):
     if os.path.exists(projectname):
-        click.echo(click.style('[d2s]', bold=True) + ' A ' + click.style(projectname, bold=True) 
-            + ' file already exists for this directory.', err=True)
+        click.echo(click.style('[d2s]', bold=True) + ' The folder ' + click.style(projectname, bold=True) 
+            + ' already exists.', err=True)
         return
 
     config = configparser.ConfigParser()
