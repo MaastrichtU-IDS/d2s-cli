@@ -60,11 +60,19 @@ Display the default help command
 d2s
 ```
 
-Create a d2s project in the current directory
+Create a d2s project in the given folder 
 
 ```bash
-d2s init
+d2s init project-folder-name
 ```
+
+All `d2s` commands are designed to be run from the project folder, move to it
+
+```shell
+cd project-folder-name/
+```
+
+> Project settings stored if `.d2sconfig` file.
 
 # Development setup
 

@@ -71,6 +71,7 @@ def init(ctx, projectname):
 
     # Copy load.sh in workspace for Virtuoso bulk load
     os.system('mkdir -p workspace/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/virtuoso')
+    # TODO: improve this to include it in Docker deployment
 
     click.echo()
     # Copy GraphDB zip file to the right folder in d2s-cwl-workflows
