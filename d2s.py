@@ -36,11 +36,13 @@ def get_running_processes(ctx, args, incomplete):
     return [os.system("ps ax | grep -v time | grep '[c]wl-runner' | awk '{print $1}'")]
 
 @cli.command()
+@click.argument('projectname', nargs=1)
 @click.pass_context
-def init(ctx):
-    """Initialize a project in the current directory"""
-    if os.path.exists('.d2sconfig'):
-        click.echo(click.style('[d2s]', bold=True) + ' A ' + click.style('.d2sconfig', bold=True) 
+def init(ctx, projectname):
+    """Initialize a project in the provided folder name"""
+    # if os.path.exists('.d2sconfig'):
+    if os.path.exists(projectname):
+        click.echo(click.style('[d2s]', bold=True) + ' A ' + click.style(projectname, bold=True) 
             + ' file already exists for this directory.', err=True)
         return
 
@@ -54,9 +56,10 @@ def init(ctx):
     click.echo(click.style('[d2s] ', bold=True) + 'Or use the default template repository.')
     d2s_repository_url = click.prompt(click.style('[?]', bold=True) + ' Enter the URL of the d2s git repository to clone in the current directory. Default', default='https://github.com/MaastrichtU-IDS/d2s-transform-template.git')
     config['d2s']['url'] = d2s_repository_url
-    click.echo(click.style('[d2s] ', bold=True) + 'Cloning the repository...')
+    click.echo(click.style('[d2s] ', bold=True) + 'Cloning the repository in ' + projectname + '...')
 
-    os.system('git clone --quiet --recursive ' + d2s_repository_url + ' .')
+    os.system('git clone --quiet --recursive ' + d2s_repository_url + ' ' + projectname)
+    os.chdir(projectname)
     click.echo(click.style('[d2s]', bold=True) + ' Git repository cloned.')
     if not os.path.exists('./d2s-cwl-workflows'):
         os.system('git submodule add --recursive https://github.com/MaastrichtU-IDS/d2s-cwl-workflows.git')
