@@ -4,10 +4,10 @@ A Command Line Interface to orchestrate the integration of heterogenous data sou
 
 More detailed instruction on the [d2s documentation website](https://d2s.semanticscience.org/docs/d2s-installation).
 
-### Install with pip
+### Install with pipx
 
 ```bash
-pip install d2s cwlref-runner
+pipx install d2s cwlref-runner
 ```
 
 > Use [pip](https://pypi.org/project/pip/), pip3 or [pipx](https://pipxproject.github.io/pipx/) depending on your system preferences.
@@ -46,7 +46,16 @@ echo 'eval "$(_D2S_COMPLETE=source d2s)"' >> ~/.bashrc
 
 > **To be tested.**
 
-### Upgrade pip package
+### Upgrade package
+
+With `pipx`:
+
+```bash
+pipx uninstall d2s
+pipx install d2s
+```
+
+With `pip`:
 
 ```bash
 pip install --upgrade d2s 
