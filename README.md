@@ -2,7 +2,7 @@ A Command Line Interface to orchestrate the integration of heterogenous data sou
 
 ## Installation 
 
-More detailed instruction on the [d2s documentation website](https://d2s.semanticscience.org/docs/d2s-installation).
+Complete documentation about the `d2s-cli` on the [d2s documentation website 📖](https://d2s.semanticscience.org/docs/d2s-installation)
 
 ### Install with pipx
 
@@ -85,31 +85,32 @@ cd project-folder-name/
 
 # Development setup
 
+Install package and add it to `requirements.txt`:
+
 ```bash
-# Add new package
 pip install package && pip freeze > requirements.txt
 ```
 
 ### Install for dev
 
-Install `d2s` as cli in local for dev. `d2s` will be updated directly on change.
+Install `d2s` as executable in local for development. `d2s` will be updated directly on change in the code.
 
 ```bash
 pip install --editable .
 ```
 
-Recommended script to build and publish automatically using Docker:
+To publish a new version, upgrade the version in [setup.py](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/setup.py#L6) and use the following script to build and publish automatically using [Docker](https://docs.docker.com/install/):
 
 ```bash
 ./publish_pip.sh
 ```
 
-Or do it locally 
+Or do it locally:
 
 ```bash
-# Build packages in dist/
+# Build packages in dist/ folder
 python3 setup.py sdist bdist_wheel
-# Publish the built dist/ directory
+# Publish packages previously built in the dist/ folder
 twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 ```
 
@@ -136,7 +137,7 @@ sudo update-alternatives --config python3
 > #!/usr/bin/python3.6
 > ```
 
-If you face issue uploading the package on pypi
+If you face issue uploading the package on pypi:
 
 ```bash
 twine check dist/d2s-*-py3-none-any.whl
