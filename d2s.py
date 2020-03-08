@@ -91,6 +91,7 @@ def init(ctx, projectname):
     click.echo(click.style('[d2s]', bold=True) + ' The project configuration is stored in the ' 
         + click.style('.d2sconfig', bold=True) + ' file')
     click.echo(click.style('[d2s]', bold=True) + ' Running ' + click.style('d2s update', bold=True) + '...')
+    click.secho('cd ' + projectname, bold=True)
     ctx.invoke(update)
 
 
@@ -101,7 +102,7 @@ def update():
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml build graphdb')
     click.echo(click.style('[d2s]', bold=True) + ' All images pulled and built.')
     click.echo(click.style('[d2s]', bold=True) + ' You can now start services (e.g. drill, and triplestore virtuoso and graphdb):')
-    click.secho('d2s start virtuoso graphdb drill', bold=True)
+    click.secho('d2s start demo', bold=True)
 
 
 @cli.command()
@@ -129,7 +130,7 @@ def start(services, deploy):
     """Start services"""
     if services[0] == "demo":
         deploy = "demo"
-        services_string = "virtuoso blazegraph drill api browse-local-blazegraph"
+        services_string = "virtuoso blazegraph drill api into-the-graph"
         click.echo(click.style('[d2s] ', bold=True) + ' Starting the services required for demo: ' + services_string)
     else:
         services_string = " ".join(services)
