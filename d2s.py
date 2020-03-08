@@ -14,10 +14,11 @@ def cli():
 # Used for autocompletion
 def get_services_list(ctx, args, incomplete):
     # TODO: automate by parsing the docker-compose.yaml
-    return filter(lambda x: x.startswith(incomplete), ['virtuoso', 'graphdb', 'blazegraph', 'allegrograph', 'anzograph',
+    return filter(lambda x: x.startswith(incomplete), [ 'demo',
+    'virtuoso', 'graphdb', 'blazegraph', 'allegrograph', 'anzograph',
     'browse-local-graphdb', 'browse-local-virtuoso', 'browse-local-blazegraph', 'browse-translator-trek',
     'ldf-server', 'comunica', 'notebook',
-    'api', 'drill', 'postgres', 'proxy', 'filebrowser', 'rmljob', 'rmltask'])
+    'api', 'drill', 'postgres', 'proxy', 'filebrowser', 'rmljob', 'rmltask' ])
 def get_datasets_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./datasets"))
 def get_workflows_list(ctx, args, incomplete):
@@ -126,7 +127,11 @@ def config():
     help='Use custom deployment config')
 def start(services, deploy):
     """Start services"""
-    services_string = " ".join(services)
+    if services[0] == "demo":
+        services_string = "virtuoso blazegraph drill browse-local-blazegraph"
+        click.echo(click.style('[d2s] ', bold=True) + ' Starting the services required for demo: ' + services_string)
+    else:
+        services_string = " ".join(services)
     if deploy:
         os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate ' + services_string)
         os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml -f d2s-cwl-workflows/docker-compose.'
