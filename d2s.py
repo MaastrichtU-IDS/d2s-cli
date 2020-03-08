@@ -128,7 +128,8 @@ def config():
 def start(services, deploy):
     """Start services"""
     if services[0] == "demo":
-        services_string = "virtuoso blazegraph drill browse-local-blazegraph"
+        deploy = "demo"
+        services_string = "virtuoso blazegraph drill api browse-local-blazegraph"
         click.echo(click.style('[d2s] ', bold=True) + ' Starting the services required for demo: ' + services_string)
     else:
         services_string = " ".join(services)
