@@ -75,11 +75,12 @@ def init(ctx, projectname):
 
     click.echo()
     # Copy GraphDB zip file to the right folder in d2s-cwl-workflows
-    click.echo(click.style('[d2s]', bold=True) + ' For the next step you should have ' 
-        + click.style('downloaded GraphDB version 9.1.1 standalone zip', bold=True) 
-        + ' distribution at ' 
-        + click.style('https://ontotext.com/products/graphdb/', bold=True))
-    graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 9.1.1 zip file used to build its image. Default', default='~/graphdb-free-9.1.1-dist.zip')
+    click.echo(click.style('[d2s]', bold=True) + ' The GraphDB triplestore needs to be downloaded for licensing reason.\n'
+        + 'Go to ' 
+        + click.style('https://ontotext.com/products/graphdb/', bold=True)) + ' and provide your email to receive the URL to download ' 
+        + click.style('GraphDB version 9.1.1 standalone zip', bold=True) 
+    
+    graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 9.1.1 zip file used to build the Docker image. Default', default='~/graphdb-free-9.1.1-dist.zip')
     os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
     
     with open('.d2sconfig', 'w') as configfile:
@@ -100,7 +101,7 @@ def update():
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml pull')
     os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml build graphdb')
     click.echo(click.style('[d2s]', bold=True) + ' All images pulled and built.')
-    click.echo(click.style('[d2s]', bold=True) + ' You can now start services (e.g. drill, and triplestore virtuoso and graphdb):')
+    click.echo(click.style('[d2s]', bold=True) + ' You can now start services (e.g. demo services):')
     click.secho('d2s start demo', bold=True)
 
 
@@ -130,17 +131,18 @@ def start(services, deploy):
     if services[0] == "demo":
         deploy = "demo"
         services_string = "virtuoso blazegraph drill api into-the-graph"
-        click.echo(click.style('[d2s] ', bold=True) + ' Starting the services required for demo: ' + services_string)
+        click.echo(click.style('[d2s] ', bold=True) + ' Starting the services for the demo: ' + services_string)
     else:
         services_string = " ".join(services)
+    
+    # Run docker-compose:
     if deploy:
-        os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate ' + services_string)
         os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml -f d2s-cwl-workflows/docker-compose.'
         + deploy + '.yaml up -d --force-recreate ' + services_string)
     else:
         os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate ' + services_string)
 
-        
+    # Ask user to create the GraphDB test repository
     click.echo(click.style('[d2s] ', bold=True) + services_string + ' started.')
     if 'graphdb' in services:
         if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the ' 
