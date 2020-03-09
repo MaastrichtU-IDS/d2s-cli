@@ -15,7 +15,7 @@ def cli():
 def get_services_list(ctx, args, incomplete):
     # TODO: automate by parsing the docker-compose.yaml
     return filter(lambda x: x.startswith(incomplete), [ 'demo',
-    'virtuoso', 'graphdb', 'blazegraph', 'allegrograph', 'anzograph',
+    'virtuoso', 'virtuoso-tmp', 'graphdb', 'blazegraph', 'allegrograph', 'anzograph',
     'into-the-graph', 'ldf-server', 'comunica', 'notebook',
     'api', 'drill', 'postgres', 'proxy', 'filebrowser', 'rmljob', 'rmltask' ])
 def get_datasets_list(ctx, args, incomplete):
