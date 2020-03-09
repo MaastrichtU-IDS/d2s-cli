@@ -71,6 +71,7 @@ def init(ctx, projectname):
 
     # Copy load.sh in workspace for Virtuoso bulk load
     os.system('mkdir -p workspace/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/virtuoso')
+    os.system('mkdir -p workspace/virtuoso-tmp && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/virtuoso-tmp')
     # TODO: improve this to include it in Docker deployment
 
     click.echo()
@@ -130,7 +131,7 @@ def start(services, deploy):
     """Start services"""
     if services[0] == "demo":
         deploy = "demo"
-        services_string = "virtuoso blazegraph drill api into-the-graph"
+        services_string = "virtuoso virtuoso-tmp drill api into-the-graph"
         click.echo(click.style('[d2s] ', bold=True) + ' Starting the services for the demo: ' + services_string)
     else:
         services_string = " ".join(services)
@@ -249,10 +250,10 @@ def run(workflow, dataset, get_mappings, detached):
     # TODO: Trying to fix issue where virtuoso bulk load only the first dataset we run
     # It needs restart to work a second time
     click.echo(click.style('[d2s] ', bold=True) 
-        + 'Restart Virtuoso and delete file in ' 
+        + 'Restart tmp Virtuoso and delete file in ' 
         + click.style('workspace/output', bold=True))
-    os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml stop virtuoso')
-    os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate virtuoso')
+    os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml stop virtuoso-tmp')
+    os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate virtuoso-tmp')
     # TODO: fix dirty Virtuoso deployment 
     # Virtuoso unable to handle successive bulk load + permission issues + load.sh in the virtuoso containers
     # I don't know how, they managed to not put it in the container... They had one job...
@@ -263,6 +264,7 @@ def run(workflow, dataset, get_mappings, detached):
     # Make sure the load.sh script is in the Virtuoso folder
     os.system('sudo chmod -R 777 workspace/virtuoso')
     os.system('mkdir -p workspace/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/virtuoso')
+    os.system('mkdir -p workspace/virtuoso-tmp && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/virtuoso-tmp')
     
     if (detached):
         cwl_command = 'nohup time '
