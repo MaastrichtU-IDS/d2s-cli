@@ -91,9 +91,11 @@ def init(ctx, projectname):
     click.echo(click.style('[d2s]', bold=True) + ' Your d2s project has been created!')
     click.echo(click.style('[d2s]', bold=True) + ' The project configuration is stored in the ' 
         + click.style('.d2sconfig', bold=True) + ' file')
-    click.echo(click.style('[d2s]', bold=True) + ' Running ' + click.style('d2s update', bold=True) + '...')
     click.secho('cd ' + projectname, bold=True)
-    ctx.invoke(update)
+    click.secho('d2s update', bold=True)
+    # Execute update directly:
+    # click.echo(click.style('[d2s]', bold=True) + ' Running ' + click.style('d2s update', bold=True) + '...')
+    # ctx.invoke(update)
 
 
 @cli.command()
@@ -145,7 +147,7 @@ def start(services, deploy):
 
     # Ask user to create the GraphDB test repository
     click.echo(click.style('[d2s] ', bold=True) + services_string + ' started.')
-    if 'graphdb' in services:
+    if 'graphdb' in services or 'demo' in services:
         if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the ' 
         + click.style('demo repository', bold=True) + ' in GraphDB?'):
             click.echo(click.style('[d2s] ', bold=True) 
