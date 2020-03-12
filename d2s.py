@@ -131,7 +131,7 @@ def start(services, deploy):
     """Start services"""
     if services[0] == "demo":
         deploy = "demo"
-        services_string = "virtuoso tmp-virtuoso drill api into-the-graph"
+        services_string = "graphdb tmp-virtuoso drill api into-the-graph"
         click.echo(click.style('[d2s] ', bold=True) + ' Starting the services for the demo: ' + services_string)
     else:
         services_string = " ".join(services)
@@ -147,11 +147,11 @@ def start(services, deploy):
     click.echo(click.style('[d2s] ', bold=True) + services_string + ' started.')
     if 'graphdb' in services:
         if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the ' 
-        + click.style('test repository', bold=True) + ' in GraphDB?'):
+        + click.style('demo repository', bold=True) + ' in GraphDB?'):
             click.echo(click.style('[d2s] ', bold=True) 
                 + 'Creating the repository, it should take about 20s.')
             time.sleep(10)
-            os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-cwl-workflows/support/graphdb-test-repo-config.ttl" -H "Content-Type: multipart/form-data"')
+            os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-cwl-workflows/support/graphdb-repo-config.ttl" -H "Content-Type: multipart/form-data"')
     click.echo()
     click.echo(click.style('[d2s]', bold=True) 
         + ' You can now download data to run a first workflow:')
