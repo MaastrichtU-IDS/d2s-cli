@@ -67,10 +67,11 @@ def init(ctx, projectname):
 
     # Create workspace directories
     os.system('mkdir -p workspace/output/tmp-outdir')
-    os.system('chmod 777 workspace/output')
+    os.system('mkdir -p workspace/graphdb-import')
+    os.system('chmod -R 777 workspace/graphdb-import')
     os.system('mkdir -p workspace/workflow-history')
     os.system('mkdir -p workspace/download/releases/1')
-    click.echo(click.style('[d2s]', bold=True) + ' Downloading RMLStreamer.jar... (80M)')
+    click.echo(click.style('[d2s]', bold=True) + ' Downloading RMLStreamer.jar... [80M]')
     urllib.request.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/RMLStreamer.jar")
     # os.system('wget -a workspace/RMLStreamer.jar https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar')
     os.system('chmod +x workspace/RMLStreamer.jar')
@@ -241,16 +242,20 @@ def download(datasets):
 
 @cli.command()
 @click.argument('dataset', autocompletion=get_datasets_list)
+# @click.option(
+#     '-p', '--parallelism', default='8', 
+#     help='Run in parallel, depends on Task Slots availables')
 def rml(dataset):
     """Run RML Streamer"""
     click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
         + click.style('datasets/' + dataset + '/mapping/rml-mappings.ttl', bold=True))
-    rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmljob_1 /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/output/rml-output-' + dataset + '.nt'
+    rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmljob_1 /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt'
+    print(rmlstreamer_cmd)
     os.system(rmlstreamer_cmd)
     click.echo(click.style('[d2s]', bold=True) + ' Check the job running at ' 
         + click.style('http://localhost:8078/#/job/running', bold=True))
     click.echo(click.style('[d2s]', bold=True) + ' Output file in ' 
-        + click.style("workspace/output/rml-output-" + dataset + ".nt", bold=True))
+        + click.style("workspace/graphdb-import/rml-output-" + dataset + ".nt", bold=True))
 
 @cli.command()
 @click.argument('workflow', autocompletion=get_workflows_list)
