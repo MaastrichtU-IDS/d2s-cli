@@ -3,7 +3,7 @@ import click
 import configparser
 import datetime
 import time
-import urllib
+import urllib.request
 import fileinput
 import cwltool.factory
 import cwltool.context
@@ -67,10 +67,13 @@ def init(ctx, projectname):
 
     # Create workspace directories
     os.system('mkdir -p workspace/output/tmp-outdir')
+    os.system('chmod 777 workspace/output')
     os.system('mkdir -p workspace/workflow-history')
     os.system('mkdir -p workspace/download/releases/1')
-    urllib.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/RMLStreamer.jar")
+    click.echo(click.style('[d2s]', bold=True) + ' Dwonloading RMLStreamer.jar...')
+    urllib.request.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/RMLStreamer.jar")
     # os.system('wget -a workspace/RMLStreamer.jar https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar')
+    os.system('chmod +x workspace/RMLStreamer.jar')
 
     # Copy load.sh in workspace for Virtuoso bulk load
     os.system('mkdir -p workspace/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/virtuoso')
@@ -95,7 +98,8 @@ def init(ctx, projectname):
     click.echo(click.style('[d2s]', bold=True) + ' The project configuration is stored in the ' 
         + click.style('.d2sconfig', bold=True) + ' file')
     click.secho('cd ' + projectname, bold=True)
-    click.secho('d2s update', bold=True)
+    click.secho('d2s start demo', bold=True)
+    # click.secho('d2s update', bold=True)
     # Execute update directly:
     # click.echo(click.style('[d2s]', bold=True) + ' Running ' + click.style('d2s update', bold=True) + '...')
     # ctx.invoke(update)
@@ -240,10 +244,10 @@ def download(datasets):
 def rml(dataset):
     """Run RML Streamer"""
     start_time = datetime.datetime.now()
-    os.system("docker exec -d d2s-cwl-workflows_rmljob_1 "
-        + "/opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar "
-        + "--path /mnt/datasets/" + dataset + "/mapping/rml-mappings.ttl 
-        + "--outputPath /mnt/workspace/output/rml-output-" + dataset + ".nt")
+    cmd = 'docker exec -d d2s-cwl-workflows_rmljob_1 /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/output/rml-output-' + dataset + '.nt'
+
+    print(cmd)
+    os.system(cmd)
     click.echo(click.style('[d2s]', bold=True) + ' Check the job running at ' 
         + click.style('http://localhost:8078/#/job/running', bold=True))
     click.echo(click.style('[d2s]', bold=True) + ' Output file in ' 
