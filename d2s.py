@@ -70,7 +70,7 @@ def init(ctx, projectname):
     os.system('chmod 777 workspace/output')
     os.system('mkdir -p workspace/workflow-history')
     os.system('mkdir -p workspace/download/releases/1')
-    click.echo(click.style('[d2s]', bold=True) + ' Dwonloading RMLStreamer.jar...')
+    click.echo(click.style('[d2s]', bold=True) + ' Downloading RMLStreamer.jar... (80M)')
     urllib.request.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/RMLStreamer.jar")
     # os.system('wget -a workspace/RMLStreamer.jar https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar')
     os.system('chmod +x workspace/RMLStreamer.jar')
