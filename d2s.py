@@ -3,6 +3,7 @@ import click
 import configparser
 import datetime
 import time
+import urllib
 import fileinput
 import cwltool.factory
 import cwltool.context
@@ -68,6 +69,8 @@ def init(ctx, projectname):
     os.system('mkdir -p workspace/output/tmp-outdir')
     os.system('mkdir -p workspace/workflow-history')
     os.system('mkdir -p workspace/download/releases/1')
+    urllib.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/RMLStreamer.jar")
+    # os.system('wget -a workspace/RMLStreamer.jar https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar')
 
     # Copy load.sh in workspace for Virtuoso bulk load
     os.system('mkdir -p workspace/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/virtuoso')
@@ -231,6 +234,20 @@ def download(datasets):
     click.echo()
     click.echo(click.style('[d2s]', bold=True) + ' You can now run the transformation workflow:')
     click.secho('d2s run', bold=True)
+
+@cli.command()
+@click.argument('dataset', autocompletion=get_datasets_list)
+def rml(dataset):
+    """Run RML Streamer"""
+    start_time = datetime.datetime.now()
+    os.system("docker exec -d d2s-cwl-workflows_rmljob_1 "
+        + "/opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar "
+        + "--path /mnt/datasets/" + dataset + "/mapping/rml-mappings.ttl 
+        + "--outputPath /mnt/workspace/output/rml-output-" + dataset + ".nt")
+    click.echo(click.style('[d2s]', bold=True) + ' Check the job running at ' 
+        + click.style('http://localhost:8078/#/job/running', bold=True))
+    click.echo(click.style('[d2s]', bold=True) + ' Output file in ' 
+        + click.style("workspace/output/rml-output-" + dataset + ".nt", bold=True))
 
 @cli.command()
 @click.argument('workflow', autocompletion=get_workflows_list)
