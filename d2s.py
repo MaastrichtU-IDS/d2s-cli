@@ -243,11 +243,10 @@ def download(datasets):
 @click.argument('dataset', autocompletion=get_datasets_list)
 def rml(dataset):
     """Run RML Streamer"""
-    start_time = datetime.datetime.now()
-    cmd = 'docker exec -d d2s-cwl-workflows_rmljob_1 /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/output/rml-output-' + dataset + '.nt'
-
-    print(cmd)
-    os.system(cmd)
+    click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
+        + click.style('datasets/' + dataset + '/mapping/rml-mappings.ttl', bold=True))
+    rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmljob_1 /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/output/rml-output-' + dataset + '.nt'
+    os.system(rmlstreamer_cmd)
     click.echo(click.style('[d2s]', bold=True) + ' Check the job running at ' 
         + click.style('http://localhost:8078/#/job/running', bold=True))
     click.echo(click.style('[d2s]', bold=True) + ' Output file in ' 
