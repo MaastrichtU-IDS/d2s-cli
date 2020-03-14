@@ -261,8 +261,8 @@ def rml(dataset):
     os.system(rmlstreamer_cmd)
     click.echo(click.style('[d2s]', bold=True) + ' Check the job running at ' 
         + click.style('http://localhost:8078/#/job/running', bold=True))
-    click.echo(click.style('[d2s]', bold=True) + ' Output file in ' 
-        + click.style("workspace/graphdb-import/rml-output-" + dataset + ".nt", bold=True))
+    click.echo(click.style('[d2s]', bold=True) + ' Output file in ' )
+    click.secho('workspace/graphdb-import/rml-output-' + dataset + '.nt', bold=True)
 
 @cli.command()
 @click.argument('workflow', autocompletion=get_workflows_list)
