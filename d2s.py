@@ -12,6 +12,9 @@ import cwltool.context
 def cli():
    pass
 
+# Start of the docker-compose using d2s-cwl-workflows yaml
+docker_compose_cmd = 'docker-compose -f d2s-cwl-workflows/docker-compose.yaml '
+
 # Used for autocompletion
 def get_services_list(ctx, args, incomplete):
     # TODO: automate by parsing the docker-compose.yaml
@@ -109,8 +112,8 @@ def init(ctx, projectname):
 @cli.command()
 def update():
     """Update Docker images"""
-    os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml pull')
-    os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml build graphdb')
+    os.system(docker_compose_cmd + 'pull')
+    os.system(docker_compose_cmd + 'build graphdb')
     click.echo(click.style('[d2s]', bold=True) + ' All images pulled and built.')
     click.echo(click.style('[d2s]', bold=True) + ' You can now start services (e.g. demo services):')
     click.secho('d2s start demo', bold=True)
@@ -148,10 +151,10 @@ def start(services, deploy):
     
     # Run docker-compose:
     if deploy:
-        os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml -f d2s-cwl-workflows/docker-compose.'
+        os.system(docker_compose_cmd + '-f d2s-cwl-workflows/docker-compose.'
         + deploy + '.yaml up -d --force-recreate ' + services_string)
     else:
-        os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate ' + services_string)
+        os.system(docker_compose_cmd + 'up -d --force-recreate ' + services_string)
 
     # Ask user to create the GraphDB test repository
     click.echo(click.style('[d2s] ', bold=True) + services_string + ' started.')
@@ -176,12 +179,12 @@ def start(services, deploy):
 def stop(services, all):
     """Stop services (--all to stop all services)"""
     if all:
-        os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml down')
+        os.system(docker_compose_cmd + 'down')
         os.system('sudo rm -rf workspace/virtuoso')
         click.echo(click.style('[d2s] ', bold=True) + 'All services stopped.')
     else:
         services_string = " ".join(services)
-        os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml stop ' + services_string)
+        os.system(docker_compose_cmd + 'stop ' + services_string)
         click.echo(click.style('[d2s] ', bold=True) + services_string + ' stopped.')
 
 
@@ -250,7 +253,7 @@ def rml(dataset):
     click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
         + click.style('datasets/' + dataset + '/mapping/rml-mappings.ttl', bold=True))
     rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer dataset ' + dataset + '"'
-    # rmlstreamer_cmd = 'docker-compose -f d2s-cwl-workflows/docker-compose.yaml exec -d rmlstreamer /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer dataset ' + dataset + '"'
+    # rmlstreamer_cmd = docker_compose_cmd + 'exec -d rmlstreamer /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer dataset ' + dataset + '"'
     # print(rmlstreamer_cmd)
     os.system(rmlstreamer_cmd)
     click.echo(click.style('[d2s]', bold=True) + ' Check the job running at ' 
@@ -280,8 +283,8 @@ def run(workflow, dataset, get_mappings, detached):
     click.echo(click.style('[d2s] ', bold=True) 
         + 'Restart tmp Virtuoso and delete file in '
         + click.style('workspace/output', bold=True))
-    os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml stop tmp-virtuoso')
-    os.system('docker-compose -f d2s-cwl-workflows/docker-compose.yaml up -d --force-recreate tmp-virtuoso')
+    os.system(docker_compose_cmd + 'stop tmp-virtuoso')
+    os.system(docker_compose_cmd + 'up -d --force-recreate tmp-virtuoso')
     # TODO: fix this dirty Virtuoso deployment 
     # Virtuoso unable to handle successive bulk load + permission issues + load.sh in the virtuoso containers
     # I don't know how, they managed to not put it in the container... They had one job...
