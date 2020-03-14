@@ -18,7 +18,7 @@ def get_services_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), [ 'demo',
     'graphdb', 'virtuoso', 'tmp-virtuoso', 'blazegraph', 'allegrograph', 'anzograph',
     'into-the-graph', 'ldf-server', 'comunica', 'notebook',
-    'api', 'drill', 'postgres', 'proxy', 'filebrowser', 'rmljob', 'rmltask' ])
+    'api', 'drill', 'postgres', 'proxy', 'filebrowser', 'rmlstreamer', 'rmltask' ])
 def get_datasets_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./datasets"))
 def get_workflows_list(ctx, args, incomplete):
@@ -249,7 +249,8 @@ def rml(dataset):
     """Run RML Streamer"""
     click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
         + click.style('datasets/' + dataset + '/mapping/rml-mappings.ttl', bold=True))
-    rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmljob_1 /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt'
+    rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer dataset ' + dataset + '"'
+    # rmlstreamer_cmd = 'docker-compose -f d2s-cwl-workflows/docker-compose.yaml exec -d rmlstreamer /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer dataset ' + dataset + '"'
     # print(rmlstreamer_cmd)
     os.system(rmlstreamer_cmd)
     click.echo(click.style('[d2s]', bold=True) + ' Check the job running at ' 
