@@ -248,14 +248,21 @@ def download(datasets):
 
 @cli.command()
 @click.argument('dataset', autocompletion=get_datasets_list)
+@click.option(
+    '--detached/--watch', default=True, 
+    help='Run in detached mode or watch workflow')
 # @click.option(
 #     '-p', '--parallelism', default='8', # Not working properly.
 #     help='Run in parallel, depends on Task Slots availables')
-def rml(dataset):
+def rml(dataset, detached):
     """Run RML Streamer"""
     click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
         + click.style('datasets/' + dataset + '/mapping/rml-mappings.ttl', bold=True))
-    rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '"'
+    if (detached):
+        detached_arg = "-d"
+    else:
+        detached_arg = "-it"
+    rmlstreamer_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '"'
     # Try parallelism:
     # rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -p 4 /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '" --enable-local-parallel'
     # Try to use docker-compose, but exec dont resolve from the -f file
