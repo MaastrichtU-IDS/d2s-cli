@@ -75,8 +75,10 @@ def init(ctx, projectname):
     os.system('chmod -R 777 workspace/graphdb-import')
     os.system('mkdir -p workspace/workflow-history')
     os.system('mkdir -p workspace/download/releases/1')
-    click.echo(click.style('[d2s]', bold=True) + ' Downloading RMLStreamer.jar... [80M]')
-    urllib.request.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/RMLStreamer.jar")
+    os.system('cp ~/RMLStreamer.jar workspace/RMLStreamer.jar')
+    if not os.path.exists('/home/vemonet/RMLStreamer.jar'):
+        click.echo(click.style('[d2s]', bold=True) + ' Downloading RMLStreamer.jar... [80M]')
+        urllib.request.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/RMLStreamer.jar")
     # os.system('wget -a workspace/RMLStreamer.jar https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar')
     os.system('chmod +x workspace/RMLStreamer.jar')
 
