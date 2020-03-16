@@ -29,13 +29,13 @@ def get_workflows_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./d2s-cwl-workflows/workflows"))
 def get_workflow_history(ctx, args, incomplete):
     # Sorted from latest to oldest
-    files = list(filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/workflow-history")))
-    return sorted(files, key=lambda x: os.path.getmtime("./workspace/workflow-history/" + x), reverse=True)
+    files = list(filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/logs")))
+    return sorted(files, key=lambda x: os.path.getmtime("./workspace/logs/" + x), reverse=True)
 def get_running_workflows(ctx, args, incomplete):
     # Only show workflow logs that have been modified in the last 2 minutes
     # TODO: Will not work for workflow with SPARQL queries longer than 2 minutes
-    files = filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/workflow-history"))
-    return filter(lambda x: datetime.datetime.fromtimestamp(os.path.getmtime("./workspace/workflow-history/" + x)) > (datetime.datetime.now() - datetime.timedelta(minutes=2)), files)
+    files = filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/logs"))
+    return filter(lambda x: datetime.datetime.fromtimestamp(os.path.getmtime("./workspace/logs/" + x)) > (datetime.datetime.now() - datetime.timedelta(minutes=2)), files)
 def get_running_processes(ctx, args, incomplete):
     # Show running processes to be stopped
     return [os.system("ps ax | grep -v time | grep '[c]wl-runner' | awk '{print $1}'")]
@@ -73,7 +73,7 @@ def init(ctx, projectname):
     os.system('mkdir -p workspace/output/tmp-outdir')
     os.system('mkdir -p workspace/import')
     os.system('chmod -R 777 workspace/import')
-    os.system('mkdir -p workspace/workflow-history')
+    os.system('mkdir -p workspace/logs')
     os.system('mkdir -p workspace/download/releases/1')
     os.system('cp ~/RMLStreamer.jar workspace/RMLStreamer.jar')
     if not os.path.exists('/home/vemonet/RMLStreamer.jar'):
@@ -230,14 +230,14 @@ def process_stop(process):
 @click.argument('workflow', autocompletion=get_running_workflows)
 def watch(workflow):
     """Watch running workflow"""
-    os.system('watch tail -n 30 workspace/workflow-history/' + workflow)
+    os.system('watch tail -n 30 workspace/logs/' + workflow)
 
 
 @cli.command()
 @click.argument('workflow', autocompletion=get_workflow_history)
 def log(workflow):
     """Display logs of a workflow"""
-    os.system('less +G workspace/workflow-history/' + workflow)
+    os.system('less +G workspace/logs/' + workflow)
 
 @cli.command()
 @click.argument('datasets', nargs=-1, autocompletion=get_datasets_list)
@@ -344,7 +344,7 @@ def run(workflow, dataset, get_mappings, detached):
     cwl_command = cwl_command +'cwl-runner --custom-net d2s-cwl-workflows_network --outdir {0}/output --tmp-outdir-prefix={0}/output/tmp-outdir/ --tmpdir-prefix={0}/output/tmp-outdir/tmp- {1} {2}'.format('workspace',cwl_workflow_path,dataset_config_path)
     if (detached):
         log_filename = workflow + '-' + dataset + '-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.txt'
-        cwl_command = cwl_command + ' > workspace/workflow-history/' + log_filename + ' &'
+        cwl_command = cwl_command + ' > workspace/logs/' + log_filename + ' &'
     click.echo()
     click.echo(click.style('[d2s] ', bold=True) 
         + 'Running CWL worklow...')
