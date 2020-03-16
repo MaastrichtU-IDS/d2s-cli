@@ -71,8 +71,8 @@ def init(ctx, projectname):
 
     # Create workspace directories
     os.system('mkdir -p workspace/output/tmp-outdir')
-    os.system('mkdir -p workspace/graphdb-import')
-    os.system('chmod -R 777 workspace/graphdb-import')
+    os.system('mkdir -p workspace/import')
+    os.system('chmod -R 777 workspace/import')
     os.system('mkdir -p workspace/workflow-history')
     os.system('mkdir -p workspace/download/releases/1')
     os.system('cp ~/RMLStreamer.jar workspace/RMLStreamer.jar')
@@ -120,10 +120,10 @@ def init(ctx, projectname):
 def update(services, permissions):
     """Update Docker images"""
     if permissions:
-        click.echo(click.style('[d2s]', bold=True) + ' Password will be asked to updates following folder permissions in workspace: input, output, graphdb-import, tmp-virtuoso')
+        click.echo(click.style('[d2s]', bold=True) + ' Password will be asked to updates following folder permissions in workspace: input, output, import, tmp-virtuoso')
         os.system('sudo chmod -R 777 workspace/input')
         os.system('sudo chmod -R 777 workspace/output')
-        os.system('sudo chmod -R 777 workspace/graphdb-import')
+        os.system('sudo chmod -R 777 workspace/import')
         os.system('sudo chmod -R 777 workspace/tmp-virtuoso')
     else:
         services_string = " ".join(services)
@@ -286,21 +286,21 @@ def rml(dataset, detached, mapper):
     
         if mapper:
             output_filename = 'rmlmapper-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
-            rmlstreamer_cmd = 'docker run ' + detached_arg + ' -v $(pwd)/workspace:/mnt/workspace -v $(pwd)/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/graphdb-import/' + output_filename
+            rmlstreamer_cmd = 'docker run ' + detached_arg + ' -v $(pwd)/workspace:/mnt/workspace -v $(pwd)/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename
         else:
             output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
-            rmlstreamer_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/graphdb-import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
+            rmlstreamer_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
     
         os.system(rmlstreamer_cmd)
         click.echo(click.style('[d2s]', bold=True) + ' Output file in ')
-        click.secho('workspace/graphdb-import/' + output_filename, bold=True)
+        click.secho('workspace/import/' + output_filename, bold=True)
     
     click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
             + click.style('http://localhost:8078/#/job/running', bold=True))
     # Try parallelism:
-    # rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -p 4 /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '" --enable-local-parallel'
+    # rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -p 4 /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '" --enable-local-parallel'
     # Try to use docker-compose, but exec dont resolve from the -f file
-    # rmlstreamer_cmd = docker_compose_cmd + 'exec -d rmlstreamer /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '"'
+    # rmlstreamer_cmd = docker_compose_cmd + 'exec -d rmlstreamer /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '"'
     # print(rmlstreamer_cmd)
 
 @cli.command()
