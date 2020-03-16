@@ -113,13 +113,24 @@ def init(ctx, projectname):
 
 
 @cli.command()
-def update():
+@click.argument('services', nargs=-1, autocompletion=get_services_list)
+@click.option(
+    '--permissions/--images', default=False, 
+    help='Update files permissions (Docker images by default)')
+def update(services, permissions):
     """Update Docker images"""
-    os.system(docker_compose_cmd + 'pull')
-    os.system(docker_compose_cmd + 'build graphdb')
-    click.echo(click.style('[d2s]', bold=True) + ' All images pulled and built.')
-    click.echo(click.style('[d2s]', bold=True) + ' You can now start services (e.g. demo services):')
-    click.secho('d2s start demo', bold=True)
+    if permissions:
+        click.echo(click.style('[d2s]', bold=True) + ' Password will be asked to updates workspace/graphdb-import and workspace/tmp-virtuoso folder permissions.')
+        os.system('sudo chmod -R 777 workspace/graphdb-import')
+        os.system('sudo chmod -R 777 workspace/tmp-virtuoso')
+    else:
+        services_string = " ".join(services)
+        os.system(docker_compose_cmd + 'pull ' + services_string)
+        if not services or "graphdb" in services:
+            os.system(docker_compose_cmd + 'build graphdb')
+        click.echo(click.style('[d2s]', bold=True) + ' All images pulled and built.')
+        click.echo(click.style('[d2s]', bold=True) + ' You can now start services (e.g. demo services):')
+        click.secho('d2s start demo', bold=True)
 
 
 @cli.command()
@@ -183,7 +194,6 @@ def stop(services, all):
     """Stop services (--all to stop all services)"""
     if all:
         os.system(docker_compose_cmd + 'down')
-        os.system('sudo rm -rf workspace/virtuoso')
         click.echo(click.style('[d2s] ', bold=True) + 'All services stopped.')
     else:
         services_string = " ".join(services)
@@ -315,7 +325,6 @@ def run(workflow, dataset, get_mappings, detached):
     os.system('rm -r workspace/output/*')
     os.system('rm -r workspace/tmp-virtuoso/*.nq')
     # Make sure the load.sh script is in the tmp Virtuoso folder
-    os.system('sudo chmod -R 777 workspace/tmp-virtuoso')
     os.system('mkdir -p workspace/tmp-virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/tmp-virtuoso')
     
     if (detached):
