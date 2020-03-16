@@ -120,7 +120,9 @@ def init(ctx, projectname):
 def update(services, permissions):
     """Update Docker images"""
     if permissions:
-        click.echo(click.style('[d2s]', bold=True) + ' Password will be asked to updates workspace/graphdb-import and workspace/tmp-virtuoso folder permissions.')
+        click.echo(click.style('[d2s]', bold=True) + ' Password will be asked to updates following folder permissions in workspace: input, output, graphdb-import, tmp-virtuoso')
+        os.system('sudo chmod -R 777 workspace/input')
+        os.system('sudo chmod -R 777 workspace/output')
         os.system('sudo chmod -R 777 workspace/graphdb-import')
         os.system('sudo chmod -R 777 workspace/tmp-virtuoso')
     else:
@@ -158,7 +160,7 @@ def start(services, deploy):
     """Start services"""
     if not services or services[0] == "demo":
         deploy = "demo"
-        services_string = "graphdb tmp-virtuoso drill api into-the-graph"
+        services_string = "graphdb tmp-virtuoso drill"
         click.echo(click.style('[d2s] ', bold=True) + ' Starting the services for the demo: ' + services_string)
     else:
         services_string = " ".join(services)
@@ -259,12 +261,15 @@ def download(datasets):
 @cli.command()
 @click.argument('dataset', autocompletion=get_datasets_list)
 @click.option(
+    '--mapper/--streamer', default=False, 
+    help='Run RML Streamer or Mapper')
+@click.option(
     '--detached/--watch', default=True, 
     help='Run in detached mode or watch workflow')
 # @click.option(
 #     '-p', '--parallelism', default='8', # Not working properly.
 #     help='Run in parallel, depends on Task Slots availables')
-def rml(dataset, detached):
+def rml(dataset, detached, mapper):
     """Run RML Streamer"""
     if (detached):
         detached_arg = "-d"
@@ -279,11 +284,16 @@ def rml(dataset, detached):
         click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
             + click.style(mapping_filepath, bold=True))
     
-        rmlstreamer_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/graphdb-import/' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
+        if mapper:
+            output_filename = 'rmlmapper-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
+            rmlstreamer_cmd = 'docker run ' + detached_arg + ' -v $(pwd)/workspace:/mnt/workspace -v $(pwd)/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/graphdb-import/' + output_filename
+        else:
+            output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
+            rmlstreamer_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/graphdb-import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
     
         os.system(rmlstreamer_cmd)
-        click.echo(click.style('[d2s]', bold=True) + ' Output file in ' )
-        click.secho('workspace/graphdb-import/'+ mapping_filename.replace('.', '_') + '-' + dataset + '.nt', bold=True)
+        click.echo(click.style('[d2s]', bold=True) + ' Output file in ')
+        click.secho('workspace/graphdb-import/' + output_filename, bold=True)
     
     click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
             + click.style('http://localhost:8078/#/job/running', bold=True))
