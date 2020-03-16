@@ -156,7 +156,7 @@ def config():
     help='Use custom deployment config')
 def start(services, deploy):
     """Start services"""
-    if services[0] == "demo":
+    if not services or services[0] == "demo":
         deploy = "demo"
         services_string = "graphdb tmp-virtuoso drill api into-the-graph"
         click.echo(click.style('[d2s] ', bold=True) + ' Starting the services for the demo: ' + services_string)
