@@ -256,23 +256,32 @@ def download(datasets):
 #     help='Run in parallel, depends on Task Slots availables')
 def rml(dataset, detached):
     """Run RML Streamer"""
-    click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
-        + click.style('datasets/' + dataset + '/mapping/rml-mappings.ttl', bold=True))
     if (detached):
         detached_arg = "-d"
     else:
         detached_arg = "-it"
-    rmlstreamer_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '"'
+
+    for file in os.listdir('./datasets/' + dataset + '/mapping'):
+     mapping_filename = os.fsdecode(file)
+     if mapping_filename.endswith(".rml.ttl"): 
+        # print(os.path.join(directory, filename))
+        mapping_filepath = 'datasets/' + dataset + '/mapping/' + mapping_filename
+        click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
+            + click.style(mapping_filepath, bold=True))
+    
+        rmlstreamer_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/graphdb-import/' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
+    
+        os.system(rmlstreamer_cmd)
+        click.echo(click.style('[d2s]', bold=True) + ' Output file in ' )
+        click.secho('workspace/graphdb-import/'+ mapping_filename.replace('.', '_') + '-' + dataset + '.nt', bold=True)
+    
+    click.echo(click.style('[d2s]', bold=True) + ' Check the job(s) running at ' 
+            + click.style('http://localhost:8078/#/job/running', bold=True))
     # Try parallelism:
     # rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -p 4 /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '" --enable-local-parallel'
     # Try to use docker-compose, but exec dont resolve from the -f file
     # rmlstreamer_cmd = docker_compose_cmd + 'exec -d rmlstreamer /opt/flink/bin/flink run /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/graphdb-import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '"'
     # print(rmlstreamer_cmd)
-    os.system(rmlstreamer_cmd)
-    click.echo(click.style('[d2s]', bold=True) + ' Check the job running at ' 
-        + click.style('http://localhost:8078/#/job/running', bold=True))
-    click.echo(click.style('[d2s]', bold=True) + ' Output file in ' )
-    click.secho('workspace/graphdb-import/rml-output-' + dataset + '.nt', bold=True)
 
 @cli.command()
 @click.argument('workflow', autocompletion=get_workflows_list)
