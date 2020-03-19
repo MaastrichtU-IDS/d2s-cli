@@ -19,7 +19,7 @@ docker_compose_cmd = 'docker-compose -f d2s-cwl-workflows/docker-compose.yaml '
 def get_services_list(ctx, args, incomplete):
     # TODO: automate by parsing the docker-compose.yaml
     return filter(lambda x: x.startswith(incomplete), [ 'demo',
-    'graphdb', 'virtuoso', 'tmp-virtuoso', 'blazegraph', 'allegrograph', 'anzograph',
+    'graphdb', 'virtuoso', 'tmp-virtuoso', 'blazegraph', 'allegrograph', 'anzograph', 'fuseki',
     'into-the-graph', 'ldf-server', 'comunica', 'notebook',
     'api', 'drill', 'postgres', 'proxy', 'filebrowser', 'rmlstreamer', 'rmltask',
     'neo4j' ])
@@ -74,7 +74,8 @@ def init(ctx, projectname):
     os.system('mkdir -p workspace/import')
     os.system('chmod -R 777 workspace/import')
     os.system('mkdir -p workspace/logs')
-    os.system('mkdir -p workspace/download/releases/1')
+    os.system('mkdir -p workspace/dumps/rdf/releases/1')
+    os.system('mkdir -p workspace/dumps/hdt')
     os.system('cp ~/RMLStreamer.jar workspace/RMLStreamer.jar')
     if not os.path.exists('/home/vemonet/RMLStreamer.jar'):
         click.echo(click.style('[d2s]', bold=True) + ' Downloading RMLStreamer.jar... [80M]')
@@ -124,6 +125,7 @@ def update(services, permissions):
         os.system('sudo chmod -R 777 workspace/input')
         os.system('sudo chmod -R 777 workspace/output')
         os.system('sudo chmod -R 777 workspace/import')
+        os.system('sudo chmod -R 777 workspace/dumps')
         os.system('sudo chmod -R 777 workspace/tmp-virtuoso')
     else:
         services_string = " ".join(services)
@@ -266,9 +268,9 @@ def download(datasets):
 @click.option(
     '--detached/--watch', default=True, 
     help='Run in detached mode or watch workflow')
-# @click.option(
-#     '-p', '--parallelism', default='8', # Not working properly.
-#     help='Run in parallel, depends on Task Slots availables')
+@click.option(
+    '-p', '--parallelism', default='8',
+    help='Run in parallel, depends on Task Slots availables')
 def rml(dataset, detached, mapper):
     """Run RML Streamer"""
     if (detached):
@@ -290,6 +292,9 @@ def rml(dataset, detached, mapper):
         else:
             output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
             rmlstreamer_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
+            print(rmlstreamer_cmd)
+            ## Try parallelism:
+            # rmlstreamer_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -p ' + parallelism + ' -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '" --parallelism ' + parallelism + ' --enable-local-parallel'
     
         os.system(rmlstreamer_cmd)
         click.echo(click.style('[d2s]', bold=True) + ' Output file in ')
