@@ -72,11 +72,12 @@ def init(ctx, projectname):
         os.system('git submodule add --recursive https://github.com/MaastrichtU-IDS/d2s-cwl-workflows.git')
 
     # Create workspace directories
-    os.system('mkdir -p workspace/output/tmp-outdir')
-    os.system('mkdir -p workspace/import')
-    os.system('mkdir -p workspace/logs')
-    os.system('mkdir -p workspace/dumps/rdf/releases/1')
-    os.system('mkdir -p workspace/dumps/hdt')
+    os.makedirs('workspace/output/tmp-outdir', exist_ok=True)
+    os.makedirs('workspace/output/tmp-outdir', exist_ok=True)
+    os.makedirs('workspace/import', exist_ok=True)
+    os.makedirs('workspace/logs', exist_ok=True)
+    os.makedirs('workspace/dumps/rdf/releases/1', exist_ok=True)
+    os.makedirs('workspace/dumps/hdt', exist_ok=True)
     # Linux only, use os.chmod
     # os.chmod(path, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
     # https://stackoverflow.com/questions/16249440/changing-file-permission-in-python
@@ -94,8 +95,10 @@ def init(ctx, projectname):
     os.chmod('workspace/RMLStreamer.jar', stat.S_IRWXO)
 
     # Copy load.sh in workspace for Virtuoso bulk load
-    os.system('mkdir -p workspace/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/virtuoso')
-    os.system('mkdir -p workspace/tmp-virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/tmp-virtuoso')
+    os.makedirs('workspace/virtuoso', exist_ok=True)
+    os.makedirs('workspace/tmp-virtuoso', exist_ok=True)
+    copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/virtuoso/load.sh')
+    copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/tmp-virtuoso/load.sh')
     # TODO: improve this to include it in Docker deployment
 
     click.echo()
@@ -106,7 +109,8 @@ def init(ctx, projectname):
         + ' and provide your email to receive the URL to download ' + click.style('GraphDB version 9.1.1 standalone zip', bold=True))
     
     graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 9.1.1 zip file used to build the Docker image. Default', default='~/graphdb-free-9.1.1-dist.zip')
-    os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
+    # os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
+    copyfile(graphdb_path, './d2s-cwl-workflows/support/graphdb')
     
     with open('.d2sconfig', 'w') as configfile:
         config.write(configfile)
