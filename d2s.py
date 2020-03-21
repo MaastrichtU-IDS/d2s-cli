@@ -42,6 +42,17 @@ def get_running_processes(ctx, args, incomplete):
     # Show running processes to be stopped
     return [os.system("ps ax | grep -v time | grep '[c]wl-runner' | awk '{print $1}'")]
 
+def chmod777(path):
+    for dirpath, dirnames, filenames in os.walk(path):
+        os.chmod(dirpath, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        # os.chmod(dirpath, 0o777)
+        # os.chmod('workspace/import', stat.S_IRWXO)
+        # shutil.chown(dirpath, owner)
+        for filename in filenames:
+            os.chmod(os.path.join(dirpath, filename), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+            # os.chmod(os.path.join(dirpath, filename), 0o777)
+            # shutil.chown(os.path.join(dirpath, filename), owner)
+
 @cli.command()
 @click.argument('projectname', nargs=1)
 @click.pass_context
@@ -81,7 +92,7 @@ def init(ctx, projectname):
     # Linux only, use os.chmod
     # os.chmod(path, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
     # https://stackoverflow.com/questions/16249440/changing-file-permission-in-python
-    os.chmod('workspace/import', stat.S_IRWXO)
+    chmod777('workspace/import')
     # Read, write, and execute by others
     # os.system('chmod -R 777 workspace/import')
     # Get RMLStreamer from home dir to qvoid download each time
@@ -92,7 +103,7 @@ def init(ctx, projectname):
         click.echo(click.style('[d2s]', bold=True) + ' Downloading RMLStreamer.jar... [80M]')
         urllib.request.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/RMLStreamer.jar")
     # os.system('wget -a workspace/RMLStreamer.jar https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar')
-    os.chmod('workspace/RMLStreamer.jar', stat.S_IRWXO)
+    chmod777('workspace/RMLStreamer.jar')
 
     # Copy load.sh in workspace for Virtuoso bulk load
     os.makedirs('workspace/virtuoso', exist_ok=True)
