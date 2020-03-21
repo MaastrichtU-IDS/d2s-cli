@@ -1,4 +1,6 @@
-import os
+import os, sys, stat
+from pathlib import Path
+from shutil import copyfile
 import click
 import configparser
 import datetime
@@ -72,16 +74,24 @@ def init(ctx, projectname):
     # Create workspace directories
     os.system('mkdir -p workspace/output/tmp-outdir')
     os.system('mkdir -p workspace/import')
-    os.system('chmod -R 777 workspace/import')
     os.system('mkdir -p workspace/logs')
     os.system('mkdir -p workspace/dumps/rdf/releases/1')
     os.system('mkdir -p workspace/dumps/hdt')
-    os.system('cp ~/RMLStreamer.jar workspace/RMLStreamer.jar')
-    if not os.path.exists('/home/vemonet/RMLStreamer.jar'):
+    # Linux only, use os.chmod
+    # os.chmod(path, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+    # https://stackoverflow.com/questions/16249440/changing-file-permission-in-python
+    os.chmod('workspace/import', stat.S_IRWXO)
+    # Read, write, and execute by others
+    # os.system('chmod -R 777 workspace/import')
+    # Get RMLStreamer from home dir to qvoid download each time
+    user_home_dir = str(Path.home())
+    if os.path.exists(user_home_dir + '/RMLStreamer.jar'):
+        copyfile(user_home_dir + '/RMLStreamer.jar', 'workspace/RMLStreamer.jar')
+    else:
         click.echo(click.style('[d2s]', bold=True) + ' Downloading RMLStreamer.jar... [80M]')
         urllib.request.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/RMLStreamer.jar")
     # os.system('wget -a workspace/RMLStreamer.jar https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar')
-    os.system('chmod +x workspace/RMLStreamer.jar')
+    os.chmod('workspace/RMLStreamer.jar', stat.S_IRWXO)
 
     # Copy load.sh in workspace for Virtuoso bulk load
     os.system('mkdir -p workspace/virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/virtuoso')
