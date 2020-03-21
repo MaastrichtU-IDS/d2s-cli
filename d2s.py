@@ -110,7 +110,11 @@ def init(ctx, projectname):
     
     graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 9.1.1 zip file used to build the Docker image. Default', default='~/graphdb-free-9.1.1-dist.zip')
     # os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
-    copyfile(graphdb_path, './d2s-cwl-workflows/support/graphdb')
+    if os.path.exists(graphdb_path):
+        copyfile(graphdb_path, './d2s-cwl-workflows/support/graphdb')
+    else:
+        click.echo(click.style('[d2s]', bold=True) + ' GraphDB installation file not found. Copy the zip file in d2s-cwl-workflows/support/graphdb after download.')
+
     
     with open('.d2sconfig', 'w') as configfile:
         config.write(configfile)
@@ -196,6 +200,7 @@ def start(services, deploy):
             click.echo(click.style('[d2s] ', bold=True) 
                 + 'Creating the repository, it should take about 20s.')
             time.sleep(10)
+            # TODO: use urllib
             os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-cwl-workflows/support/graphdb-repo-config.ttl" -H "Content-Type: multipart/form-data"')
     click.echo()
     click.echo(click.style('[d2s]', bold=True) 
