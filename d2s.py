@@ -1,6 +1,7 @@
 import os, sys, stat
 from pathlib import Path
-from shutil import copyfile
+import shutil
+import glob
 import click
 import configparser
 import datetime
@@ -98,7 +99,7 @@ def init(ctx, projectname):
     # Get RMLStreamer from home dir to qvoid download each time
     user_home_dir = str(Path.home())
     if os.path.exists(user_home_dir + '/RMLStreamer.jar'):
-        copyfile(user_home_dir + '/RMLStreamer.jar', 'workspace/RMLStreamer.jar')
+        shutil.copyfile(user_home_dir + '/RMLStreamer.jar', 'workspace/RMLStreamer.jar')
     else:
         click.echo(click.style('[d2s]', bold=True) + ' Downloading RMLStreamer.jar... [80M]')
         urllib.request.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/RMLStreamer.jar")
@@ -108,8 +109,8 @@ def init(ctx, projectname):
     # Copy load.sh in workspace for Virtuoso bulk load
     os.makedirs('workspace/virtuoso', exist_ok=True)
     os.makedirs('workspace/tmp-virtuoso', exist_ok=True)
-    copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/virtuoso/load.sh')
-    copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/tmp-virtuoso/load.sh')
+    shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/virtuoso/load.sh')
+    shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/tmp-virtuoso/load.sh')
     # TODO: improve this to include it in Docker deployment
 
     click.echo()
@@ -122,7 +123,7 @@ def init(ctx, projectname):
     graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 9.1.1 zip file used to build the Docker image. Default', default='~/graphdb-free-9.1.1-dist.zip')
     # os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
     if os.path.exists(graphdb_path):
-        copyfile(graphdb_path, './d2s-cwl-workflows/support/graphdb')
+        shutil.copyfile(graphdb_path, './d2s-cwl-workflows/support/graphdb')
     else:
         click.echo(click.style('[d2s]', bold=True) + ' GraphDB installation file not found. Copy the zip file in d2s-cwl-workflows/support/graphdb after download.')
 
@@ -366,11 +367,15 @@ def run(workflow, dataset, get_mappings, detached):
     # Virtuoso unable to handle successive bulk load + permission issues + load.sh in the virtuoso containers
     # I don't know how, they managed to not put it in the container... They had one job...
 
-    # Delete previous output (not archived)
-    os.system('rm -r workspace/output/*')
-    os.system('rm -r workspace/tmp-virtuoso/*.nq')
+    # Delete previous output (not archived). See article: https://thispointer.com/python-how-to-delete-a-directory-recursively-using-shutil-rmtree/
+    shutil.rmtree('workspace/output', ignore_errors=False, onerror=None)
+    for file in glob.glob("workspace/tmp-virtuoso/*.nq"):
+        os.remove(file)
     # Make sure the load.sh script is in the tmp Virtuoso folder
     os.system('mkdir -p workspace/tmp-virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/tmp-virtuoso')
+    os.makedirs('workspace/tmp-virtuoso', exist_ok=True)
+    shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/virtuoso/load.sh')
+    shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/tmp-virtuoso/load.sh')
     
     if (detached):
         cwl_command = 'nohup time '
