@@ -350,6 +350,8 @@ def rml(dataset, detached, mapper, parallelism):
             # Use RMLStreamer
             output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
             rml_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
+            click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
+                + click.style('http://localhost:8078/#/job/running', bold=True))
             ## Try parallelism:
             # rml_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -p ' + parallelism + ' -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '" --parallelism ' + parallelism + ' --enable-local-parallel'
     
@@ -359,11 +361,9 @@ def rml(dataset, detached, mapper, parallelism):
         #     process = subprocess.call(rml_cmd, shell=True, 
         #         stdout=output, stderr=output)
 
-        # click.echo(click.style('[d2s]', bold=True) + ' PID of running process: ' + str(process))
+        # click.echo(click.style('[d2s]', bold=True) + ' PID of running process: ' + str(process.pid))
         click.echo(click.style('[d2s]', bold=True) + ' Output file in ')
         click.secho('workspace/import/' + output_filename, bold=True)
-        click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
-                + click.style('http://localhost:8078/#/job/running', bold=True))
     
     # Try parallelism:
     # rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -p 4 /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '" --enable-local-parallel'
