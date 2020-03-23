@@ -7,9 +7,11 @@ import configparser
 import datetime
 import time
 import urllib.request
+
 import fileinput
 import cwltool.factory
 import cwltool.context
+
 
 @click.group()
 def cli():
@@ -53,7 +55,7 @@ def chmod777(path):
             # os.chmod('workspace/import', stat.S_IRWXO)
             shutil.chown(dirpath, user=os.getuid(), group=os.getgid())
         except:
-            click.echo(click.style('[d2s]', bold=True) + ' Issue while updating permissions for ' + dirpath)
+            click.echo(click.style('[d2s]', bold=True) + ' Issue while updating permissions for ' + dirpath + '.')
         
         for filename in filenames:
             try:
@@ -166,6 +168,8 @@ def update(services, permissions):
         for fileToUpdate in listToUpdate:
             chmod777('workspace/' + fileToUpdate)
             os.makedirs('workspace/' + fileToUpdate, exist_ok=True)
+        click.echo(click.style('[d2s]', bold=True) + ' Most permissions issues can be fixed by changing the owner of the file while running as administrator')
+        click.secho('sudo chown -R ' + os.getuid() + ':' + os.getdid() + ' workspace', bold=True)
     else:
         services_string = " ".join(services)
         os.system(docker_compose_cmd + 'pull ' + services_string)
@@ -216,13 +220,21 @@ def start(services, deploy):
     # Ask user to create the GraphDB test repository
     click.echo(click.style('[d2s] ', bold=True) + services_string + ' started.')
     if 'graphdb' in services or 'demo' in services:
-        if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the ' 
-        + click.style('demo repository', bold=True) + ' in GraphDB?'):
-            click.echo(click.style('[d2s] ', bold=True) 
-                + 'Creating the repository, it should take about 20s.')
-            time.sleep(10)
-            # TODO: use urllib
-            os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-cwl-workflows/support/graphdb-repo-config.ttl" -H "Content-Type: multipart/form-data"')
+        click.echo(click.style('[d2s] ', bold=True) 
+                + 'Create repository on GraphDB: http://localhost:7200/repository')
+        # if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the ' 
+        # + click.style('demo repository', bold=True) + ' in GraphDB?'):
+        #     click.echo(click.style('[d2s] ', bold=True) 
+        #         + 'Creating the repository, it should take about 20s.')
+        #     time.sleep(10)
+        #     TODO: posting multiform with urllib needs to be changed
+        #     localGraphdbUrl = 'http://localhost:7200/rest/repositories'
+        #     headers = {'Content-Type': 'multipart/form-data'}
+        #     request = urllib.request.Request(localGraphdbUrl, 
+        #         open('d2s-cwl-workflows/support/graphdb-repo-config.ttl', 'rb'),
+        #                             headers=headers)
+        #     response = urllib.request.urlopen(request)
+        #     os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-cwl-workflows/support/graphdb-repo-config.ttl" -H "Content-Type: multipart/form-data"')
     click.echo()
     click.echo(click.style('[d2s]', bold=True) 
         + ' You can now download data to run a first workflow:')
