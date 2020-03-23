@@ -45,14 +45,14 @@ def get_running_processes(ctx, args, incomplete):
     # Show running processes to be stopped
     return [os.system("ps ax | grep -v time | grep '[c]wl-runner' | awk '{print $1}'")]
 
-# Change permissions to 777 recursively
+# Change permissions to 777 recursively. 
+# See https://stackoverflow.com/questions/16249440/changing-file-permission-in-python
 def chmod777(path):
     for dirpath, dirnames, filenames in os.walk(path):
         # Handle permissions errors
         try:
             os.chmod(dirpath, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
             # os.chmod(dirpath, 0o777)
-            # os.chmod('workspace/import', stat.S_IRWXO)
             shutil.chown(dirpath, user=os.getuid(), group=os.getgid())
         except:
             click.echo(click.style('[d2s]', bold=True) + ' Issue while updating permissions for ' + dirpath + '.')
@@ -63,8 +63,6 @@ def chmod777(path):
                 shutil.chown(os.path.join(dirpath, filename), user=os.getuid(), group=os.getgid())
             except:
                 click.echo(click.style('[d2s]', bold=True) + ' Issue while updating permissions for ' + os.path.join(dirpath, filename))
-            # os.chmod(os.path.join(dirpath, filename), 0o777)
-            # shutil.chown(os.path.join(dirpath, filename), owner)
 
 @cli.command()
 @click.argument('projectname', nargs=1)
@@ -79,8 +77,6 @@ def init(ctx, projectname):
 
     config = configparser.ConfigParser()
     config['d2s'] = {}
-    # os.system('echo "UID=$UID" > .env')
-    # os.system('echo "GID=$GID" >> .env')
 
     click.echo(click.style('[d2s] ', bold=True) + 'You can generate a new project on GitHub using the provided template:')
     click.secho('https://github.com/MaastrichtU-IDS/d2s-transform-template/generate', bold=True)
@@ -95,19 +91,14 @@ def init(ctx, projectname):
     if not os.path.exists('./d2s-cwl-workflows'):
         os.system('git submodule add --recursive https://github.com/MaastrichtU-IDS/d2s-cwl-workflows.git')
 
-    # Create workspace directories
-    os.makedirs('workspace/output/tmp-outdir', exist_ok=True)
-    os.makedirs('workspace/output/tmp-outdir', exist_ok=True)
-    os.makedirs('workspace/import', exist_ok=True)
-    os.makedirs('workspace/logs', exist_ok=True)
-    os.makedirs('workspace/dumps/rdf/releases/1', exist_ok=True)
-    os.makedirs('workspace/dumps/hdt', exist_ok=True)
-    # Linux only, use os.chmod
-    # os.chmod(path, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
-    # https://stackoverflow.com/questions/16249440/changing-file-permission-in-python
-    chmod777('workspace/import')
-    # Read, write, and execute by others
-    # os.system('chmod -R 777 workspace/import')
+    # Create workspace directories and chmod 777
+    listToCreate = ["input", "output", "import", "output/tmp-outdir", 
+        "logs", "dumps/rdf/releases/1", 'dumps/hdt']
+    click.echo(click.style('[d2s]', bold=True) + ' Creating following folders in workspace: ' + ", ".join(listToUpdate))
+    for fileToCreate in listToCreate:
+        os.makedirs('workspace/' + fileToCreate, exist_ok=True)
+    chmod777('workspace')
+
     # Get RMLStreamer from home dir to qvoid download each time
     user_home_dir = str(Path.home())
     if os.path.exists(user_home_dir + '/RMLStreamer.jar'):
@@ -115,7 +106,6 @@ def init(ctx, projectname):
     else:
         click.echo(click.style('[d2s]', bold=True) + ' Downloading RMLStreamer.jar... [80M]')
         urllib.request.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/RMLStreamer.jar")
-    # os.system('wget -a workspace/RMLStreamer.jar https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar')
     chmod777('workspace/RMLStreamer.jar')
 
     # Copy load.sh in workspace for Virtuoso bulk load
@@ -133,13 +123,12 @@ def init(ctx, projectname):
         + ' and provide your email to receive the URL to download ' + click.style('GraphDB version 9.1.1 standalone zip', bold=True))
     
     graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 9.1.1 zip file used to build the Docker image. Default', default='~/graphdb-free-9.1.1-dist.zip')
-    # os.system('cp ' + graphdb_path + ' ./d2s-cwl-workflows/support/graphdb')
+    # Get GraphDB installation file
     if os.path.exists(graphdb_path):
         shutil.copyfile(graphdb_path, './d2s-cwl-workflows/support/graphdb')
     else:
         click.echo(click.style('[d2s]', bold=True) + ' GraphDB installation file not found. Copy the zip file in d2s-cwl-workflows/support/graphdb after download.')
 
-    
     with open('.d2sconfig', 'w') as configfile:
         config.write(configfile)
     
@@ -169,8 +158,9 @@ def update(services, permissions):
             chmod777('workspace/' + fileToUpdate)
             os.makedirs('workspace/' + fileToUpdate, exist_ok=True)
         click.echo(click.style('[d2s]', bold=True) + ' Most permissions issues can be fixed by changing the owner of the file while running as administrator')
-        click.secho('sudo chown -R ' + os.getuid() + ':' + os.getdid() + ' workspace', bold=True)
+        click.secho('sudo chown -R ' + os.getuid() + ':' + os.getgid() + ' workspace', bold=True)
     else:
+        # Update Docker images (pull and build graphdb)
         services_string = " ".join(services)
         os.system(docker_compose_cmd + 'pull ' + services_string)
         if not services or "graphdb" in services:
@@ -222,12 +212,12 @@ def start(services, deploy):
     if 'graphdb' in services or 'demo' in services:
         click.echo(click.style('[d2s] ', bold=True) 
                 + 'Create repository on GraphDB: http://localhost:7200/repository')
+        # TODO: Creating GraphDB repo by posting multiform with urllib needs to be changed
         # if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the ' 
         # + click.style('demo repository', bold=True) + ' in GraphDB?'):
         #     click.echo(click.style('[d2s] ', bold=True) 
         #         + 'Creating the repository, it should take about 20s.')
         #     time.sleep(10)
-        #     TODO: posting multiform with urllib needs to be changed
         #     localGraphdbUrl = 'http://localhost:7200/rest/repositories'
         #     headers = {'Content-Type': 'multipart/form-data'}
         #     request = urllib.request.Request(localGraphdbUrl, 
