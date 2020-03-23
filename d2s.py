@@ -93,11 +93,16 @@ def init(ctx, projectname):
 
     # Create workspace directories and chmod 777
     listToCreate = ["input", "output", "import", "output/tmp-outdir", 
-        "logs", "dumps/rdf/releases/1", 'dumps/hdt']
+        "logs", "dumps/rdf/releases/1", 'dumps/hdt', 'virtuoso', 'tmp-virtuoso']
     click.echo(click.style('[d2s]', bold=True) + ' Creating following folders in workspace: ' + ", ".join(listToUpdate))
     for fileToCreate in listToCreate:
         os.makedirs('workspace/' + fileToCreate, exist_ok=True)
     chmod777('workspace')
+    # Copy load.sh in workspace for Virtuoso bulk load
+    shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/virtuoso/load.sh')
+    shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/tmp-virtuoso/load.sh')
+    # TODO: improve this to include it in Docker deployment
+
 
     # Get RMLStreamer from home dir to qvoid download each time
     user_home_dir = str(Path.home())
@@ -107,13 +112,6 @@ def init(ctx, projectname):
         click.echo(click.style('[d2s]', bold=True) + ' Downloading RMLStreamer.jar... [80M]')
         urllib.request.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/RMLStreamer.jar")
     chmod777('workspace/RMLStreamer.jar')
-
-    # Copy load.sh in workspace for Virtuoso bulk load
-    os.makedirs('workspace/virtuoso', exist_ok=True)
-    os.makedirs('workspace/tmp-virtuoso', exist_ok=True)
-    shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/virtuoso/load.sh')
-    shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/tmp-virtuoso/load.sh')
-    # TODO: improve this to include it in Docker deployment
 
     click.echo()
     # Copy GraphDB zip file to the right folder in d2s-cwl-workflows
@@ -157,6 +155,12 @@ def update(services, permissions):
         for fileToUpdate in listToUpdate:
             chmod777('workspace/' + fileToUpdate)
             os.makedirs('workspace/' + fileToUpdate, exist_ok=True)
+        # Copy load.sh in workspace for Virtuoso bulk load
+        shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/virtuoso/load.sh')
+        shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/tmp-virtuoso/load.sh')
+        chmod777('workspace/virtuoso/load.sh')
+        chmod777('workspace/tmp-virtuoso/load.sh')
+        # TODO: improve this to include it in Docker deployment
         click.echo(click.style('[d2s]', bold=True) + ' Most permissions issues can be fixed by changing the owner of the file while running as administrator')
         click.secho('sudo chown -R ' + os.getuid() + ':' + os.getgid() + ' workspace', bold=True)
     else:
@@ -345,6 +349,7 @@ def rml(dataset, detached, mapper, parallelism):
         click.secho('workspace/import/' + output_filename, bold=True)
         click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
                 + click.style('http://localhost:8078/#/job/running', bold=True))
+    
     # Try parallelism:
     # rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -p 4 /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '" --enable-local-parallel'
     # Try to use docker-compose, but exec dont resolve from the -f file
@@ -370,11 +375,11 @@ def run(workflow, dataset, get_mappings, detached):
 
     # TODO: Trying to fix issue where virtuoso bulk load only the first dataset we run
     # It needs restart to work a second time
-    click.echo(click.style('[d2s] ', bold=True) 
-        + 'Restart tmp Virtuoso and delete file in '
-        + click.style('workspace/output', bold=True))
-    os.system(docker_compose_cmd + 'stop tmp-virtuoso')
-    os.system(docker_compose_cmd + 'up -d --force-recreate tmp-virtuoso')
+    # click.echo(click.style('[d2s] ', bold=True) 
+    #     + 'Restart tmp Virtuoso and delete file in '
+    #     + click.style('workspace/output', bold=True))
+    # os.system(docker_compose_cmd + 'stop tmp-virtuoso')
+    # os.system(docker_compose_cmd + 'up -d --force-recreate tmp-virtuoso')
     # TODO: fix this dirty Virtuoso deployment 
     # Virtuoso unable to handle successive bulk load + permission issues + load.sh in the virtuoso containers
     # I don't know how, they managed to not put it in the container... They had one job...
@@ -383,13 +388,9 @@ def run(workflow, dataset, get_mappings, detached):
     shutil.rmtree('workspace/output', ignore_errors=True, onerror=None)
     for file in glob.glob("workspace/tmp-virtuoso/*.nq"):
         os.remove(file)
-    # Make sure the load.sh script is in the tmp Virtuoso folder
-    os.system('mkdir -p workspace/tmp-virtuoso && cp d2s-cwl-workflows/support/virtuoso/load.sh workspace/tmp-virtuoso')
-    os.makedirs('workspace/tmp-virtuoso', exist_ok=True)
-    shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/virtuoso/load.sh')
-    shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/tmp-virtuoso/load.sh')
-    
+
     if (detached):
+        # TODO: Find a better solution to work on windows
         cwl_command = 'nohup time '
     else:
         cwl_command = ''
@@ -415,18 +416,7 @@ def run(workflow, dataset, get_mappings, detached):
         click.echo()
         click.echo(click.style('[d2s] ', bold=True) + 'Browse the file generated by the workflow in ' 
             + click.style('workspace/output/' + dataset, bold=True))
-        # click.echo(click.style('[d2s] ', bold=True)
-        #     + 'Access the linked data browser for Virtuoso at '
-        #     + click.style('http://localhost:8891', bold=True))
-        # click.echo(click.style('[d2s] ', bold=True)
-        #     + 'Access Virtuoso (temp store) at '
-        #     + click.style('http://localhost:8890', bold=True))
-        # click.echo(click.style('[d2s] ', bold=True) 
-        #     + 'Access the linked data browser for GraphDB at '
-        #     + click.style('http://localhost:7201', bold=True))
-        # click.echo(click.style('[d2s] ', bold=True) 
-        #     + 'Access GraphDB at '
-        #     + click.style('http://localhost:7200', bold=True))
+
     if (detached):
         click.echo()
         click.echo(click.style('[d2s] ', bold=True) 
@@ -504,6 +494,7 @@ def dataset():
         + click.style(dataset_id + ' dataset', bold=True) 
         + ' has been generated')
     click.echo(click.style('[d2s]', bold=True) + ' Start edit them in ' + click.style('datasets/' + dataset_id, bold=True))
+    
     # Will not work on all platforms:
     # if click.confirm(click.style('[?]', bold=True) + ' Do you want to open the ' 
     #     + click.style('download', bold=True) + ' file to edit it?'):
