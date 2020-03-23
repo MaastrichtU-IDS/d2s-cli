@@ -302,7 +302,7 @@ def download(datasets):
 @click.option(
     '-p', '--parallelism', default='8',
     help='Run in parallel, depends on Task Slots availables')
-def rml(dataset, detached, mapper):
+def rml(dataset, detached, mapper, parallelism):
     """Run RML Streamer"""
     if (detached):
         detached_arg = "-d"
@@ -321,6 +321,7 @@ def rml(dataset, detached, mapper):
             output_filename = 'rmlmapper-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
             rmlstreamer_cmd = 'docker run ' + detached_arg + ' -v $(pwd)/workspace:/mnt/workspace -v $(pwd)/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename
         else:
+            # Use RMLStreamer
             output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
             rmlstreamer_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
             print(rmlstreamer_cmd)
@@ -330,9 +331,8 @@ def rml(dataset, detached, mapper):
         os.system(rmlstreamer_cmd)
         click.echo(click.style('[d2s]', bold=True) + ' Output file in ')
         click.secho('workspace/import/' + output_filename, bold=True)
-    
-    click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
-            + click.style('http://localhost:8078/#/job/running', bold=True))
+        click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
+                + click.style('http://localhost:8078/#/job/running', bold=True))
     # Try parallelism:
     # rmlstreamer_cmd = 'docker exec -d d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -p 4 /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '" --enable-local-parallel'
     # Try to use docker-compose, but exec dont resolve from the -f file
