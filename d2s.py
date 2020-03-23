@@ -43,14 +43,24 @@ def get_running_processes(ctx, args, incomplete):
     # Show running processes to be stopped
     return [os.system("ps ax | grep -v time | grep '[c]wl-runner' | awk '{print $1}'")]
 
+# Change permissions to 777 recursively
 def chmod777(path):
     for dirpath, dirnames, filenames in os.walk(path):
-        os.chmod(dirpath, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-        # os.chmod(dirpath, 0o777)
-        # os.chmod('workspace/import', stat.S_IRWXO)
-        # shutil.chown(dirpath, owner)
+        # Handle permissions errors
+        try:
+            os.chmod(dirpath, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+            # os.chmod(dirpath, 0o777)
+            # os.chmod('workspace/import', stat.S_IRWXO)
+            shutil.chown(dirpath, user=os.getuid(), group=os.getgid())
+        except:
+            click.echo(click.style('[d2s]', bold=True) + ' Issue while updating permissions for ' + dirpath)
+        
         for filename in filenames:
-            os.chmod(os.path.join(dirpath, filename), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+            try:
+                os.chmod(os.path.join(dirpath, filename), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+                shutil.chown(os.path.join(dirpath, filename), user=os.getuid(), group=os.getgid())
+            except:
+                click.echo(click.style('[d2s]', bold=True) + ' Issue while updating permissions for ' + os.path.join(dirpath, filename))
             # os.chmod(os.path.join(dirpath, filename), 0o777)
             # shutil.chown(os.path.join(dirpath, filename), owner)
 
@@ -151,12 +161,11 @@ def init(ctx, projectname):
 def update(services, permissions):
     """Update Docker images"""
     if permissions:
-        click.echo(click.style('[d2s]', bold=True) + ' Password will be asked to updates following folder permissions in workspace: input, output, import, tmp-virtuoso')
-        os.system('sudo chmod -R 777 workspace/input')
-        os.system('sudo chmod -R 777 workspace/output')
-        os.system('sudo chmod -R 777 workspace/import')
-        os.system('sudo chmod -R 777 workspace/dumps')
-        os.system('sudo chmod -R 777 workspace/tmp-virtuoso')
+        listToUpdate = ["input", "output", "import", "dumps", "tmp-virtuoso", "virtuoso"]
+        click.echo(click.style('[d2s]', bold=True) + ' Password might be asked to updates following folder permissions in workspace: ' + ", ".join(listToUpdate))
+        for fileToUpdate in listToUpdate:
+            chmod777('workspace/' + fileToUpdate)
+            os.makedirs('workspace/' + fileToUpdate, exist_ok=True)
     else:
         services_string = " ".join(services)
         os.system(docker_compose_cmd + 'pull ' + services_string)
