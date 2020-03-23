@@ -350,11 +350,9 @@ def rml(dataset, detached, mapper, parallelism):
             # Use RMLStreamer
             output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
             rml_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
-            print(rml_cmd)
             ## Try parallelism:
             # rml_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -p ' + parallelism + ' -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '" --parallelism ' + parallelism + ' --enable-local-parallel'
     
-        print(rml_cmd)
         os.system(rml_cmd)
         # TODO: store logs in a file and get the run time. Use subprocess.call
         # with open('workspace/logs/' + output_filename + '.log', 'a') as output:
