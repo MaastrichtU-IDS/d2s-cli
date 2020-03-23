@@ -332,7 +332,7 @@ def rml(dataset, detached, mapper, parallelism):
         click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
             + click.style(mapping_filepath, bold=True))
     
-        # TODO: store logs in a file and get the run time
+        # TODO: store logs in a file and get the run time. Use subprocess.call?
         if mapper:
             output_filename = 'rmlmapper-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
             rmlstreamer_cmd = 'docker run ' + detached_arg + ' -v $(pwd)/workspace:/mnt/workspace -v $(pwd)/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename
