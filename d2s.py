@@ -317,6 +317,7 @@ def rml(dataset, detached, mapper, parallelism):
         click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
             + click.style(mapping_filepath, bold=True))
     
+        # TODO: store logs in a file and get the run time
         if mapper:
             output_filename = 'rmlmapper-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
             rmlstreamer_cmd = 'docker run ' + detached_arg + ' -v $(pwd)/workspace:/mnt/workspace -v $(pwd)/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename
@@ -368,7 +369,7 @@ def run(workflow, dataset, get_mappings, detached):
     # I don't know how, they managed to not put it in the container... They had one job...
 
     # Delete previous output (not archived). See article: https://thispointer.com/python-how-to-delete-a-directory-recursively-using-shutil-rmtree/
-    shutil.rmtree('workspace/output', ignore_errors=False, onerror=None)
+    shutil.rmtree('workspace/output', ignore_errors=True, onerror=None)
     for file in glob.glob("workspace/tmp-virtuoso/*.nq"):
         os.remove(file)
     # Make sure the load.sh script is in the tmp Virtuoso folder
