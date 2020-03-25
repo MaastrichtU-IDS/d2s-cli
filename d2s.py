@@ -325,14 +325,28 @@ def download(datasets):
     '--detached/--watch', default=True, 
     help='Run in detached mode or watch workflow')
 @click.option(
+    '--openshift/--local', default=False, 
+    help='Run RML Streamer on OpenShift')
+@click.option(
     '-p', '--parallelism', default='8',
     help='Run in parallel, depends on Task Slots availables')
-def rml(dataset, detached, mapper, parallelism):
+def rml(dataset, detached, mapper, openshift, parallelism):
     """Run RML Streamer"""
     if (detached):
         detached_arg = '-d'
     else:
         detached_arg = '-it'
+
+    if openshift:
+        # Ask if need to copy file on OpenShift cluster
+        click.echo(click.style('[d2s]', bold=True) + ' Running RMLStreamer on OpenShift. Make sure your logged in and in the right project.')
+        flink_manager_pod = os.popen('oc get pod --selector app=flink --selector component=jobmanager --no-headers -o=custom-columns=NAME:.metadata.name').read().strip()
+        if click.confirm(click.style('[?]', bold=True) + ' It is required to copy (rsync) the workspace to the OpenShift cluster. Do you want to do it? It will take a few minutes, but needs to be done only if the data has not already been copied.'):
+            # rsync input files, mapping files and RMLStreamer.jar
+            os.system('oc exec ' + flink_manager_pod + ' -- mkdir -p /mnt/workspace/import')
+            os.system('oc rsync workspace/input ' + flink_manager_pod + ':/mnt/workspace/')
+            os.system('oc rsync datasets ' + flink_manager_pod + ':/mnt/')
+            os.system('oc rsync workspace/resources ' + flink_manager_pod + ':/mnt/workspace/')
 
     for file in os.listdir('./datasets/' + dataset + '/mapping'):
      mapping_filename = os.fsdecode(file)
@@ -343,18 +357,35 @@ def rml(dataset, detached, mapper, parallelism):
             + click.style(mapping_filepath, bold=True))
 
         output_filename = 'rml'
-        if mapper:
-            output_filename = 'rmlmapper-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
-            rml_cmd = 'docker run ' + detached_arg + ' -v ' + getCurrentDir() + '/workspace:/mnt/workspace -v ' + getCurrentDir() + '/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename
+        # Now build the command to run RML processor
+        if openshift:
+            # Run RMLStreamer in an OpenShift cluster
+            # print('flink manager')
+            # print(flink_manager_pod)
+            output_filename = 'openshift-rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
+            rml_cmd = 'oc exec ' + flink_manager_pod + ' -- /opt/flink/bin/flink run -c io.rml.framework.Main /mnt/workspace/resources/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
+            print(rml_cmd)
+            # oc exec flink_manager_pod -- /opt/flink/bin/flink run -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/workspace/datasets/cohd/mapping/associations-mapping.rml.ttl --outputPath /mnt/workspace/rdf_output-associations-mapping.nt --job-name "[d2s] RMLStreamer associations-mapping.rml.ttl - COHD"
+            # oc get pod --selector app=flink --selector component=jobmanager
+            #oc exec --selector app=flink --selector component=jobmanager -- ls
+            # oc get pod -o template --template={{.Name}}
+            # oc get pod --selector app=flink --selector component=jobmanager --no-headers -o=custom-columns=NAME:.metadata.name
         else:
-            # Use RMLStreamer
-            output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
-            rml_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
-            click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
-                + click.style('http://localhost:8078/#/job/running', bold=True))
-            ## Try parallelism:
-            # rml_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -p ' + parallelism + ' -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '" --parallelism ' + parallelism + ' --enable-local-parallel'
-    
+            # Run locally
+            if mapper:
+                # Run rmlmapper docker image
+                output_filename = 'rmlmapper-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
+                rml_cmd = 'docker run ' + detached_arg + ' -v ' + getCurrentDir() + '/workspace:/mnt/workspace -v ' + getCurrentDir() + '/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename
+            else:
+                # Run RMLStreamer in running Apache Flink
+                output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
+                rml_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -c io.rml.framework.Main /mnt/workspace/resources/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
+                click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
+                    + click.style('http://localhost:8078/#/job/running', bold=True))
+                ## Try parallelism:
+                # rml_cmd = 'docker exec ' + detached_arg + ' d2s-cwl-workflows_rmlstreamer_1 /opt/flink/bin/flink run -p ' + parallelism + ' -c io.rml.framework.Main /mnt/workspace/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '" --parallelism ' + parallelism + ' --enable-local-parallel'
+        
+        # Run RML processor
         os.system(rml_cmd)
         # TODO: store logs in a file and get the run time. Use subprocess.call
         # with open('workspace/logs/' + output_filename + '.log', 'a') as output:
