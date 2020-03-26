@@ -341,7 +341,7 @@ def rml(dataset, detached, mapper, openshift, parallelism):
         # Ask if need to copy file on OpenShift cluster
         click.echo(click.style('[d2s]', bold=True) + ' Running RMLStreamer on OpenShift. Make sure your logged in and in the right project.')
         flink_manager_pod = os.popen('oc get pod --selector app=flink --selector component=jobmanager --no-headers -o=custom-columns=NAME:.metadata.name').read().strip()
-        click.echo(click.style('[d2s]', bold=True) + ' ID of the Apache Drill pod used: ' 
+        click.echo(click.style('[d2s]', bold=True) + ' ID of the Apache Flink pod used: ' 
             + click.style(flink_manager_pod, bold=True))
         if click.confirm(click.style('[?]', bold=True) + ' It is required to copy (rsync) the workspace to the OpenShift cluster the first time your run it. Do you want to do it?'):
             # rsync input files, mapping files and RMLStreamer.jar
