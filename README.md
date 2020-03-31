@@ -16,13 +16,19 @@ Requirements:
 
 * [Python 3.6](https://d2s.semanticscience.org/docs/d2s-installation#install-pip)
 * [docker-compose](https://docs.docker.com/compose/install/)
-* git, curl, time (bash)
+* git, time (bash)
+
+More detailed documentation to install pipx and `d2s` on various platforms available at [d2s.semanticscience.org](https://d2s.semanticscience.org/docs/d2s-installation#install-pipx)
+
+See [those instructions to install d2s on Windows](/docs/d2s-installation#install-pipx-on-windows) using the [Chocolatey package manager](https://chocolatey.org/) and [pipx](https://pipxproject.github.io/pipx/). 
+
+> ⚠️ Some features support are still a work in progress on Windows, such as CWL workflows (see the [official CWL Windows documentation](https://github.com/common-workflow-language/cwltool/blob/master/windowsdoc.md) to make it work)
 
 ### Enable autocompletion
 
 Enable commandline autocompletion in the terminal
 
-> Highly recommended, it makes `d2s` much more user-friendly 
+> Recommended, it makes `d2s` much more user-friendly 
 
 * **ZSH**: add the import autocomplete line to the `~/.zshrc` file.
 
@@ -46,22 +52,7 @@ echo 'eval "$(_D2S_COMPLETE=source d2s)"' >> ~/.bashrc
 
 > **To be tested.**
 
-### Upgrade package
-
-With `pipx`:
-
-```bash
-pipx uninstall d2s
-pipx install d2s
-```
-
-With `pip`:
-
-```bash
-pip install --upgrade d2s 
-```
-
-## Try it
+### Try it
 
 Display the default help command
 
@@ -83,12 +74,40 @@ cd project-folder-name/
 
 > Project settings stored if `.d2sconfig` file.
 
-# Development setup
+### Upgrade d2s
 
-Install package and add it to `requirements.txt`:
+With `pipx`:
 
 ```bash
-pip install package && pip freeze > requirements.txt
+pipx upgrade d2s
+```
+
+With `pip`:
+
+```bash
+pip install --upgrade d2s 
+```
+
+### Uninstall
+
+With `pipx`:
+
+```bash
+pipx uninstall d2s cwlref-runner
+```
+
+With `pip`:
+
+```bash
+pip uninstall d2s cwlref-runner
+```
+
+# Development setup
+
+Add new packages to use to [setup.py](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/setup.py#L16) (to be imported during the build). And install it locally for dev
+
+```bash
+pip install package
 ```
 
 ### Install for dev
@@ -99,13 +118,17 @@ Install `d2s` as executable in local for development. `d2s` will be updated dire
 pip install --editable .
 ```
 
-To publish a new version, upgrade the version in [setup.py](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/setup.py#L6) and use the following script to build and publish automatically using [Docker](https://docs.docker.com/install/):
+## Build and publish
+
+To publish a new version on [pypi](https://pypi.org/project/d2s/), upgrade the version in [setup.py](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/setup.py#L6) and use the following script to build and publish automatically using [Docker](https://docs.docker.com/install/):
 
 ```bash
 ./publish_pip.sh
 ```
 
-Or do it locally:
+### Build locally
+
+This can be done locally:
 
 ```bash
 # Build packages in dist/ folder
@@ -114,7 +137,7 @@ python3 setup.py sdist bdist_wheel
 twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 ```
 
-You might need to install twine
+Additional instructions to install twine locally (not needed)
 
 ```bash
 pipx install twine
