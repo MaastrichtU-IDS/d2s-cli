@@ -22,7 +22,7 @@ More detailed documentation to install pipx and `d2s` on various platforms avail
 
 See [those instructions to install d2s on Windows](/docs/d2s-installation#install-pipx-on-windows) using the [Chocolatey package manager](https://chocolatey.org/) and [pipx](https://pipxproject.github.io/pipx/). 
 
-> ⚠️ Some features support are still a work in progress on Windows, such as CWL workflows (see the [official CWL Windows documentation](https://github.com/common-workflow-language/cwltool/blob/master/windowsdoc.md) to make it work)
+> Some features support are still a work in progress on Windows, such as CWL workflows (see the [official CWL Windows documentation](https://github.com/common-workflow-language/cwltool/blob/master/windowsdoc.md) to make it work)
 
 ### Enable autocompletion
 
