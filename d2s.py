@@ -50,7 +50,7 @@ def get_running_processes(ctx, args, incomplete):
 def getCurrentDir():
     if os.name == 'nt':
         # If Windows
-        return '$\{PWD\}'
+        return '${PWD}'
     else:
         # Linux and MacOS
         return '$(pwd)'
