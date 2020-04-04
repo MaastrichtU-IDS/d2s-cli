@@ -303,7 +303,7 @@ def download(datasets):
     """Download a dataset to be processed"""
     start_time = datetime.datetime.now()
     for dataset in datasets:
-        os.system('docker run -it -v $PWD:/srv \
+        os.system('docker run -it -v ' + getCurrentDir() + ':/srv \
             umids/d2s-bash-exec:latest \
             /srv/datasets/' + dataset + '/download/download.sh workspace/input/' + dataset)
         click.echo(click.style('[d2s] ' + dataset, bold=True) + ' dataset downloaded at ' 
