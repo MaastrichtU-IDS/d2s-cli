@@ -104,7 +104,7 @@ def init(ctx, projectname):
     # Create workspace directories and chmod 777
     listToCreate = ["input", "output", "import", "output/tmp-outdir", "resources",
         "logs", "dumps/rdf/releases/1", 'dumps/hdt', 'virtuoso', 'tmp-virtuoso']
-    click.echo(click.style('[d2s]', bold=True) + ' Creating following folders in workspace: ' + ", ".join(listToUpdate))
+    click.echo(click.style('[d2s]', bold=True) + ' Creating following folders in workspace: ' + ", ".join(listToCreate))
     for fileToCreate in listToCreate:
         os.makedirs('workspace/' + fileToCreate, exist_ok=True)
     chmod777('workspace')
