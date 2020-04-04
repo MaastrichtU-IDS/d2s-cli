@@ -133,7 +133,7 @@ def init(ctx, projectname):
     graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 9.1.1 zip file used to build the Docker image. Default', default='~/graphdb-free-9.1.1-dist.zip')
     # Get GraphDB installation file
     if os.path.exists(graphdb_path):
-        shutil.copyfile(graphdb_path, './d2s-cwl-workflows/support/graphdb')
+        shutil.copyfile(graphdb_path, 'd2s-cwl-workflows/support/graphdb')
     else:
         click.echo(click.style('[d2s]', bold=True) + ' GraphDB installation file not found. Copy the zip file in d2s-cwl-workflows/support/graphdb after download.')
 
