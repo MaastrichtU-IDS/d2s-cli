@@ -114,7 +114,7 @@ def init(ctx, projectname):
     # TODO: improve this to include it in Docker deployment
 
 
-    # Get RMLStreamer from home dir to qvoid download each time
+    # Get RMLStreamer from home dir to avoid download each time
     user_home_dir = str(Path.home())
     if os.path.exists(user_home_dir + '/RMLStreamer.jar'):
         shutil.copyfile(user_home_dir + '/RMLStreamer.jar', 'workspace/resources/RMLStreamer.jar')
@@ -130,10 +130,10 @@ def init(ctx, projectname):
         + click.style('https://ontotext.com/products/graphdb/', bold=True) 
         + ' and provide your email to receive the URL to download ' + click.style('GraphDB version 9.1.1 standalone zip', bold=True))
     
-    graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 9.1.1 zip file used to build the Docker image. Default', default='~/graphdb-free-9.1.1-dist.zip')
+    graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 9.1.1 zip file used to build the Docker image. Default', default=user_home_dir + '/graphdb-free-9.1.1-dist.zip')
     # Get GraphDB installation file
     if os.path.exists(graphdb_path):
-        shutil.copyfile(graphdb_path, 'd2s-cwl-workflows/support/graphdb')
+        shutil.copy(graphdb_path, 'd2s-cwl-workflows/support/graphdb')
     else:
         click.echo(click.style('[d2s]', bold=True) + ' GraphDB installation file not found. Copy the zip file in d2s-cwl-workflows/support/graphdb after download.')
 
