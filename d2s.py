@@ -347,11 +347,10 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
             if mapping_filename.endswith(".yarrr.yml"): 
                 # Run rmlmapper docker image
                 output_filename = mapping_filename.replace('.yarrr.yml', '.rml.ttl')
-                click.echo(click.style('[d2s]', bold=True) + ' Converting YARRRML file: ' + mapping_filename + ' to ' + output_filename)
+                click.echo(click.style('[d2s]', bold=True) + ' Converting YARRRML file: ' + mapping_filename + ' to datasets/' + dataset + '/mapping/' + output_filename)
                 yarrrml_cmd = 'docker run -it --rm -v ' + getCurrentDir() + '/datasets:/app/datasets umids/yarrrml-parser:latest -i /app/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /app/datasets/' + dataset + '/mapping/' + output_filename
                 # Run yarrrml parser
                 os.system(yarrrml_cmd)
-                # rml_cmd = 'docker run ' + detached_arg + ' -v ' + getCurrentDir() + '/datasets:/app/datasets umids/yarrrml-parser:latest -i /app/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /app/datasets/' + dataset + '/mapping/' + output_filename
 
     if openshift:
         # Ask if need to copy file on OpenShift cluster
