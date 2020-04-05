@@ -319,6 +319,9 @@ def download(datasets):
 @cli.command()
 @click.argument('dataset', autocompletion=get_datasets_list)
 @click.option(
+    '--yarrrml/--turtle-rml', default=False, 
+    help='Use yarrrml mappings')
+@click.option(
     '--mapper/--streamer', default=False, 
     help='Run RML Streamer or Mapper')
 @click.option(
@@ -330,12 +333,25 @@ def download(datasets):
 @click.option(
     '-p', '--parallelism', default='8',
     help='Run in parallel, depends on Task Slots availables')
-def rml(dataset, detached, mapper, openshift, parallelism):
+def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
     """Run RML Streamer"""
     if (detached):
         detached_arg = '-d'
     else:
         detached_arg = '-it'
+
+    # Convert .yarrr.yml files to .rml.ttl
+    if yarrrml:
+        for file in os.listdir('./datasets/' + dataset + '/mapping'):
+            mapping_filename = os.fsdecode(file)
+            if mapping_filename.endswith(".yarrr.yml"): 
+                # Run rmlmapper docker image
+                output_filename = mapping_filename.replace('.yarrr.yml', '.rml.ttl')
+                click.echo(click.style('[d2s]', bold=True) + ' Converting YARRRML file: ' + mapping_filename + ' to ' + output_filename)
+                yarrrml_cmd = 'docker run -it --rm -v ' + getCurrentDir() + '/datasets:/app/datasets umids/yarrrml-parser:latest -i /app/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /app/datasets/' + dataset + '/mapping/' + output_filename
+                # Run yarrrml parser
+                os.system(yarrrml_cmd)
+                # rml_cmd = 'docker run ' + detached_arg + ' -v ' + getCurrentDir() + '/datasets:/app/datasets umids/yarrrml-parser:latest -i /app/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /app/datasets/' + dataset + '/mapping/' + output_filename
 
     if openshift:
         # Ask if need to copy file on OpenShift cluster
