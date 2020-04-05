@@ -44,7 +44,7 @@ def get_running_workflows(ctx, args, incomplete):
     return filter(lambda x: datetime.datetime.fromtimestamp(os.path.getmtime("./workspace/logs/" + x)) > (datetime.datetime.now() - datetime.timedelta(minutes=2)), files)
 def get_running_processes(ctx, args, incomplete):
     # Show running processes to be stopped
-    return [os.system("ps ax | grep -v time | grep '[c]wl-runner' | awk '{print $1}'")]
+    return [os.system("ps ax | grep '[c]wl-runner' | awk '{print $1}'")]
 
 # Return the current dir where the command is run
 def getCurrentDir():
@@ -271,7 +271,7 @@ def services():
 def process_running():
     """List running workflows processes"""
     os.system('echo "PID    CPU  Mem Start    Command"')
-    os.system('ps ax -o pid,%cpu,%mem,start,command | grep -v time | grep "[c]wl-runner"')
+    os.system('ps ax -o pid,%cpu,%mem,start,command | grep "[c]wl-runner"')
 
 @cli.command()
 @click.argument('process', autocompletion=get_running_processes)
@@ -429,8 +429,11 @@ def run(workflow, dataset, get_mappings, detached):
         os.remove(file)
 
     if (detached):
-        # TODO: Find a better solution to work on windows
-        cwl_command = 'nohup time '
+        # TODO: Find a better solution to work on windows.
+        # time allows to get running time of detached process but require to be installed
+        # e.g. yum install time
+        # cwl_command = 'nohup time '
+        cwl_command = 'nohup '
     else:
         cwl_command = ''
     cwl_command = cwl_command +'cwl-runner --custom-net d2s-cwl-workflows_network --outdir {0}/output --tmp-outdir-prefix={0}/output/tmp-outdir/ --tmpdir-prefix={0}/output/tmp-outdir/tmp- {1} {2}'.format('workspace',cwl_workflow_path,dataset_config_path)
