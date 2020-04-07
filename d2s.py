@@ -340,13 +340,16 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
     else:
         detached_arg = '-it'
 
-    # Convert .yarrr.yml files to .rml.ttl
+    rml_file_extension = '.rml.ttl'
+
+    # Convert .yarrr.yml files to .yarrr.rml.ttl
     if yarrrml:
+        rml_file_extension = '.yarrr.rml.ttl'
         for file in os.listdir('./datasets/' + dataset + '/mapping'):
             mapping_filename = os.fsdecode(file)
             if mapping_filename.endswith(".yarrr.yml"): 
                 # Run rmlmapper docker image
-                output_filename = mapping_filename.replace('.yarrr.yml', '.rml.ttl')
+                output_filename = mapping_filename.replace('.yarrr.yml', rml_file_extension)
                 click.echo(click.style('[d2s]', bold=True) + ' Converting YARRRML file: ' + mapping_filename + ' to datasets/' + dataset + '/mapping/' + output_filename)
                 yarrrml_cmd = 'docker run -it --rm -v ' + getCurrentDir() + '/datasets:/app/datasets umids/yarrrml-parser:latest -i /app/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /app/datasets/' + dataset + '/mapping/' + output_filename
                 # Run yarrrml parser
@@ -366,7 +369,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 
     for file in os.listdir('./datasets/' + dataset + '/mapping'):
      mapping_filename = os.fsdecode(file)
-     if mapping_filename.endswith(".rml.ttl"): 
+     if mapping_filename.endswith(rml_file_extension): 
         # print(os.path.join(directory, filename))
         mapping_filepath = 'datasets/' + dataset + '/mapping/' + mapping_filename
         click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
