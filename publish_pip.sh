@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash 
+set -e
 
 docker build -f publish.Dockerfile -t publish-d2s-cli .
 

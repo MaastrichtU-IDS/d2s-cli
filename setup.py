@@ -13,6 +13,8 @@ setup(
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     py_modules=['d2s'],
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
     install_requires=[
         'Click', 'cwltool', 'configparser'
     ],
