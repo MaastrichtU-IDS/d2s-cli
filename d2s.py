@@ -28,7 +28,7 @@ def get_services_list(ctx, args, incomplete):
     'graphdb', 'virtuoso', 'tmp-virtuoso', 'blazegraph', 'allegrograph', 'anzograph', 'fuseki',
     'into-the-graph', 'ldf-server', 'comunica', 'notebook',
     'api', 'drill', 'postgres', 'proxy', 'filebrowser', 'rmlstreamer', 'rmltask',
-    'limes-server', 'neo4j' ])
+    'limes-server', 'nanobench', 'neo4j' ])
 def get_datasets_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./datasets"))
 def get_workflows_list(ctx, args, incomplete):
