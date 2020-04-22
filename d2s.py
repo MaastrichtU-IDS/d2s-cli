@@ -26,9 +26,9 @@ def get_services_list(ctx, args, incomplete):
     # TODO: automate by parsing the docker-compose.yaml
     return filter(lambda x: x.startswith(incomplete), [ 'demo',
     'graphdb', 'virtuoso', 'tmp-virtuoso', 'blazegraph', 'allegrograph', 'anzograph', 'fuseki',
-    'into-the-graph', 'ldf-server', 'comunica', 'notebook',
+    'into-the-graph', 'ldf-server', 'comunica', 'notebook', 'biothings-studio', 'docket',
     'api', 'drill', 'postgres', 'proxy', 'filebrowser', 'rmlstreamer', 'rmltask',
-    'limes-server', 'nanobench', 'neo4j' ])
+    'limes-server', 'mapeathor', 'neo4j', 'nanobench', 'fairdatapoint' ])
 def get_datasets_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./datasets"))
 def get_workflows_list(ctx, args, incomplete):
@@ -108,10 +108,6 @@ def init(ctx, projectname):
     for fileToCreate in listToCreate:
         os.makedirs('workspace/' + fileToCreate, exist_ok=True)
     chmod777('workspace')
-    # Copy load.sh in workspace for Virtuoso bulk load
-    shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/virtuoso/load.sh')
-    shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/tmp-virtuoso/load.sh')
-    # TODO: improve this to include it in Docker deployment
 
 
     # Get RMLStreamer from home dir to avoid download each time
@@ -157,20 +153,24 @@ def init(ctx, projectname):
 @click.option(
     '--permissions/--images', default=False, 
     help='Update files permissions (Docker images by default)')
-def update(services, permissions):
-    """Update Docker images"""
+@click.option(
+    '--submodules/--no-submodule', default=False, 
+    help='Update the Git submodules (d2s-cwl-workflows)')
+    # TODO: implement it
+def update(services, permissions, submodules):
+    """Update d2s"""
+    if submodules:
+        print("Update submodules: d2s-cwl-workflows")
+        # TODO: implement it
+        # cd d2s-cwl-workflows
+        # git checkout master
+        # git pull
     if permissions:
         listToUpdate = ["input", "output", "import", "dumps", "tmp-virtuoso", "virtuoso"]
         click.echo(click.style('[d2s]', bold=True) + ' Password might be asked to updates following folder permissions in workspace: ' + ", ".join(listToUpdate))
         for fileToUpdate in listToUpdate:
             chmod777('workspace/' + fileToUpdate)
             os.makedirs('workspace/' + fileToUpdate, exist_ok=True)
-        # Copy load.sh in workspace for Virtuoso bulk load
-        shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/virtuoso/load.sh')
-        shutil.copyfile('d2s-cwl-workflows/support/virtuoso/load.sh', 'workspace/tmp-virtuoso/load.sh')
-        chmod777('workspace/virtuoso/load.sh')
-        chmod777('workspace/tmp-virtuoso/load.sh')
-        # TODO: improve this to include it in Docker deployment
         click.echo(click.style('[d2s]', bold=True) + ' Most permissions issues can be fixed by changing the owner of the file while running as administrator')
         click.secho('sudo chown -R ' + os.getuid() + ':' + os.getgid() + ' workspace', bold=True)
     else:
