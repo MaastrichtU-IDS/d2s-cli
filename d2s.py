@@ -518,42 +518,65 @@ def dataset():
     """Create a new dataset from template in datasets folder"""
     # Automatically fill data about the workflow (git repo URL of mappings)
     # TODO: make it an array of obj
-    dataset_id = click.prompt(click.style('[?]', bold=True) 
-        + ' Enter the identifier of your datasets, e.g. wikipathways (lowercase, no space or weird characters)')
-    dataset_name = click.prompt(click.style('[?]', bold=True) 
-        + ' Enter a human-readable name for your datasets, e.g. WikiPathways')
-    dataset_description = click.prompt(click.style('[?]', bold=True) 
-        + ' Enter a description for this dataset')
-    publisher_name = click.prompt(click.style('[?]', bold=True) 
-        + ' Enter complete name for the institutions publishing the data and its affiliation, e.g. Institute of Data Science at Maastricht University')
-    publisher_url = click.prompt(click.style('[?]', bold=True) 
-        + ' Enter a valid URL for the publisher homepage. Default', 
-        default='https://maastrichtuniversity.nl/ids')
-    source_license = click.prompt(click.style('[?]', bold=True) 
-        + ' Enter a valid URL to the license informations about the original dataset. Default', 
-        default='http://creativecommons.org/licenses/by-nc/4.0/legalcode')
-    rdf_license = click.prompt(click.style('[?]', bold=True) 
-        + ' Enter a valid URL to the license informations about the RDF distribution of the dataset. Default', 
-        default='http://creativecommons.org/licenses/by-nc/4.0/legalcode')
+    metadataArray = []
+    metadataArray.append({'id': 'dataset_id', 'description': 'Enter the identifier of your datasets, e.g. drugbank (lowercase, no space or weird characters)'})
+    metadataArray.append({'id': 'dataset_name', 'description': 'Enter a human-readable name for your datasets, e.g. DrugBank'})
+    metadataArray.append({'id': 'dataset_description', 'description': 'Enter a description for this dataset'})
+    metadataArray.append({'id': 'publisher_name', 'description': 'Enter complete name for the institutions publishing the data and its affiliation, e.g. Institute of Data Science at Maastricht University'})
+    metadataArray.append({'id': 'publisher_url', 'default': 'https://maastrichtuniversity.nl/ids', 'description': 'Enter a valid URL for the publisher homepage. Default'})
+    metadataArray.append({'id': 'source_license', 'default': 'http://creativecommons.org/licenses/by-nc/4.0/legalcode', 'description': 'Enter a valid URL to the license informations about the original dataset'})
+    metadataArray.append({'id': 'rdf_license', 'default': 'http://creativecommons.org/licenses/by-nc/4.0/legalcode', 'description': 'Enter a valid URL to the license informations about the RDF distribution of the dataset'})
+    
+    for metadataObject in metadataArray:
+        if 'default' in metadataObject:
+            metadataObject['value'] = click.prompt(click.style('[?]', bold=True) 
+            + ' ' + metadataObject['description'] + '. Default',
+            default=metadataObject['default'])
+        else:
+            metadataObject['value'] = click.prompt(click.style('[?]', bold=True) 
+            + ' ' + metadataObject['description'] + '. Default')
 
-    dataset_folder_path = 'datasets/' + dataset_id
+    # dataset_id = click.prompt(click.style('[?]', bold=True) 
+    #     + ' Enter the identifier of your datasets, e.g. wikipathways (lowercase, no space or weird characters)')
+    # dataset_name = click.prompt(click.style('[?]', bold=True) 
+    #     + ' Enter a human-readable name for your datasets, e.g. WikiPathways')
+    # dataset_description = click.prompt(click.style('[?]', bold=True) 
+    #     + ' Enter a description for this dataset')
+    # publisher_name = click.prompt(click.style('[?]', bold=True) 
+    #     + ' Enter complete name for the institutions publishing the data and its affiliation, e.g. Institute of Data Science at Maastricht University')
+    # publisher_url = click.prompt(click.style('[?]', bold=True) 
+    #     + ' Enter a valid URL for the publisher homepage. Default', 
+    #     default='https://maastrichtuniversity.nl/ids')
+    # source_license = click.prompt(click.style('[?]', bold=True) 
+    #     + ' Enter a valid URL to the license informations about the original dataset. Default', 
+    #     default='http://creativecommons.org/licenses/by-nc/4.0/legalcode')
+    # rdf_license = click.prompt(click.style('[?]', bold=True) 
+    #     + ' Enter a valid URL to the license informations about the RDF distribution of the dataset. Default', 
+    #     default='http://creativecommons.org/licenses/by-nc/4.0/legalcode')
+
+
+    # rdf_license = click.prompt(click.style('[?]', bold=True) 
+    #     + ' Enter. Default', 
+    #     default='changeme')
+
+    dataset_folder_path = 'datasets/' + metadataArray[0]['value']
     shutil.copytree('d2s-cwl-workflows/support/template/dataset', dataset_folder_path)
     
+    # Replace metadata in metadata files
     for dname, dirs, files in os.walk(dataset_folder_path):
         for fname in files:
             fpath = os.path.join(dname, fname)
             with open(fpath) as f:
                 file_content = f.read()
-            file_content = file_content.replace("$dataset_id", dataset_id).replace("$dataset_name", dataset_name).replace("$dataset_description", dataset_description)
-            file_content = file_content.replace("$publisher_name", publisher_name).replace("$publisher_url", publisher_url)
-            file_content = file_content.replace("$source_license", source_license).replace("$rdf_license", rdf_license)
+            for metadataObject in metadataArray:
+                file_content = file_content.replace("$" + metadataObject['id'], metadataObject['value'])
             with open(fpath, "w") as f:
                 f.write(file_content)
     click.echo()
     click.echo(click.style('[d2s]', bold=True) + ' The config, metadata and mapping files for the ' 
-        + click.style(dataset_id + ' dataset', bold=True) 
+        + click.style(metadataArray[0]['value'] + ' dataset', bold=True) 
         + ' has been generated')
-    click.echo(click.style('[d2s]', bold=True) + ' Start edit them in ' + click.style('datasets/' + dataset_id, bold=True))
+    click.echo(click.style('[d2s]', bold=True) + ' Start edit them in ' + click.style('datasets/' + metadataArray[0]['value'], bold=True))
     
     # Will not work on all platforms:
     # if click.confirm(click.style('[?]', bold=True) + ' Do you want to open the ' 
