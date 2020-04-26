@@ -78,6 +78,7 @@ def init(ctx, projectname):
 
     config = configparser.ConfigParser()
     config['d2s'] = {}
+    config['d2s']['path'] = os.getcwd() + '/' + projectname
 
     click.echo(click.style('[d2s] ', bold=True) + 'You can generate a new project on GitHub using the provided template:')
     click.secho('https://github.com/MaastrichtU-IDS/d2s-transform-template/generate', bold=True)
@@ -142,20 +143,24 @@ def init(ctx, projectname):
 @cli.command()
 @click.argument('services', nargs=-1, autocompletion=get_services_list)
 @click.option(
-    '--permissions/--images', default=False, 
+    '--images/--no-images', default=False, 
+    help='Update files permissions (Docker images by default)')
+@click.option(
+    '--permissions/--no-permissions', default=False, 
     help='Update files permissions (Docker images by default)')
 @click.option(
     '--submodules/--no-submodule', default=False, 
     help='Update the Git submodules (d2s-core)')
     # TODO: implement it
-def update(services, permissions, submodules):
-    """Update d2s"""
+def update(services, images, permissions, submodules):
+    """Update d2s (images, permissions, submodules)"""
     if submodules:
         print("Update submodules: d2s-core")
-        # TODO: implement it
-        # cd d2s-core
-        # git checkout master
-        # git pull
+        project_dir = os.getcwd()
+        os.chdir('d2s-core')
+        os.system('git checkout master')
+        os.system('git pull')
+        os.chdir(project_dir)
     if permissions:
         listToUpdate = ["input", "output", "import", "dumps", "tmp-virtuoso", "virtuoso"]
         click.echo(click.style('[d2s]', bold=True) + ' Password might be asked to updates following folder permissions in workspace: ' + ", ".join(listToUpdate))
@@ -164,7 +169,7 @@ def update(services, permissions, submodules):
             os.makedirs('workspace/' + fileToUpdate, exist_ok=True)
         click.echo(click.style('[d2s]', bold=True) + ' Most permissions issues can be fixed by changing the owner of the file while running as administrator')
         click.secho('sudo chown -R ' + os.getuid() + ':' + os.getgid() + ' workspace', bold=True)
-    else:
+    if images:
         # Update Docker images (pull and build graphdb)
         services_string = " ".join(services)
         os.system(docker_compose_cmd + 'pull ' + services_string)
