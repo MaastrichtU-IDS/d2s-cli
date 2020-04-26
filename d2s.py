@@ -18,12 +18,12 @@ import cwltool.context
 def cli():
    pass
 
-# Start of the docker-compose using d2s-cwl-workflows yaml
-docker_compose_cmd = 'docker-compose -f d2s-cwl-workflows/docker-compose.yaml '
+# Start of the docker-compose using d2s-core yml
+docker_compose_cmd = 'docker-compose -f d2s-core/docker-compose.yml '
 
 # Used for autocompletion
 def get_services_list(ctx, args, incomplete):
-    # TODO: automate by parsing the docker-compose.yaml
+    # TODO: automate by parsing the docker-compose.yml
     return filter(lambda x: x.startswith(incomplete), [ 'demo',
     'graphdb', 'virtuoso', 'tmp-virtuoso', 'blazegraph', 'allegrograph', 'anzograph', 'fuseki',
     'into-the-graph', 'ldf-server', 'comunica', 'notebook', 'biothings-studio', 'docket',
@@ -32,7 +32,7 @@ def get_services_list(ctx, args, incomplete):
 def get_datasets_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./datasets"))
 def get_workflows_list(ctx, args, incomplete):
-    return filter(lambda x: x.startswith(incomplete), os.listdir("./d2s-cwl-workflows/workflows"))
+    return filter(lambda x: x.startswith(incomplete), os.listdir("./d2s-core/cwl/workflows"))
 def get_workflow_history(ctx, args, incomplete):
     # Sorted from latest to oldest
     files = list(filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/logs")))
@@ -98,8 +98,8 @@ def init(ctx, projectname):
     os.system('git clone --quiet --recursive ' + d2s_repository_url + ' ' + projectname)
     os.chdir(projectname)
     click.echo(click.style('[d2s]', bold=True) + ' Git repository cloned.')
-    if not os.path.exists('./d2s-cwl-workflows'):
-        os.system('git submodule add --recursive https://github.com/MaastrichtU-IDS/d2s-cwl-workflows.git')
+    if not os.path.exists('./d2s-core'):
+        os.system('git submodule add --recursive https://github.com/MaastrichtU-IDS/d2s-core.git')
 
     # Create workspace directories and chmod 777
     listToCreate = ["input", "output", "import", "output/tmp-outdir", "resources",
@@ -120,7 +120,7 @@ def init(ctx, projectname):
     chmod777('workspace/resources/RMLStreamer.jar')
 
     click.echo()
-    # Copy GraphDB zip file to the right folder in d2s-cwl-workflows
+    # Copy GraphDB zip file to the right folder in d2s-core
     click.echo(click.style('[d2s]', bold=True) + ' The GraphDB triplestore needs to be downloaded for licensing reason.\n'
         + 'Go to ' 
         + click.style('https://ontotext.com/products/graphdb/', bold=True) 
@@ -129,9 +129,9 @@ def init(ctx, projectname):
     graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 9.1.1 zip file used to build the Docker image. Default', default=user_home_dir + '/graphdb-free-9.1.1-dist.zip')
     # Get GraphDB installation file
     if os.path.exists(graphdb_path):
-        shutil.copy(graphdb_path, 'd2s-cwl-workflows/support/graphdb')
+        shutil.copy(graphdb_path, 'd2s-core/support/graphdb')
     else:
-        click.echo(click.style('[d2s]', bold=True) + ' GraphDB installation file not found. Copy the zip file in d2s-cwl-workflows/support/graphdb after download.')
+        click.echo(click.style('[d2s]', bold=True) + ' GraphDB installation file not found. Copy the zip file in d2s-core/support/graphdb after download.')
 
     with open('.d2sconfig', 'w') as configfile:
         config.write(configfile)
@@ -155,14 +155,14 @@ def init(ctx, projectname):
     help='Update files permissions (Docker images by default)')
 @click.option(
     '--submodules/--no-submodule', default=False, 
-    help='Update the Git submodules (d2s-cwl-workflows)')
+    help='Update the Git submodules (d2s-core)')
     # TODO: implement it
 def update(services, permissions, submodules):
     """Update d2s"""
     if submodules:
-        print("Update submodules: d2s-cwl-workflows")
+        print("Update submodules: d2s-core")
         # TODO: implement it
-        # cd d2s-cwl-workflows
+        # cd d2s-core
         # git checkout master
         # git pull
     if permissions:
@@ -216,8 +216,8 @@ def start(services, deploy):
     
     # Run docker-compose:
     if deploy:
-        os.system(docker_compose_cmd + '-f d2s-cwl-workflows/docker-compose.'
-        + deploy + '.yaml up -d --force-recreate ' + services_string)
+        os.system(docker_compose_cmd + '-f d2s-core/deployments/'
+        + deploy + '.yml up -d --force-recreate ' + services_string)
     else:
         os.system(docker_compose_cmd + 'up -d --force-recreate ' + services_string)
 
@@ -235,10 +235,10 @@ def start(services, deploy):
         #     localGraphdbUrl = 'http://localhost:7200/rest/repositories'
         #     headers = {'Content-Type': 'multipart/form-data'}
         #     request = urllib.request.Request(localGraphdbUrl, 
-        #         open('d2s-cwl-workflows/support/graphdb-repo-config.ttl', 'rb'),
+        #         open('d2s-core/support/graphdb-repo-config.ttl', 'rb'),
         #                             headers=headers)
         #     response = urllib.request.urlopen(request)
-        #     os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-cwl-workflows/support/graphdb-repo-config.ttl" -H "Content-Type: multipart/form-data"')
+        #     os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-core/support/graphdb-repo-config.ttl" -H "Content-Type: multipart/form-data"')
     click.echo()
     click.echo(click.style('[d2s]', bold=True) 
         + ' You can now download data to run a first workflow:')
@@ -428,7 +428,7 @@ def run(workflow, dataset, get_mappings, detached):
     start_time = datetime.datetime.now()
     config = configparser.ConfigParser()
     config.read('.d2sconfig')
-    cwl_workflow_path = 'd2s-cwl-workflows/workflows/' + workflow
+    cwl_workflow_path = 'd2s-core/cwl/workflows/' + workflow
     dataset_config_path = 'datasets/' + dataset + '/config.yml'
 
     # TODO: Trying to fix issue where virtuoso bulk load only the first dataset we run
@@ -455,7 +455,7 @@ def run(workflow, dataset, get_mappings, detached):
         cwl_command = 'nohup '
     else:
         cwl_command = ''
-    cwl_command = cwl_command +'cwl-runner --custom-net d2s-cwl-workflows_network --outdir {0}/output --tmp-outdir-prefix={0}/output/tmp-outdir/ --tmpdir-prefix={0}/output/tmp-outdir/tmp- {1} {2}'.format('workspace',cwl_workflow_path,dataset_config_path)
+    cwl_command = cwl_command +'cwl-runner --custom-net d2s-core_network --outdir {0}/output --tmp-outdir-prefix={0}/output/tmp-outdir/ --tmpdir-prefix={0}/output/tmp-outdir/tmp- {1} {2}'.format('workspace',cwl_workflow_path,dataset_config_path)
     if (detached):
         log_filename = workflow + '-' + dataset + '-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.txt'
         cwl_command = cwl_command + ' > workspace/logs/' + log_filename + ' &'
@@ -497,14 +497,14 @@ def run(workflow, dataset, get_mappings, detached):
     # dataset_config_file = open('datasets/' + dataset + '/config.yml', 'r')
     # # Define cwl-runner workspace
     # runtime_context = cwltool.context.RuntimeContext()
-    # runtime_context.custom_net = 'd2s-cwl-workflows_network'
+    # runtime_context.custom_net = 'd2s-core_network'
     # runtime_context.outdir = 'workspace/output'
     # runtime_context.tmp_outdir_prefix = 'workspace/output/tmp-outdir/'
     # runtime_context.tmpdir_prefix = 'workspace/output/tmp-outdir/tmp-'
     # cwl_factory = cwltool.factory.Factory(runtime_context=runtime_context)
     # # Run CWL workflow
     # run_workflow = cwl_factory.make(cwl_workflow_path) # the .cwl file
-    # result = run_workflow(inp=dataset_config_file.read())  # the config yaml
+    # result = run_workflow(inp=dataset_config_file.read())  # the config yml
     # print('Running!')
     # print(result)
 
@@ -573,7 +573,7 @@ def dataset():
 
     dataset_id = metadataArray[0]['value']
     dataset_folder_path = 'datasets/' + dataset_id
-    shutil.copytree('d2s-cwl-workflows/support/template/dataset', dataset_folder_path)
+    shutil.copytree('d2s-core/support/template/dataset', dataset_folder_path)
     os.rename(dataset_folder_path + '/process-dataset.ipynb', dataset_folder_path + '/process-' + dataset_id + '.ipynb')
     
     # Replace metadata in metadata files
