@@ -397,6 +397,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
                 # rml_cmd = 'docker exec ' + detached_arg + ' d2s-rmlstreamer /opt/flink/bin/flink run -p ' + parallelism + ' -c io.rml.framework.Main /mnt/workspace/resources/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '" --parallelism ' + parallelism + ' --enable-local-parallel'
         
         # Run RML processor
+        print(rml_cmd)
         os.system(rml_cmd)
         # TODO: store logs in a file and get the run time. Use subprocess.call
         # with open('workspace/logs/' + output_filename + '.log', 'a') as output:
@@ -570,8 +571,10 @@ def dataset():
     #     + ' Enter. Default', 
     #     default='changeme')
 
-    dataset_folder_path = 'datasets/' + metadataArray[0]['value']
+    dataset_id = metadataArray[0]['value']
+    dataset_folder_path = 'datasets/' + dataset_id
     shutil.copytree('d2s-cwl-workflows/support/template/dataset', dataset_folder_path)
+    os.rename(dataset_folder_path + '/process-dataset.ipynb', dataset_folder_path + '/process-' + dataset_id + '.ipynb')
     
     # Replace metadata in metadata files
     for dname, dirs, files in os.walk(dataset_folder_path):
@@ -585,9 +588,9 @@ def dataset():
                 f.write(file_content)
     click.echo()
     click.echo(click.style('[d2s]', bold=True) + ' The config, metadata and mapping files for the ' 
-        + click.style(metadataArray[0]['value'] + ' dataset', bold=True) 
+        + click.style(dataset_id + ' dataset', bold=True) 
         + ' has been generated')
-    click.echo(click.style('[d2s]', bold=True) + ' Start edit them in ' + click.style('datasets/' + metadataArray[0]['value'], bold=True))
+    click.echo(click.style('[d2s]', bold=True) + ' Start edit them in ' + click.style('datasets/' + dataset_id, bold=True))
     
     # Will not work on all platforms:
     # if click.confirm(click.style('[?]', bold=True) + ' Do you want to open the ' 
