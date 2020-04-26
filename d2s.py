@@ -46,15 +46,6 @@ def get_running_processes(ctx, args, incomplete):
     # Show running processes to be stopped
     return [os.system("ps ax | grep '[c]wl-runner' | awk '{print $1}'")]
 
-# Return the current dir where the command is run
-def getCurrentDir():
-    if os.name == 'nt':
-        # If Windows
-        return os.getcwd()
-    else:
-        # Linux and MacOS
-        return '$(pwd)'
-
 # Change permissions to 777 recursively. 
 # See https://stackoverflow.com/questions/16249440/changing-file-permission-in-python
 def chmod777(path):
@@ -303,7 +294,7 @@ def download(datasets):
     """Download a dataset to be processed"""
     start_time = datetime.datetime.now()
     for dataset in datasets:
-        os.system('docker run -it -v ' + getCurrentDir() + ':/srv \
+        os.system('docker run -it -v ' + os.getcwd() + ':/srv \
             umids/d2s-bash-exec:latest \
             /srv/datasets/' + dataset + '/download/download.sh workspace/input/' + dataset)
         click.echo(click.style('[d2s] ' + dataset, bold=True) + ' dataset downloaded at ' 
@@ -351,7 +342,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
                 # Run rmlmapper docker image
                 output_filename = mapping_filename.replace('.yarrr.yml', rml_file_extension)
                 click.echo(click.style('[d2s]', bold=True) + ' Converting YARRRML file: ' + mapping_filename + ' to datasets/' + dataset + '/mapping/' + output_filename)
-                yarrrml_cmd = 'docker run -it --rm -v ' + getCurrentDir() + '/datasets:/app/datasets umids/yarrrml-parser:latest -i /app/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /app/datasets/' + dataset + '/mapping/' + output_filename
+                yarrrml_cmd = 'docker run -it --rm -v ' + os.getcwd() + '/datasets:/app/datasets umids/yarrrml-parser:latest -i /app/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /app/datasets/' + dataset + '/mapping/' + output_filename
                 # Run yarrrml parser
                 os.system(yarrrml_cmd)
 
@@ -386,7 +377,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
             if mapper:
                 # Run rmlmapper docker image
                 output_filename = 'rmlmapper-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
-                rml_cmd = 'docker run ' + detached_arg + ' -v ' + getCurrentDir() + '/workspace:/mnt/workspace -v ' + getCurrentDir() + '/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename
+                rml_cmd = 'docker run ' + detached_arg + ' -v ' + os.getcwd() + '/workspace:/mnt/workspace -v ' + os.getcwd() + '/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename
             else:
                 # Run RMLStreamer in running Apache Flink
                 output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
