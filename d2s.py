@@ -25,7 +25,7 @@ docker_compose_cmd = 'docker-compose -f d2s-core/docker-compose.yml '
 def get_services_list(ctx, args, incomplete):
     # TODO: automate by parsing the docker-compose.yml
     return filter(lambda x: x.startswith(incomplete), [ 'demo',
-    'graphdb', 'virtuoso', 'tmp-virtuoso', 'blazegraph', 'allegrograph', 'anzograph', 'fuseki',
+    'graphdb', 'graphdb-ee', 'virtuoso', 'tmp-virtuoso', 'blazegraph', 'allegrograph', 'anzograph', 'fuseki',
     'into-the-graph', 'ldf-server', 'comunica', 'notebook', 'biothings-studio', 'docket',
     'api', 'drill', 'postgres', 'proxy', 'filebrowser', 'rmlstreamer', 'rmltask',
     'limes-server', 'mapeathor', 'neo4j', 'nanobench', 'fairdatapoint' ])
