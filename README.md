@@ -135,6 +135,8 @@ To publish a new version on [pypi](https://pypi.org/project/d2s/):
 ./publish_pip.sh
 ```
 
+> A test will be run using Docker before publishing to make sure `d2s init` works.
+
 ### Build locally
 
 Building and publishing can be done locally:
