@@ -26,7 +26,7 @@ def get_services_list(ctx, args, incomplete):
     # TODO: automate by parsing the docker-compose.yml
     return filter(lambda x: x.startswith(incomplete), [ 'demo',
     'graphdb', 'graphdb-ee', 'virtuoso', 'tmp-virtuoso', 'blazegraph', 'allegrograph', 'anzograph', 'fuseki',
-    'into-the-graph', 'ldf-server', 'comunica', 'notebook', 'biothings-studio', 'docket',
+    'notebook', 'spark-notebook', 'into-the-graph', 'ldf-server', 'comunica', 'biothings-studio', 'docket',
     'api', 'drill', 'postgres', 'proxy', 'filebrowser', 'rmlstreamer', 'rmltask',
     'limes-server', 'mapeathor', 'neo4j', 'nanobench', 'fairdatapoint' ])
 def get_datasets_list(ctx, args, incomplete):
@@ -151,7 +151,6 @@ def init(ctx, projectname):
 @click.option(
     '--submodules/--no-submodule', default=False, 
     help='Update the Git submodules (d2s-core)')
-    # TODO: implement it
 def update(services, images, permissions, submodules):
     """Update d2s (images, permissions, submodules)"""
     if submodules:
