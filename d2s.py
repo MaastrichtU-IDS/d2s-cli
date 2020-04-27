@@ -102,6 +102,7 @@ def init(ctx, projectname):
     chmod777('workspace')
 
     click.echo()
+    user_home_dir = str(Path.home())
     # Copy GraphDB zip file to the right folder in d2s-core
     click.echo(click.style('[d2s]', bold=True) + ' The GraphDB triplestore needs to be downloaded for licensing reason.\n'
         + 'Go to ' 
