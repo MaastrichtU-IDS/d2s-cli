@@ -101,16 +101,6 @@ def init(ctx, projectname):
         os.makedirs('workspace/' + fileToCreate, exist_ok=True)
     chmod777('workspace')
 
-
-    # Get RMLStreamer from home dir to avoid download each time
-    user_home_dir = str(Path.home())
-    if os.path.exists(user_home_dir + '/RMLStreamer.jar'):
-        shutil.copyfile(user_home_dir + '/RMLStreamer.jar', 'workspace/resources/RMLStreamer.jar')
-    else:
-        click.echo(click.style('[d2s]', bold=True) + ' Downloading RMLStreamer.jar... [80M]')
-        urllib.request.urlretrieve ("https://github.com/vemonet/RMLStreamer/raw/fix-mainclass/target/RMLStreamer-1.2.2.jar", "workspace/resources/RMLStreamer.jar")
-    chmod777('workspace/resources/RMLStreamer.jar')
-
     click.echo()
     # Copy GraphDB zip file to the right folder in d2s-core
     click.echo(click.style('[d2s]', bold=True) + ' The GraphDB triplestore needs to be downloaded for licensing reason.\n'
@@ -389,7 +379,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
                 click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
                     + click.style('http://localhost:8078/#/job/running', bold=True))
                 ## Try parallelism:
-                # rml_cmd = 'docker exec ' + detached_arg + ' d2s-rmlstreamer /opt/flink/bin/flink run -p ' + parallelism + ' -c io.rml.framework.Main /mnt/workspace/resources/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '" --parallelism ' + parallelism + ' --enable-local-parallel'
+                # rml_cmd = 'docker exec ' + detached_arg + ' d2s-rmlstreamer /opt/flink/bin/flink run -p ' + parallelism + ' -c io.rml.framework.Main /opt/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '" --parallelism ' + parallelism + ' --enable-local-parallel'
         
         # Run RML processor
         print(rml_cmd)
@@ -404,9 +394,9 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
         click.secho('workspace/import/' + output_filename, bold=True)
     
     # Try parallelism:
-    # rmlstreamer_cmd = 'docker exec -d d2s-rmlstreamer /opt/flink/bin/flink run -p 4 /mnt/workspace/resources/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '" --enable-local-parallel'
+    # rmlstreamer_cmd = 'docker exec -d d2s-rmlstreamer /opt/flink/bin/flink run -p 4 /opt/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '" --enable-local-parallel'
     # Try to use docker-compose, but exec dont resolve from the -f file
-    # rmlstreamer_cmd = docker_compose_cmd + 'exec -d rmlstreamer /opt/flink/bin/flink run /mnt/workspace/resources/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '"'
+    # rmlstreamer_cmd = docker_compose_cmd + 'exec -d rmlstreamer /opt/flink/bin/flink run /opt/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '"'
     # print(rmlstreamer_cmd)
 
 @cli.command()
