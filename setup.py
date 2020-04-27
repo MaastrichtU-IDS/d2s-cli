@@ -16,7 +16,7 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=[
-        'Click', 'cwltool', 'configparser'
+        'Click', 'cwltool'
     ],
     entry_points={
         'console_scripts': [
