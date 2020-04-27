@@ -14,7 +14,7 @@ pipx install d2s cwlref-runner
 
 Requirements:
 
-* [Python 3.6](https://d2s.semanticscience.org/docs/d2s-installation#install-pip)
+* [Python 3.6+](https://d2s.semanticscience.org/docs/d2s-installation#install-pip)
 * [docker-compose](https://docs.docker.com/compose/install/)
 * git, time (bash)
 
@@ -104,13 +104,15 @@ pip uninstall d2s cwlref-runner
 
 # Development setup
 
-Add new packages to use to [setup.py](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/setup.py#L16) (to be imported during the build). And install it locally for dev
+Add new packages to use to [setup.py](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/setup.py#L16) (to be imported during the build). 
+
+And install it locally for dev:
 
 ```bash
-pip install package
+pip install <package>
 ```
 
-### Install for dev
+### Install d2s for development
 
 Install `d2s` as executable in local for development. `d2s` will be updated directly on change in the code.
 
