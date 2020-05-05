@@ -81,9 +81,9 @@ def init(ctx, projectname):
     config['d2s']['path'] = os.getcwd() + '/' + projectname
 
     click.echo(click.style('[d2s] ', bold=True) + 'You can generate a new project on GitHub using the provided template:')
-    click.secho('https://github.com/MaastrichtU-IDS/d2s-transform-template/generate', bold=True)
+    click.secho('https://github.com/MaastrichtU-IDS/d2s-project-template/generate', bold=True)
     click.echo(click.style('[d2s] ', bold=True) + 'Or use the default template repository.')
-    d2s_repository_url = click.prompt(click.style('[?]', bold=True) + ' Enter the URL of the d2s git repository to clone in the current directory. Default', default='https://github.com/MaastrichtU-IDS/d2s-transform-template.git')
+    d2s_repository_url = click.prompt(click.style('[?]', bold=True) + ' Enter the URL of the d2s git repository to clone in the current directory. Default', default='https://github.com/MaastrichtU-IDS/d2s-project-template.git')
     config['d2s']['url'] = d2s_repository_url
     click.echo(click.style('[d2s] ', bold=True) + 'Cloning the repository in ' + projectname + '...')
 
@@ -571,7 +571,7 @@ def dataset():
     shutil.copytree('d2s-core/support/template/dataset', dataset_folder_path)
     os.rename(dataset_folder_path + '/process-dataset.ipynb', dataset_folder_path + '/process-' + dataset_id + '.ipynb')
     
-    # Replace metadata in metadata files
+    # Replace provided metadata in generated files for the new dataset
     for dname, dirs, files in os.walk(dataset_folder_path):
         for fname in files:
             fpath = os.path.join(dname, fname)
