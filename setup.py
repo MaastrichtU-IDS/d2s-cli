@@ -3,7 +3,7 @@ import setuptools
 
 setup(
     name='d2s',
-    version='0.1.32',
+    version='0.2.1',
     license="MIT License",
     url="https://github.com/MaastrichtU-IDS/d2s-cli",
     author="Vincent Emonet",
@@ -16,7 +16,7 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=[
-        'Click', 'cwltool', 'configparser'
+        'Click', 'cwltool'
     ],
     entry_points={
         'console_scripts': [

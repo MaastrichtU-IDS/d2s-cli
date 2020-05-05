@@ -1,4 +1,4 @@
-A Command Line Interface to orchestrate the integration of heterogenous data sources under a common [RDF Knowledge Graph](https://www.w3.org/RDF/) using [CWL workflows](https://www.commonwl.org/), and the deployment of user-facing services over the integrated data using [Docker](https://www.docker.com/) ([SPARQL](https://yasgui.triply.cc/), [GraphQL-LD](https://comunica.github.io/Article-ISWC2018-Demo-GraphQlLD/), [OpenAPI](https://www.openapis.org/), [Web UI](https://github.com/MaastrichtU-IDS/into-the-graph)).
+A Command Line Interface to orchestrate the integration of heterogenous data sources under a common [RDF Knowledge Graph](https://www.w3.org/RDF/) using [CWL workflows](https://www.commonwl.org/), and the deployment of user-facing services over the integrated data using [Docker](https://www.docker.com/) ([SPARQL](https://yasgui.triply.cc/), [BioThings APIs](https://biothings.io/explorer/), [GraphQL-LD](https://comunica.github.io/Article-ISWC2018-Demo-GraphQlLD/), [OpenAPI](https://www.openapis.org/), [Web UI](https://github.com/MaastrichtU-IDS/into-the-graph)).
 
 ## Installation 
 
@@ -14,7 +14,7 @@ pipx install d2s cwlref-runner
 
 Requirements:
 
-* [Python 3.6](https://d2s.semanticscience.org/docs/d2s-installation#install-pip)
+* [Python 3.6+](https://d2s.semanticscience.org/docs/d2s-installation#install-pip) (built using [python:3.6](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/publish.Dockerfile))
 * [docker-compose](https://docs.docker.com/compose/install/)
 * git, time (bash)
 
@@ -51,6 +51,16 @@ echo 'eval "$(_D2S_COMPLETE=source d2s)"' >> ~/.bashrc
 ```
 
 > **To be tested.**
+
+### Install d2s for development
+
+Install `d2s` as executable in local for development. 
+
+`d2s` will be updated directly on change in the code.
+
+```bash
+pip install --editable .
+```
 
 ### Try it
 
@@ -102,33 +112,34 @@ With `pip`:
 pip uninstall d2s cwlref-runner
 ```
 
-# Development setup
+### Add new package
 
-Add new packages to use to [setup.py](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/setup.py#L16) (to be imported during the build). And install it locally for dev
+Add new packages to use to [setup.py](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/setup.py#L16) (to be imported during the build). 
 
-```bash
-pip install package
-```
-
-### Install for dev
-
-Install `d2s` as executable in local for development. `d2s` will be updated directly on change in the code.
+And install it locally for dev:
 
 ```bash
-pip install --editable .
+pip install <package>
 ```
 
 ## Build and publish
 
-To publish a new version on [pypi](https://pypi.org/project/d2s/), upgrade the version in [setup.py](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/setup.py#L6) and use the following script to build and publish automatically using [Docker](https://docs.docker.com/install/):
+### Publish using Docker
+
+To publish a new version on [pypi](https://pypi.org/project/d2s/):
+
+* upgrade the version in [setup.py](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/setup.py#L6) (e.g. from `0.2.1` to `0.2.2`)
+* use the following script to build and publish automatically using [Docker](https://docs.docker.com/install/):
 
 ```bash
 ./publish_pip.sh
 ```
 
+> A test will be run using Docker before publishing to make sure `d2s init` works.
+
 ### Build locally
 
-This can be done locally:
+Building and publishing can be done locally:
 
 ```bash
 # Build packages in dist/ folder
