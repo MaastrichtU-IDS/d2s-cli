@@ -430,8 +430,8 @@ def run(workflow, dataset, get_mappings, detached):
 
     # Delete previous output (not archived). See article: https://thispointer.com/python-how-to-delete-a-directory-recursively-using-shutil-rmtree/
     shutil.rmtree('workspace/output', ignore_errors=True, onerror=None)
-    for file in glob.glob("workspace/tmp-virtuoso/*.nq"):
-        os.remove(file)
+    # for file in glob.glob("workspace/tmp-virtuoso/*.nq"):
+    #     os.remove(file)
 
     if (detached):
         # TODO: Find a better solution to work on windows.
