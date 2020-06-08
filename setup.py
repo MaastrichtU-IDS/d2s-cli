@@ -15,9 +15,7 @@ setup(
     py_modules=['d2s'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
-    install_requires=[
-        'Click', 'cwltool'
-    ],
+    install_requires=open("requirements.txt", "r").readlines(),
     entry_points={
         'console_scripts': [
             'd2s=d2s:cli'
