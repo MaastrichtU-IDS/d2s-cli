@@ -25,7 +25,7 @@ docker_compose_cmd = 'docker-compose -f d2s-core/docker-compose.yml '
 def get_services_list(ctx, args, incomplete):
     # TODO: automate by parsing the docker-compose.yml
     return filter(lambda x: x.startswith(incomplete), [ 'demo',
-    'graphdb', 'graphdb-ee', 'virtuoso', 'tmp-virtuoso', 'blazegraph', 'allegrograph', 'anzograph', 'fuseki',
+    'graphdb', 'graphdb-preload', 'graphdb-ee', 'virtuoso', 'tmp-virtuoso', 'blazegraph', 'allegrograph', 'anzograph', 'fuseki',
     'notebook', 'spark-notebook', 'into-the-graph', 'ldf-server', 'comunica', 'biothings-studio', 'docket',
     'api', 'drill', 'postgres', 'proxy', 'filebrowser', 'rmlstreamer', 'rmltask',
     'limes-server', 'mapeathor', 'neo4j', 'nanobench', 'fairdatapoint' ])
@@ -95,10 +95,11 @@ def init(ctx, projectname):
 
     # Create workspace directories and chmod 777
     listToCreate = ["input", "output", "import", "output/tmp-outdir", "resources",
-        "logs", "dumps/rdf/releases/1", 'dumps/hdt', 'virtuoso', 'tmp-virtuoso']
+        "logs", "dumps/rdf/releases/1", 'dumps/hdt', 'graphdb', 'virtuoso', 'tmp-virtuoso']
     click.echo(click.style('[d2s]', bold=True) + ' Creating following folders in workspace: ' + ", ".join(listToCreate))
     for fileToCreate in listToCreate:
         os.makedirs('workspace/' + fileToCreate, exist_ok=True)
+    shutil.copy('d2s-core/support/graphdb-repo-config.ttl', 'workspace/graphdb/preload-config.ttl')
     chmod777('workspace')
 
     click.echo()
@@ -163,8 +164,8 @@ def update(services, images, permissions, submodules):
         # Update Docker images (pull and build graphdb)
         services_string = " ".join(services)
         os.system(docker_compose_cmd + 'pull ' + services_string)
-        if not services or "graphdb" in services:
-            os.system(docker_compose_cmd + 'build graphdb')
+        if not services or ("graphdb" and "graphdb-preload") in services:
+            os.system(docker_compose_cmd + 'build graphdb graphdb-preload')
         click.echo(click.style('[d2s]', bold=True) + ' All images pulled and built.')
         click.echo(click.style('[d2s]', bold=True) + ' You can now start services (e.g. demo services):')
         click.secho('d2s start demo', bold=True)
