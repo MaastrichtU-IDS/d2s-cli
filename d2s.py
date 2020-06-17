@@ -413,9 +413,6 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 def run(workflow, dataset, get_mappings, detached):
     """Run CWL workflows"""
     start_time = datetime.datetime.now()
-    # TODO: remove
-    # config = configparser.ConfigParser()
-    # config.read('.d2sconfig')
     cwl_workflow_path = 'd2s-core/cwl/workflows/' + workflow
     dataset_config_path = 'datasets/' + dataset + '/config.yml'
 
