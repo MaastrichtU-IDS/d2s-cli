@@ -4,10 +4,10 @@ import shutil
 import glob
 import click
 import subprocess
-import configparser
 import datetime
 import time
 import urllib.request
+import dotenv 
 
 import fileinput
 import cwltool.factory
@@ -70,25 +70,26 @@ def chmod777(path):
 @click.pass_context
 def init(ctx, projectname):
     """Initialize a project in the provided folder name"""
-    # if os.path.exists('.d2sconfig'):
     if os.path.exists(projectname):
         click.echo(click.style('[d2s]', bold=True) + ' The folder ' + click.style(projectname, bold=True) 
             + ' already exists.', err=True)
         return
 
-    config = configparser.ConfigParser()
-    config['d2s'] = {}
-    config['d2s']['path'] = os.getcwd() + '/' + projectname
-
     click.echo(click.style('[d2s] ', bold=True) + 'You can generate a new project on GitHub using the provided template:')
     click.secho('https://github.com/MaastrichtU-IDS/d2s-project-template/generate', bold=True)
     click.echo(click.style('[d2s] ', bold=True) + 'Or use the default template repository.')
     d2s_repository_url = click.prompt(click.style('[?]', bold=True) + ' Enter the URL of the d2s git repository to clone in the current directory. Default', default='https://github.com/MaastrichtU-IDS/d2s-project-template.git')
-    config['d2s']['url'] = d2s_repository_url
+    
     click.echo(click.style('[d2s] ', bold=True) + 'Cloning the repository in ' + projectname + '...')
 
     os.system('git clone --quiet --recursive ' + d2s_repository_url + ' ' + projectname)
     os.chdir(projectname)
+
+    # Create the .env file
+    f = open(".env", "w").close
+    dotenv.set_key('.env', 'URL', d2s_repository_url, quote_mode="noquote")
+    dotenv.set_key('.env', "PATH", os.getcwd(), quote_mode="noquote")
+    
     click.echo(click.style('[d2s]', bold=True) + ' Git repository cloned.')
     if not os.path.exists('./d2s-core'):
         os.system('git submodule add --recursive https://github.com/MaastrichtU-IDS/d2s-core.git')
@@ -108,22 +109,27 @@ def init(ctx, projectname):
     click.echo(click.style('[d2s]', bold=True) + ' The GraphDB triplestore needs to be downloaded for licensing reason.\n'
         + 'Go to ' 
         + click.style('https://ontotext.com/products/graphdb/', bold=True) 
-        + ' and provide your email to receive the URL to download ' + click.style('GraphDB version 9.1.1 standalone zip', bold=True))
+        + ' and provide your email to receive the URL to download the ' + click.style('GraphDB latest version standalone zip', bold=True))
+
     
-    graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB distribution 9.1.1 zip file used to build the Docker image. Default', default=user_home_dir + '/graphdb-free-9.1.1-dist.zip')
+    graphdb_version = click.prompt(click.style('[?]', bold=True) + ' Enter the version of the GraphDB triplestore used. Default', default='9.3.0')
+    dotenv.set_key('.env', 'GRAPHDB_VERSION', graphdb_version, quote_mode="noquote")
+    
+    graphdb_heap_size = click.prompt(click.style('[?]', bold=True) + ' Enter the Java heap size allocated to GraphDB. Default', default='2G')
+    dotenv.set_key('.env', 'GRAPHDB_HEAP_SIZE', graphdb_heap_size, quote_mode="noquote")
+    
+    graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB ' + graphdb_version + ' zip file that will be used to build the Docker image. Default', default=user_home_dir + '/graphdb-free-' + graphdb_version + '-dist.zip')
     # Get GraphDB installation file
     if os.path.exists(graphdb_path):
         shutil.copy(graphdb_path, 'd2s-core/support/graphdb')
+        click.echo(click.style('[d2s]', bold=True) + ' GraphDB installation file copied imported successfully!')
     else:
         click.echo(click.style('[d2s]', bold=True) + ' GraphDB installation file not found. Copy the zip file in d2s-core/support/graphdb after download.')
 
-    with open('.d2sconfig', 'w') as configfile:
-        config.write(configfile)
-    
     click.echo()
     click.echo(click.style('[d2s]', bold=True) + ' Your d2s project has been created!')
     click.echo(click.style('[d2s]', bold=True) + ' The project configuration is stored in the ' 
-        + click.style('.d2sconfig', bold=True) + ' file')
+        + click.style('.env', bold=True) + ' file')
     click.secho('cd ' + projectname, bold=True)
     click.secho('d2s start demo', bold=True)
     # click.secho('d2s update', bold=True)
@@ -175,16 +181,10 @@ def update(services, images, permissions, submodules):
 def config():
     """Show the project configuration"""
     click.echo(click.style('[d2s]', bold=True) + ' Configuration is stored in the ' 
-        + click.style('.d2sconfig', bold=True) + ' file:')
+        + click.style('.env', bold=True) + ' file:')
     click.echo()
-    config = configparser.ConfigParser()
-    config.read('.d2sconfig')
-    # print(config['d2s']['url'])
-    for section_name in config.sections():
-        click.secho('[' + section_name + ']', bold=True)
-        # print('  Options:', config.options(section_name))
-        for name, value in config.items(section_name):
-            click.echo('  ' + name + ' = ' + click.style(value, bold=True))
+    with open('.env') as f:
+        click.echo(f.read())
 
 
 @cli.command()
@@ -413,8 +413,9 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 def run(workflow, dataset, get_mappings, detached):
     """Run CWL workflows"""
     start_time = datetime.datetime.now()
-    config = configparser.ConfigParser()
-    config.read('.d2sconfig')
+    # TODO: remove
+    # config = configparser.ConfigParser()
+    # config.read('.d2sconfig')
     cwl_workflow_path = 'd2s-core/cwl/workflows/' + workflow
     dataset_config_path = 'datasets/' + dataset + '/config.yml'
 
