@@ -367,7 +367,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
         if openshift:
             # Run RMLStreamer in an OpenShift cluster
             output_filename = 'openshift-rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
-            rml_cmd = 'oc exec ' + flink_manager_pod + ' -- /opt/flink/bin/flink run -c io.rml.framework.Main /opt/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
+            rml_cmd = 'oc exec ' + flink_manager_pod + ' -- /opt/flink/bin/flink run -c io.rml.framework.Main toFile /opt/RMLStreamer.jar -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
         else:
             # Run locally
             if mapper:
