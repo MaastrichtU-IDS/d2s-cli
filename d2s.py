@@ -367,7 +367,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
         if openshift:
             # Run RMLStreamer in an OpenShift cluster
             output_filename = 'openshift-rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
-            rml_cmd = 'oc exec ' + flink_manager_pod + ' -- /opt/flink/bin/flink run -c io.rml.framework.Main toFile /opt/RMLStreamer.jar -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
+            rml_cmd = 'oc exec ' + flink_manager_pod + ' -- /opt/flink/bin/flink run -p ' + str(parallelism) + ' -c io.rml.framework.Main /opt/RMLStreamer.jar toFile -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
         else:
             # Run locally
             if mapper:
@@ -377,7 +377,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
             else:
                 # Run RMLStreamer in running Apache Flink
                 output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
-                rml_cmd = 'docker exec ' + detached_arg + ' d2s-rmlstreamer /opt/flink/bin/flink run -c io.rml.framework.Main /opt/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
+                rml_cmd = 'docker exec ' + detached_arg + ' d2s-rmlstreamer /opt/flink/bin/flink run -p ' + str(parallelism) + ' -c io.rml.framework.Main /opt/RMLStreamer.jar toFile -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
                 click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
                     + click.style('http://localhost:8078/#/job/running', bold=True))
                 ## Try parallelism:
@@ -422,6 +422,7 @@ def run(workflow, dataset, get_mappings, detached):
     #     + 'Restart tmp Virtuoso and delete file in '
     #     + click.style('workspace/output', bold=True))
     # os.system(docker_compose_cmd + 'stop tmp-virtuoso')
+    # shutil.rmtree('workspace/tmp-virtuoso', ignore_errors=True, onerror=None)
     # os.system(docker_compose_cmd + 'up -d --force-recreate tmp-virtuoso')
     # TODO: fix this dirty Virtuoso deployment 
     # Virtuoso unable to handle successive bulk load + permission issues + load.sh in the virtuoso containers
