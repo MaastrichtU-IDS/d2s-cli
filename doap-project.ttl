@@ -1,0 +1,27 @@
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix asf: <http://projects.apache.org/ns/asfext#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+<https://w3id.org/idsproject/project/data2services>
+  a doap:Project ;
+  doap:name "Data2Services" ;
+  doap:description "Template and Command Line Interface to orchestrate the deployment of RDF Knowledge Graphs built from heterogeneous data sources" ;
+
+  doap:programming-language "Python" ;
+  doap:license <https://github.com/MaastrichtU-IDS/d2s-project-template/blob/master/LICENSE> ;
+  doap:homepage <https://d2s.semanticscience.org> ;
+  doap:bug-database <https://github.com/MaastrichtU-IDS/d2s-project-template/issues> ;
+  doap:wiki <https://d2s.semanticscience.org/docs/d2s-introduction>
+  doap:download-page <https://pypi.org/project/d2s> ;
+  
+  doap:mailing-list <https://gitter.im/um-dsri/data2services> ;
+  doap:category "Development" ;
+  doap:repository [
+    a doap:GitRepository ;
+    doap:location <https://github.com/MaastrichtU-IDS/d2s-project-template> ;
+  ] ;
+  doap:maintainer [
+    a foaf:Person ;
+    foaf:name "Vincent Emonet" ;
+    foaf:mbox <mailto:vincent.emonet@maastrichtuniversity.nl>
+  ] .
