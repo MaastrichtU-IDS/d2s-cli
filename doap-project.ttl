@@ -11,7 +11,7 @@
   doap:license <https://github.com/MaastrichtU-IDS/d2s-project-template/blob/master/LICENSE> ;
   doap:homepage <https://d2s.semanticscience.org> ;
   doap:bug-database <https://github.com/MaastrichtU-IDS/d2s-project-template/issues> ;
-  doap:wiki <https://d2s.semanticscience.org/docs/d2s-introduction>
+  doap:wiki <https://d2s.semanticscience.org/docs/d2s-introduction> ;
   doap:download-page <https://pypi.org/project/d2s> ;
   
   doap:mailing-list <https://gitter.im/um-dsri/data2services> ;
