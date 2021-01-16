@@ -21,7 +21,7 @@ setup(
     install_requires=open("requirements.txt", "r").readlines(),
     entry_points={
         'console_scripts': [
-            'd2s=d2s.d2s:cli',
+            'd2s=d2s.cli:cli',
         ],
     },
     classifiers=[
