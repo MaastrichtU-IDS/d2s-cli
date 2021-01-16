@@ -1,3 +1,5 @@
 Click
 cwltool
 python-dotenv
+SPARQLWrapper
+rdflib
