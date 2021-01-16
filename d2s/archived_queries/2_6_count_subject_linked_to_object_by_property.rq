@@ -1,0 +1,24 @@
+# 6.6.2.6 To specify the number of unique subject types that are linked to unique object types in the dataset
+CONSTRUCT {
+  <?_graph_uri> a void:Dataset ;
+    void:propertyPartition [
+    void:property ?p ;
+    #void:triples "12419715"^^xsd:integer ;
+    void:classPartition [
+        void:class ?stype ;
+        void:distinctSubjects ?scount ;
+    ];
+    void-ext:objectClassPartition [
+      void:class ?otype ;
+      void:distinctObjects ?ocount ;
+  ]] . 
+} WHERE { 
+  <?_graph_start>
+    SELECT (COUNT(DISTINCT ?s) AS ?scount) ?stype ?p ?otype  (COUNT(DISTINCT ?o) AS ?ocount)  
+    { 
+      ?s ?p ?o . 
+      ?s a ?stype .
+      ?o a ?otype .
+    } GROUP BY ?p ?stype ?otype
+  <?_graph_end>
+}

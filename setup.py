@@ -12,14 +12,17 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
-    py_modules=['d2s'],
+    # package_dir={'': 'src'},
+    package_data={'': ['queries/*']},
+    include_package_data=True,
+    # py_modules=['d2s'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=open("requirements.txt", "r").readlines(),
     entry_points={
         'console_scripts': [
-            'd2s=d2s:cli'
-        ]
+            'd2s=d2s.d2s:cli',
+        ],
     },
     classifiers=[
         "Programming Language :: Python :: 3",

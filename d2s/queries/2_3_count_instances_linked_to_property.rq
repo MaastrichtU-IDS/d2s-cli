@@ -1,0 +1,19 @@
+# 6.6.2.3 To specify the property, the number of unique typed subjects, and number of triples linked to a property in the dataset:
+CONSTRUCT {
+  <?_graph_uri> a void:Dataset ;
+    void:propertyPartition [
+    void:property ?p ;
+    void:triples ?triples ;
+    void:classPartition [
+      void:class ?stype ;
+      void:distinctSubjects ?scount ;
+  ]] .
+} WHERE { 
+  <?_graph_start>
+    SELECT (COUNT(DISTINCT ?s) AS ?scount) ?stype ?p (COUNT(?p) AS ?triples) 
+    { 
+      ?s ?p ?o . 
+      ?s a ?stype 
+    } GROUP BY ?p ?stype 
+  <?_graph_end>
+}

@@ -1,0 +1,12 @@
+# 6.6.2.1 To specify the classes and the number of their instances
+CONSTRUCT {
+  <?_graph_uri> a void:Dataset ;
+    void:classPartition [
+    void:class ?o ;
+    void:distinctSubjects ?distinctInstances
+  ] .
+} WHERE { 
+  <?_graph_start>
+    { SELECT ?o (COUNT(DISTINCT ?s) AS ?distinctInstances) { ?s a ?o } GROUP BY ?o }
+  <?_graph_end>
+}

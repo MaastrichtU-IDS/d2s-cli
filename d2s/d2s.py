@@ -1,22 +1,25 @@
-import os, sys, stat
+import os
+import stat
 from pathlib import Path
 import shutil
-import glob
 import click
-import subprocess
 import datetime
-import time
-import urllib.request
 import dotenv 
 
-import fileinput
-import cwltool.factory
-import cwltool.context
+from d2s.generate_metadata import create_dataset_prompt, generate_hcls_from_sparql
+
+# import glob
+# import subprocess
+# import time
+# import urllib.request
+# import fileinput
+# import cwltool.factory
+# import cwltool.context
 
 
 @click.group()
 def cli():
-   pass
+    pass
 
 # Start of the docker-compose using d2s-core yml
 docker_compose_cmd = 'docker-compose -f d2s-core/docker-compose.yml '
@@ -355,45 +358,45 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
             os.system('oc rsync datasets ' + flink_manager_pod + ':/mnt/')
 
     for file in os.listdir('./datasets/' + dataset + '/mapping'):
-     mapping_filename = os.fsdecode(file)
-     if mapping_filename.endswith(rml_file_extension): 
-        # print(os.path.join(directory, filename))
-        mapping_filepath = 'datasets/' + dataset + '/mapping/' + mapping_filename
-        click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
-            + click.style(mapping_filepath, bold=True))
+        mapping_filename = os.fsdecode(file)
+        if mapping_filename.endswith(rml_file_extension): 
+            # print(os.path.join(directory, filename))
+            mapping_filepath = 'datasets/' + dataset + '/mapping/' + mapping_filename
+            click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
+                + click.style(mapping_filepath, bold=True))
 
-        output_filename = 'rml'
-        # Now build the command to run RML processor
-        if openshift:
-            # Run RMLStreamer in an OpenShift cluster
-            output_filename = 'openshift-rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
-            rml_cmd = 'oc exec ' + flink_manager_pod + ' -- /opt/flink/bin/flink run -p ' + str(parallelism) + ' -c io.rml.framework.Main /opt/RMLStreamer.jar toFile -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
-        else:
-            # Run locally
-            if mapper:
-                # Run rmlmapper docker image
-                output_filename = 'rmlmapper-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
-                rml_cmd = 'docker run ' + detached_arg + ' -v ' + os.getcwd() + '/workspace:/mnt/workspace -v ' + os.getcwd() + '/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename
+            output_filename = 'rml'
+            # Now build the command to run RML processor
+            if openshift:
+                # Run RMLStreamer in an OpenShift cluster
+                output_filename = 'openshift-rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
+                rml_cmd = 'oc exec ' + flink_manager_pod + ' -- /opt/flink/bin/flink run -p ' + str(parallelism) + ' -c io.rml.framework.Main /opt/RMLStreamer.jar toFile -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
             else:
-                # Run RMLStreamer in running Apache Flink
-                output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
-                rml_cmd = 'docker exec ' + detached_arg + ' d2s-rmlstreamer /opt/flink/bin/flink run -p ' + str(parallelism) + ' -c io.rml.framework.Main /opt/RMLStreamer.jar toFile -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
-                click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
-                    + click.style('http://localhost:8078/#/job/running', bold=True))
-                ## Try parallelism:
-                # rml_cmd = 'docker exec ' + detached_arg + ' d2s-rmlstreamer /opt/flink/bin/flink run -p ' + parallelism + ' -c io.rml.framework.Main /opt/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '" --parallelism ' + parallelism + ' --enable-local-parallel'
-        
-        # Run RML processor
-        print(rml_cmd)
-        os.system(rml_cmd)
-        # TODO: store logs in a file and get the run time. Use subprocess.call
-        # with open('workspace/logs/' + output_filename + '.log', 'a') as output:
-        #     process = subprocess.call(rml_cmd, shell=True, 
-        #         stdout=output, stderr=output)
+                # Run locally
+                if mapper:
+                    # Run rmlmapper docker image
+                    output_filename = 'rmlmapper-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
+                    rml_cmd = 'docker run ' + detached_arg + ' -v ' + os.getcwd() + '/workspace:/mnt/workspace -v ' + os.getcwd() + '/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename
+                else:
+                    # Run RMLStreamer in running Apache Flink
+                    output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
+                    rml_cmd = 'docker exec ' + detached_arg + ' d2s-rmlstreamer /opt/flink/bin/flink run -p ' + str(parallelism) + ' -c io.rml.framework.Main /opt/RMLStreamer.jar toFile -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
+                    click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
+                        + click.style('http://localhost:8078/#/job/running', bold=True))
+                    ## Try parallelism:
+                    # rml_cmd = 'docker exec ' + detached_arg + ' d2s-rmlstreamer /opt/flink/bin/flink run -p ' + parallelism + ' -c io.rml.framework.Main /opt/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '" --parallelism ' + parallelism + ' --enable-local-parallel'
+            
+            # Run RML processor
+            print(rml_cmd)
+            os.system(rml_cmd)
+            # TODO: store logs in a file and get the run time. Use subprocess.call
+            # with open('workspace/logs/' + output_filename + '.log', 'a') as output:
+            #     process = subprocess.call(rml_cmd, shell=True, 
+            #         stdout=output, stderr=output)
 
-        # click.echo(click.style('[d2s]', bold=True) + ' PID of running process: ' + str(process.pid))
-        click.echo(click.style('[d2s]', bold=True) + ' Output file in ')
-        click.secho('workspace/import/' + output_filename, bold=True)
+            # click.echo(click.style('[d2s]', bold=True) + ' PID of running process: ' + str(process.pid))
+            click.echo(click.style('[d2s]', bold=True) + ' Output file in ')
+            click.secho('workspace/import/' + output_filename, bold=True)
     
     # Try parallelism:
     # rmlstreamer_cmd = 'docker exec -d d2s-rmlstreamer /opt/flink/bin/flink run -p 4 /opt/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '" --enable-local-parallel'
@@ -534,34 +537,11 @@ def dataset():
             metadataObject['value'] = click.prompt(click.style('[?]', bold=True) 
             + ' ' + metadataObject['description'])
 
-    # dataset_id = click.prompt(click.style('[?]', bold=True) 
-    #     + ' Enter the identifier of your datasets, e.g. wikipathways (lowercase, no space or weird characters)')
-    # dataset_name = click.prompt(click.style('[?]', bold=True) 
-    #     + ' Enter a human-readable name for your datasets, e.g. WikiPathways')
-    # dataset_description = click.prompt(click.style('[?]', bold=True) 
-    #     + ' Enter a description for this dataset')
-    # publisher_name = click.prompt(click.style('[?]', bold=True) 
-    #     + ' Enter complete name for the institutions publishing the data and its affiliation, e.g. Institute of Data Science at Maastricht University')
-    # publisher_url = click.prompt(click.style('[?]', bold=True) 
-    #     + ' Enter a valid URL for the publisher homepage. Default', 
-    #     default='https://maastrichtuniversity.nl/ids')
-    # source_license = click.prompt(click.style('[?]', bold=True) 
-    #     + ' Enter a valid URL to the license informations about the original dataset. Default', 
-    #     default='http://creativecommons.org/licenses/by-nc/4.0/legalcode')
-    # rdf_license = click.prompt(click.style('[?]', bold=True) 
-    #     + ' Enter a valid URL to the license informations about the RDF distribution of the dataset. Default', 
-    #     default='http://creativecommons.org/licenses/by-nc/4.0/legalcode')
-
-
-    # rdf_license = click.prompt(click.style('[?]', bold=True) 
-    #     + ' Enter. Default', 
-    #     default='changeme')
-
     dataset_id = metadataArray[0]['value']
     dataset_folder_path = 'datasets/' + dataset_id
     shutil.copytree('d2s-core/support/template/dataset', dataset_folder_path)
     os.rename(dataset_folder_path + '/process-dataset.ipynb', dataset_folder_path + '/process-' + dataset_id + '.ipynb')
-    
+
     # Replace provided metadata in generated files for the new dataset
     for dname, dirs, files in os.walk(dataset_folder_path):
         for fname in files:
@@ -583,4 +563,33 @@ def dataset():
     #     + click.style('download', bold=True) + ' file to edit it?'):
     #     os.system('nano ' + dataset_folder_path + '/download/download.sh')
 
-    
+@cli.group()
+def metadata():
+    """Generate metadata for RDF datasets"""
+    pass
+
+# From fair-metadata
+@metadata.command(help='Create metadata for a dataset in the terminal prompt')
+# @click.argument('first_name')
+@click.option(
+    '-o', '--output', default='', 
+    help='Write RDF to output file')
+def create(output):
+    create_dataset_prompt(output)
+
+
+@metadata.command(help='Generate descriptive metadata (about types and relations) for a SPARQL endpoint')
+@click.argument('sparql_endpoint')
+@click.option(
+    '-u', '--dataset-uri', default='https://w3id.org/d2s/distribution/default', 
+    help='URI of the dataset distribution')
+@click.option(
+    '-o', '--output', default='', 
+    help='Write RDF to output file')
+def analyze(sparql_endpoint, dataset_uri, output):
+    g = generate_hcls_from_sparql(sparql_endpoint, dataset_uri)
+    if output:
+        g.serialize(destination=output, format='turtle')
+        print("Metadata stored to " + output + ' 📝')
+    else:
+        print(g.serialize(format='turtle'))

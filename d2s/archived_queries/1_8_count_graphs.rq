@@ -1,0 +1,19 @@
+# 6.6.1.8 To specify the number of graphs in the dataset
+CONSTRUCT {
+  hcls:numberOfGraphs a dqv:QualityMeasurement;
+  dqv:isMeasurementOf dqv:CN4metric ;
+  dqv:value ?graphs .
+  dqv:CN4 a dqv:Metric ;
+  skos:definition "Number of graphs in the dataset."@en ;
+  dqv:expectedDatatype xsd:double ;
+  dqv:inDimension dqv:Conciseness .
+  dqv:Conciseness a dqv:Dimension ;
+  skos:prefLabel "Conciseness" ;
+  skos:definition "Conciseness refers to the minimization of redundancy of entities at the schema and the data level. Conciseness is classified into (i) intensional conciseness (schema level) which refers to the case when the data does not contain redundant schema elements (properties and classes) and (ii) extensional conciseness (data level) which refers to the case when the data does not contain redundant objects (instances)."@en ;
+  dqv:inCategory dqv:Intrinsic .
+  dqv:Intrinsic a dqv:Category.
+} WHERE { 
+  SELECT (COUNT(DISTINCT ?g ) AS ?graphs) { 
+    GRAPH ?g { ?s ?p ?o } 
+  } 
+}

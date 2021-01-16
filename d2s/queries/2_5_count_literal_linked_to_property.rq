@@ -1,0 +1,19 @@
+# 6.6.2.5 To specify the triples and number of unique literals that are related to a property in the dataset
+CONSTRUCT {
+  <?_graph_uri> a void:Dataset ;
+    void:propertyPartition [
+    void:property ?p ;
+    void:triples ?triples ;
+    void-ext:objectClassPartition [
+      void:class rdfs:Literal;
+      void:distinctObjects ?distinctLiterals
+  ]] .
+} WHERE { 
+  <?_graph_start>
+    SELECT ?p (COUNT(?p) AS ?triples) (COUNT(DISTINCT ?o) AS ?distinctLiterals) 
+    { 
+      ?s ?p ?o . 
+      FILTER (isLiteral(?o))
+    } GROUP BY ?p 
+  <?_graph_end>
+}

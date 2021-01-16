@@ -1,5 +1,8 @@
+metadata.ttl
+
 build/
 *.egg-info
 .eggs/
 dist/
 __pycache__/
+.pytest_cache

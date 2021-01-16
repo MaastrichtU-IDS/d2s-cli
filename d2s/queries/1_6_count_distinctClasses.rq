@@ -1,0 +1,11 @@
+# 6.6.1.1 To specify the number of triples in the dataset
+CONSTRUCT {
+  <?_graph_uri> void:classPartition [
+        void:class rdfs:Class ; # Number of unique classes
+        void:distinctSubjects ?distinctClasses 
+    ] .
+} WHERE {
+  <?_graph_start>
+    { SELECT (COUNT(DISTINCT ?o) AS ?distinctClasses) { ?s a ?o } }
+  <?_graph_end>
+}

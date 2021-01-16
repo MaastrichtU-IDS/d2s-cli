@@ -1,0 +1,19 @@
+# 6.6.2.4 To specify the number of unique typed objects linked to a property in the dataset
+CONSTRUCT {
+  <?_graph_uri> a void:Dataset ;
+    void:propertyPartition [
+    void:property ?p ;
+    void:triples ?triples ;    
+    void-ext:objectClassPartition [
+      void:class ?otype ;
+      void:distinctObjects ?ocount
+  ]] .
+} WHERE { 
+  <?_graph_start>
+    SELECT ?p (COUNT(?p) AS ?triples) ?otype (COUNT(DISTINCT ?o) AS ?ocount) 
+    { 
+      ?s ?p ?o . 
+      ?o a ?otype .
+    } GROUP BY ?p ?otype
+  <?_graph_end>
+}

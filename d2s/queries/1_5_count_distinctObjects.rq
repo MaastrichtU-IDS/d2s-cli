@@ -1,0 +1,8 @@
+# 6.6.1.1 To specify the number of triples in the dataset
+CONSTRUCT {
+  <?_graph_uri> void:distinctObjects ?distinctObjects .
+} WHERE {
+  <?_graph_start>
+    { SELECT (COUNT(DISTINCT ?o ) AS ?distinctObjects) {  ?s ?p ?o  FILTER(!isLiteral(?o)) } }
+  <?_graph_end>
+}

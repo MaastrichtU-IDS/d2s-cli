@@ -1,0 +1,12 @@
+# 6.6.1.1 To specify the number of triples in the dataset
+CONSTRUCT {
+  <?_graph_uri> a void:Dataset ;
+    void:triples ?triples .
+} WHERE {
+  # SERVICE <?_service>  {
+  # GRAPH <?_output> {
+  <?_graph_start>
+    { SELECT (COUNT(*) AS ?triples) { ?s ?p ?o  } } # count triples
+  <?_graph_end>
+  # }
+}
