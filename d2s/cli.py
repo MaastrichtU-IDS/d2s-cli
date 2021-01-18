@@ -552,6 +552,15 @@ def dataset():
                 file_content = file_content.replace("$" + metadataObject['id'], metadataObject['value'])
             with open(fpath, "w") as f:
                 f.write(file_content)
+
+    workflow_filepath = '.github/workflows/rml-map-' + dataset_id + '.yml'
+    shutil.copyfile('d2s-core/support/template/rml-map-dataset.yml', workflow_filepath)
+    with open(workflow_filepath) as f:
+        file_content = f.read()
+        file_content = file_content.replace("$dataset_id", dataset_id)
+    with open(workflow_filepath, "w") as f:
+        f.write(file_content)
+
     click.echo()
     click.echo(click.style('[d2s]', bold=True) + ' The config, metadata and mapping files for the ' 
         + click.style(dataset_id + ' dataset', bold=True) 
