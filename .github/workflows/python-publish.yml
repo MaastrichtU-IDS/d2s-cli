@@ -39,7 +39,8 @@ jobs:
         python setup.py pytest
   
   deploy:
-    if: startsWith(github.event.ref, 'refs/tags')
+    # if: startsWith(github.event.ref, 'refs/tags')
+    if: github.event_name == 'release'
     needs: test
     runs-on: ubuntu-latest
 
