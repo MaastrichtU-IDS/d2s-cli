@@ -1,4 +1,4 @@
-[![Build](https://github.com/MaastrichtU-IDS/d2s-cli/workflows/Test%20and%20publish%20package/badge.svg)](https://github.com/MaastrichtU-IDS/d2s-cli/actions?query=workflow%3A%22Test+and+publish+package%22) ![Version](https://img.shields.io/pypi/v/d2s)
+[![Build](https://github.com/MaastrichtU-IDS/d2s-cli/workflows/Test%20and%20publish%20package/badge.svg)](https://github.com/MaastrichtU-IDS/d2s-cli/actions?query=workflow%3A%22Test+and+publish+package%22) [![Version](https://img.shields.io/pypi/v/d2s)](https://pypi.org/project/d2s)
 
 A Command Line Interface to orchestrate the integration of heterogenous data sources under a common [RDF Knowledge Graph](https://www.w3.org/RDF/) using [CWL workflows](https://www.commonwl.org/), and the deployment of user-facing services over the integrated data using [Docker](https://www.docker.com/) ([SPARQL](https://yasgui.triply.cc/), [BioThings APIs](https://biothings.io/explorer/), [GraphQL-LD](https://comunica.github.io/Article-ISWC2018-Demo-GraphQlLD/), [OpenAPI](https://www.openapis.org/), [Web UI](https://github.com/MaastrichtU-IDS/into-the-graph)).
 

@@ -1,4 +1,6 @@
 metadata.ttl
+FAIRMETADATA_FAILED_QUERIES.md
+FAIRMETADATA_SUCCESS_QUERIES.md
 
 build/
 *.egg-info
