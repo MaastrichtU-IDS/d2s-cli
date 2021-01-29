@@ -1,3 +1,4 @@
 Click
 SPARQLWrapper
 rdflib
+dotenv
