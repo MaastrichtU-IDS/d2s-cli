@@ -167,8 +167,8 @@ PREFIX void-ext: <http://ldf.fi/void-ext#>\n"""
     for graph_row in select_all_graphs_results:
         graph = graph_row['graph']['value']
         print('Computing HCLS metadata for graph ' + graph)
-        for filename in os.listdir(pkg_resources.resource_filename('fair_metadata', 'queries')):
-            with open(pkg_resources.resource_filename('fair_metadata', 'queries/' + filename), 'r') as f:
+        for filename in os.listdir(pkg_resources.resource_filename('d2s', 'queries')):
+            with open(pkg_resources.resource_filename('d2s', 'queries/' + filename), 'r') as f:
                 if (graph):
                     sparql_query = f.read().replace('?_graph_uri', graph)
                     sparql_query = sparql_query.replace('<?_graph_start>', 'GRAPH <' + graph + '> {')
