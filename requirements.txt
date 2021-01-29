@@ -1,4 +1,4 @@
 Click
 SPARQLWrapper
 rdflib
-dotenv
+python-dotenv
