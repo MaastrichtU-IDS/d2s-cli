@@ -25,21 +25,21 @@ IDOT = Namespace("http://identifiers.org/idot/")
 FOAF = Namespace("http://xmlns.com/foaf/0.1/")
 
 
-def create_dataset_prompt(output_file):
+def create_dataset_prompt():
     """Create a new dataset from questions asked in the prompt"""
     metadataArray = []
     metadataArray.append({'id': 'dataset_id', 'description': 'Enter the identifier of your datasets, e.g. drugbank (lowercase, no space or weird characters)'})
     metadataArray.append({'id': 'name', 'description': 'Enter a human-readable name for your datasets, e.g. DrugBank'})
     metadataArray.append({'id': 'description', 'description': 'Enter a description for this dataset'})
+    metadataArray.append({'id': 'downloadURL', 'default': 'https://www.drugbank.ca/releases/5-1-1/downloads/all-full-database', 'description': 'Enter the URL to download the source file to be transformed'})
+    metadataArray.append({'id': 'license', 'default': 'http://creativecommons.org/licenses/by-nc/4.0/legalcode', 'description': 'Enter a valid URL to the license informations about the original dataset'})
     metadataArray.append({'id': 'publisher_name', 'default': 'Institute of Data Science at Maastricht University', 'description': 'Enter complete name for the institutions publishing the data and its affiliation, e.g. Institute of Data Science at Maastricht University'})
     metadataArray.append({'id': 'publisher_url', 'default': 'https://maastrichtuniversity.nl/ids', 'description': 'Enter a valid URL for the publisher homepage. Default'})
-    metadataArray.append({'id': 'license', 'default': 'http://creativecommons.org/licenses/by-nc/4.0/legalcode', 'description': 'Enter a valid URL to the license informations about the original dataset'})
     metadataArray.append({'id': 'format', 'default': 'application/xml', 'description': 'Enter the format of the source file to transform'})
     metadataArray.append({'id': 'homepage', 'default': 'http://d2s.semanticscience.org/', 'description': 'Enter the URL of the dataset homepage'})
-    metadataArray.append({'id': 'accessURL', 'default': 'https://www.drugbank.ca/releases/latest', 'description': 'Specify URL of the directory containing the file(s) of interest (not the direct file URL)'})
+    # metadataArray.append({'id': 'accessURL', 'default': 'https://www.drugbank.ca/releases/latest', 'description': 'Specify URL of the directory containing the file(s) of interest (not the direct file URL)'})
     metadataArray.append({'id': 'references', 'default': 'https://www.ncbi.nlm.nih.gov/pubmed/29126136', 'description': 'Enter the URL of a publication supporting the dataset'})
     metadataArray.append({'id': 'keyword', 'default': 'drug', 'description': 'Enter a keyword to describe the dataset'})
-    metadataArray.append({'id': 'downloadURL', 'default': 'https://www.drugbank.ca/releases/5-1-1/downloads/all-full-database', 'description': 'Enter the URL to download the source file to be transformed'})
     metadataArray.append({'id': 'sparqlEndpoint', 'description': 'Enter the URL of the final SPARQL endpoint to access the integrated dataset',
         'default': 'https://graphdb.dumontierlab.com/repositories/test-vincent'})
     # metadataArray.append({'id': 'theme', 'default': 'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C54708', 'description': 'Enter the URL to an ontology concept describing the dataset theme'})
@@ -56,11 +56,13 @@ def create_dataset_prompt(output_file):
 
     g = create_dataset(metadata_answers)
 
-    if output_file:
-        g.serialize(destination=output_file, format='turtle')
-        print("Metadata stored to " + output_file + ' 📝')
-    else:
-        print(g.serialize(format='turtle'))
+    # if output_file:
+    #     g.serialize(destination=output_file, format='turtle')
+    #     print("Metadata stored to " + output_file + ' 📝')
+    # else:
+    #     print(g.serialize(format='turtle'))
+
+    return g, metadata_answers
 
 
 
@@ -90,8 +92,7 @@ def create_dataset(metadata):
     g.add((summary_uri, IDOT['preferredPrefix'], Literal(metadata['dataset_id'])))
     g.add((summary_uri, DCTERMS.license, URIRef(metadata['license'])))
     g.add((summary_uri, FOAF['page'], URIRef(metadata['homepage'])))
-    g.add((summary_uri, DCAT['accessURL'], URIRef(metadata['accessURL'])))
-    g.add((summary_uri, DCAT['accessURL'], URIRef(metadata['accessURL'])))
+    # g.add((summary_uri, DCAT['accessURL'], URIRef(metadata['accessURL'])))
     g.add((summary_uri, DCTERMS.references, URIRef(metadata['references'])))
     g.add((summary_uri, DCAT['keyword'], Literal(metadata['keyword'])))
     g.add((summary_uri, VOID.sparqlEndpoint, URIRef(metadata['sparqlEndpoint'])))

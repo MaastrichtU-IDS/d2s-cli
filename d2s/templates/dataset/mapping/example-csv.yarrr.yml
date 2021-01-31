@@ -1,0 +1,53 @@
+prefixes:
+  grel: "http://users.ugent.be/~bjdmeest/function/grel.ttl#"
+  rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+  d2s: "https://w3id.org/d2s/"
+
+## Example mappings for this CSV about countries:
+# ISO,Country,Capital,Area,Population,Continent,Neighbours
+# FR,France,Paris,547030,64768389,EU,CH|DE|BE|LU|IT|AD|MC|ES
+# GA,Gabon,Libreville,267667,1545255,AF,CM|GQ|CG
+
+## Try and convert YARRRML mappings at https://rml.io/yarrrml/matey
+
+mappings:
+  ## Multiple mappings from different sources can be defined per file
+  # Each mapping define the subject (s:) and the predicates/objects to build the triples
+  mapping1:
+
+    ## Define the source file to get data from ~csv indicate it is a CSV file
+    sources:
+      - ['$dataset_id.csv~csv']
+      ## It could also be JSON or XML files
+      # - [$dataset_id.json~jsonpath, "$.countries[*]"]
+      # - [$dataset_id.xml~xpath, /countries/country]
+
+    # Use $(COLUMN_NAME) to use the column value when you build your RDF
+    s: https://w3id.org/d2s/country/$(ISO)
+
+    ## Graph of the triple can also be defined to generate nquads
+    # g: https://w3id.org/d2s/graph/countries
+    
+    ## Define all predicates/objects related to this subject
+    ## Here we define the rdf:type, rdfs:label and the country neighbours
+    po:
+      - [a, d2s:Country]
+      - [rdfs:label, $(Country)]
+      # Example using the string_split function to generate multiple triples
+      # From a single column value, splitting on a given separator
+      # Here | (requires to be escaped)
+      - p: d2s:neighbours
+        o:
+            function: grel:string_split
+            parameters:
+                - [grel:p_string_sep, "\|"]
+                - [grel:valueParameter, $(Neighbours)]
+            language: en
+
+      ## Example to use the lower case function
+      # - p: d2s:neighbours
+      #   o:
+      #       function: grel:toLowerCase
+      #       parameters:
+      #           - [grel:valueParameter, $(neighbours)]
+      #       language: en

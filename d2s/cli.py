@@ -1,20 +1,17 @@
 import os
 import stat
 from pathlib import Path
+import pkg_resources
 import shutil
 import click
 import datetime
 import dotenv 
 
-from d2s.generate_metadata import create_dataset_prompt, generate_hcls_from_sparql
+from rdflib import Graph, plugin, Literal, RDF, URIRef, Namespace
+from rdflib.namespace import RDFS, XSD, DC, DCTERMS, VOID
+from rdflib.serializer import Serializer
 
-# import glob
-# import subprocess
-# import time
-# import urllib.request
-# import fileinput
-# import cwltool.factory
-# import cwltool.context
+from d2s.generate_metadata import create_dataset_prompt, generate_hcls_from_sparql
 
 
 @click.group()
@@ -123,53 +120,41 @@ def new():
 def dataset():
     """Create a new folder to map data from a template"""
     # Automatically fill data about the workflow (git repo URL of mappings)
-    metadataArray = []
-    metadataArray.append({'id': 'dataset_id', 'description': 'Enter the identifier of your datasets, e.g. drugbank (lowercase, no space or weird characters)'})
-    metadataArray.append({'id': 'dataset_name', 'description': 'Enter a human-readable name for your datasets, e.g. DrugBank'})
-    metadataArray.append({'id': 'dataset_description', 'description': 'Enter a description for this dataset'})
-    metadataArray.append({'id': 'publisher_name', 'default': 'Institute of Data Science at Maastricht University', 'description': 'Enter complete name for the institutions publishing the data and its affiliation, e.g. Institute of Data Science at Maastricht University'})
-    metadataArray.append({'id': 'publisher_url', 'default': 'https://maastrichtuniversity.nl/ids', 'description': 'Enter a valid URL for the publisher homepage. Default'})
-    metadataArray.append({'id': 'source_license', 'default': 'http://creativecommons.org/licenses/by-nc/4.0/legalcode', 'description': 'Enter a valid URL to the license informations about the original dataset'})
-    metadataArray.append({'id': 'inputFormat', 'default': 'application/xml', 'description': 'Enter the format of the source file to transform'})
-    metadataArray.append({'id': 'homepage', 'default': 'http://d2s.semanticscience.org/', 'description': 'Enter the URL of the dataset homepage'})
-    metadataArray.append({'id': 'accessURL', 'default': 'https://www.drugbank.ca/releases/latest', 'description': 'Specify URL of the directory containing the file(s) of interest (not the direct file URL)'})
-    metadataArray.append({'id': 'references', 'default': 'https://www.ncbi.nlm.nih.gov/pubmed/29126136', 'description': 'Enter the URL of a publication supporting the dataset'})
-    metadataArray.append({'id': 'keyword', 'default': 'drug', 'description': 'Enter a keyword to describe the dataset'})
-    metadataArray.append({'id': 'theme', 'default': 'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C54708', 'description': 'Enter the URL to an ontology concept describing the dataset theme'})
-    metadataArray.append({'id': 'sparqlEndpoint', 'default': 'https://graphdb.dumontierlab.com/repositories/trek', 'description': 'Enter the URL of the final SPARQL endpoint to access the integrated dataset'})
-    metadataArray.append({'id': 'downloadURL', 'default': 'https://www.drugbank.ca/releases/5-1-1/downloads/all-full-database', 'description': 'Enter the URL to download the source file to be transformed'})
-    metadataArray.append({'id': 'rdfPublisherName', 'default': 'Institute of Data Science at Maastricht University', 'description': 'Enter the name for the publisher of the RDF distribution'})
-    metadataArray.append({'id': 'rdfPublisherPage', 'default': 'https://maastrichtuniversity.nl/ids', 'description': 'Enter a valid homepage URL for the publisher of the RDF distribution'})
-    metadataArray.append({'id': 'rdf_license', 'default': 'http://creativecommons.org/licenses/by-nc/4.0/legalcode', 'description': 'Enter a valid URL to the license informations about the RDF distribution of the dataset'})
-    metadataArray.append({'id': 'rdfDownloadURL', 'default': 'http://download.137.120.31.102.nip.io/#/', 'description': 'Enter a valid URL to download the RDF distribution'})
-    
-    for metadataObject in metadataArray:
-        if 'default' in metadataObject:
-            metadataObject['value'] = click.prompt(click.style('[?]', bold=True) 
-            + ' ' + metadataObject['description'] + '. Default',
-            default=metadataObject['default'])
-        else:
-            metadataObject['value'] = click.prompt(click.style('[?]', bold=True) 
-            + ' ' + metadataObject['description'])
+    g, dataset_metadata = create_dataset_prompt()
 
-    dataset_id = metadataArray[0]['value']
+    dataset_id = dataset_metadata['dataset_id']
     dataset_folder_path = 'datasets/' + dataset_id
-    shutil.copytree('d2s-core/support/template/dataset', dataset_folder_path)
-    os.rename(dataset_folder_path + '/process-dataset.ipynb', dataset_folder_path + '/process-' + dataset_id + '.ipynb')
 
-    # Replace provided metadata in generated files for the new dataset
+    # Copy template folder with example mappings
+    shutil.copytree(pkg_resources.resource_filename('d2s', 'templates/dataset'), dataset_folder_path)
+    os.rename(dataset_folder_path + '/process-dataset.ipynb', dataset_folder_path + '/process-' + dataset_id + '.ipynb')
+    # for filename in os.listdir(pkg_resources.resource_filename('d2s', 'templates/dataset')):
+    #     with open(pkg_resources.resource_filename('d2s', 'queries/' + filename), 'r') as f:
+
+    # Store metadata file
+    os.makedirs(dataset_folder_path + '/metadata', exist_ok=True)
+    g.serialize(destination=dataset_folder_path + '/metadata/' + dataset_id + '-metadata.ttl', format='turtle')
+    print("Metadata stored to " + dataset_folder_path + '/metadata/' + dataset_id + '-metadata.ttl' + ' 📝')
+
+    # Replace metadata in all files from template for the new dataset (mainly for the dataset_id)
     for dname, dirs, files in os.walk(dataset_folder_path):
         for fname in files:
             fpath = os.path.join(dname, fname)
+            print('fpath to replace metadata')
+            print(fpath)
             with open(fpath) as f:
                 file_content = f.read()
-            for metadataObject in metadataArray:
-                file_content = file_content.replace("$" + metadataObject['id'], metadataObject['value'])
+            for metadata_id, metadata_value in dataset_metadata.items():
+                print('metadata')
+                print(metadata_id)
+                print(metadata_value)
+                file_content = file_content.replace("$" + metadata_id, metadata_value)
             with open(fpath, "w") as f:
                 f.write(file_content)
 
-    workflow_filepath = '.github/workflows/rml-map-' + dataset_id + '.yml'
-    shutil.copyfile('d2s-core/support/template/rml-map-dataset.yml', workflow_filepath)
+    # Copy example GitHub Actions workflow file, and replace dataset_id in it
+    workflow_filepath = '.github/workflows/process-' + dataset_id + '.yml'
+    shutil.copyfile(pkg_resources.resource_filename('d2s', 'templates/process-dataset.yml'), workflow_filepath)
     with open(workflow_filepath) as f:
         file_content = f.read()
         file_content = file_content.replace("$dataset_id", dataset_id)
@@ -177,15 +162,11 @@ def dataset():
         f.write(file_content)
 
     click.echo()
-    click.echo(click.style('[d2s]', bold=True) + ' The config, metadata and mapping files for the ' 
+    click.echo(click.style('[d2s]', bold=True) + ' Metadata, example mapping files and scripts for the ' 
         + click.style(dataset_id + ' dataset', bold=True) 
         + ' has been generated')
-    click.echo(click.style('[d2s]', bold=True) + ' Start edit them in ' + click.style('datasets/' + dataset_id, bold=True))
-    
-    # Will not work on all platforms:
-    # if click.confirm(click.style('[?]', bold=True) + ' Do you want to open the ' 
-    #     + click.style('download', bold=True) + ' file to edit it?'):
-    #     os.system('nano ' + dataset_folder_path + '/download/download.sh')
+    click.echo(click.style('[d2s]', bold=True) + ' 📝 Start edit them in ' + click.style('datasets/' + dataset_id, bold=True))
+    click.echo(click.style('[d2s]', bold=True) + ' 🐈 GitHub Actions workflow file in ' + click.style(workflow_filepath, bold=True))
 
 
 ### Generate HCLS metadata using generate_metadata.py 
@@ -203,6 +184,7 @@ def metadata():
     help='Write RDF to output file')
 def create(output):
     create_dataset_prompt(output)
+
 
 @metadata.command(help='Generate descriptive metadata (about types and relations) for a SPARQL endpoint')
 @click.argument('sparql_endpoint')
