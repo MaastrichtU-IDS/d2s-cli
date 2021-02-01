@@ -1,0 +1,13 @@
+# Ignore files generated when running locally
+rmlmapper.jar
+**/*.csv
+**/*.xlsx
+**/output-*.ttl
+
+workspace/
+output/
+input/
+
+# Ignore temporary and system files
+**/.ipynb_checkpoints
+.DS_Store

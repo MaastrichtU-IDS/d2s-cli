@@ -1,6 +1,7 @@
 prefixes:
   grel: "http://users.ugent.be/~bjdmeest/function/grel.ttl#"
   rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+  schema: "https://schema.org/"
   d2s: "https://w3id.org/d2s/"
 
 ## Example mappings for this CSV about countries:
@@ -17,12 +18,12 @@ mappings:
 
     ## Define the source file to get data from ~csv indicate it is a CSV file
     sources:
-      - ['$dataset_id.csv~csv']
+      - ['output/$dataset_id.csv~csv']
       ## It could also be JSON or XML files
-      # - [$dataset_id.json~jsonpath, "$.countries[*]"]
-      # - [$dataset_id.xml~xpath, /countries/country]
+      # - [output/$dataset_id.json~jsonpath, "$.countries[*]"]
+      # - [output/$dataset_id.xml~xpath, /countries/country]
 
-    # Use $(COLUMN_NAME) to use the column value when you build your RDF
+    # Use $(COLUMN NAME) to use the column value when you build your RDF
     s: https://w3id.org/d2s/country/$(ISO)
 
     ## Graph of the triple can also be defined to generate nquads
@@ -32,7 +33,7 @@ mappings:
     ## Here we define the rdf:type, rdfs:label and the country neighbours
     po:
       - [a, d2s:Country]
-      - [rdfs:label, $(Country)]
+      - [rdfs:label, $(Country Name)]
       # Example using the string_split function to generate multiple triples
       # From a single column value, splitting on a given separator
       # Here | (requires to be escaped)

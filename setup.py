@@ -13,7 +13,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     # package_dir={'': 'src'},
-    package_data={'': ['queries/*']},
+    package_data={'': ['queries/*', 'templates/**']},
     include_package_data=True,
     # py_modules=['d2s'],
     setup_requires=['pytest-runner'],
@@ -21,7 +21,7 @@ setup(
     install_requires=open("requirements.txt", "r").readlines(),
     entry_points={
         'console_scripts': [
-            'd2s=d2s.cli:cli',
+            'd2s=d2s.__main__:cli',
         ],
     },
     classifiers=[

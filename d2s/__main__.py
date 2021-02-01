@@ -1,184 +1,54 @@
 import os
+import sys
 import stat
-from pathlib import Path
-import pkg_resources
 import shutil
 import click
 import datetime
-import dotenv 
 
-from rdflib import Graph, plugin, Literal, RDF, URIRef, Namespace
-from rdflib.namespace import RDFS, XSD, DC, DCTERMS, VOID
-from rdflib.serializer import Serializer
+# from rdflib import Graph, plugin, Literal, RDF, URIRef, Namespace
+# from rdflib.namespace import RDFS, XSD, DC, DCTERMS, VOID
+# from rdflib.serializer import Serializer
 
 from d2s.generate_metadata import create_dataset_prompt, generate_hcls_from_sparql
+from d2s.utils import new_dataset, get_config, init_folder
 
 
 @click.group()
 def cli():
+    """d2s Command Line Interface"""
     pass
 
-
-### Init project and config
-
+# @click.argument('projectname', nargs=1)
+# @click.pass_context
+# def init(ctx, projectname):
 @cli.command()
-@click.argument('projectname', nargs=1)
-@click.pass_context
-def init(ctx, projectname):
+def init():
     """Initialize a project in the provided folder name"""
-    if os.path.exists(projectname):
-        click.echo(click.style('[d2s]', bold=True) + ' The folder ' + click.style(projectname, bold=True) 
-            + ' already exists.', err=True)
-        return
-    else:
-        os.makedirs(projectname, exist_ok=False)
-
-    # click.echo(click.style('[d2s] ', bold=True) + 'You can generate a new project on GitHub using the provided template:')
-    # click.secho('https://github.com/MaastrichtU-IDS/d2s-project-template/generate', bold=True)
-    # click.echo(click.style('[d2s] ', bold=True) + 'Or use the default template repository.')
-    d2s_repository_url = click.prompt(click.style('[?]', bold=True) + ' Enter the URL of the d2s git repository to clone in the current directory. Default', default='https://github.com/MaastrichtU-IDS/d2s-project-template.git')
-    
-    # click.echo(click.style('[d2s] ', bold=True) + 'Cloning the repository in ' + projectname + '...')
-
-    # os.system('git clone --quiet --recursive ' + d2s_repository_url + ' ' + projectname)
-
-    os.chdir(projectname)
-    os.system('git init')
-    # TODO: add if not present: readme, docker-compose file, .env
-    # TODO: ask user about some kg infos, description, SPARQL endpoint...
-
-    # Create the .env file
-    f = open(".env", "w").close
-    dotenv.set_key('.env', 'URL', d2s_repository_url, quote_mode="noquote")
-    dotenv.set_key('.env', "PATH", os.getcwd(), quote_mode="noquote")
-    
-    click.echo(click.style('[d2s]', bold=True) + ' Git repository cloned.')
-    if not os.path.exists('./d2s-core'):
-        os.system('git submodule add --recursive https://github.com/MaastrichtU-IDS/d2s-core.git')
-
-    # Create workspace directories and chmod 777
-    listToCreate = ["input", "output", "import", "output/tmp-outdir", "resources",
-        "logs", "dumps/rdf/releases/1", 'dumps/hdt', 'graphdb', 'virtuoso', 'tmp-virtuoso']
-    click.echo(click.style('[d2s]', bold=True) + ' Creating following folders in workspace: ' + ", ".join(listToCreate))
-    for fileToCreate in listToCreate:
-        os.makedirs('workspace/' + fileToCreate, exist_ok=True)
-    shutil.copy('d2s-core/support/graphdb-repo-config.ttl', 'workspace/graphdb/preload-config.ttl')
-    chmod777('workspace')
-
-    click.echo()
-    user_home_dir = str(Path.home())
-    # Copy GraphDB zip file to the right folder in d2s-core
-    click.echo(click.style('[d2s]', bold=True) + ' The GraphDB triplestore needs to be downloaded for licensing reason.\n'
-        + 'Go to ' 
-        + click.style('https://ontotext.com/products/graphdb/', bold=True) 
-        + ' and provide your email to receive the URL to download the ' + click.style('GraphDB latest version standalone zip', bold=True))
-
-    
-    graphdb_version = click.prompt(click.style('[?]', bold=True) + ' Enter the version of the GraphDB triplestore used. Default', default='9.3.0')
-    dotenv.set_key('.env', 'GRAPHDB_VERSION', graphdb_version, quote_mode="noquote")
-    
-    graphdb_heap_size = click.prompt(click.style('[?]', bold=True) + ' Enter the Java heap size allocated to GraphDB. Default', default='2G')
-    dotenv.set_key('.env', 'GRAPHDB_HEAP_SIZE', graphdb_heap_size, quote_mode="noquote")
-    
-    graphdb_path = click.prompt(click.style('[?]', bold=True) + ' Enter the path to the GraphDB ' + graphdb_version + ' zip file that will be used to build the Docker image. Default', default=user_home_dir + '/graphdb-free-' + graphdb_version + '-dist.zip')
-    # Get GraphDB installation file
-    if os.path.exists(graphdb_path):
-        shutil.copy(graphdb_path, 'd2s-core/support/graphdb')
-        click.echo(click.style('[d2s]', bold=True) + ' GraphDB installation file copied imported successfully!')
-    else:
-        click.echo(click.style('[d2s]', bold=True) + ' GraphDB installation file not found. Copy the zip file in d2s-core/support/graphdb after download.')
-
-    click.echo()
-    click.echo(click.style('[d2s]', bold=True) + ' Your d2s project has been created!')
-    click.echo(click.style('[d2s]', bold=True) + ' The project configuration is stored in the ' 
-        + click.style('.env', bold=True) + ' file')
-    click.secho('cd ' + projectname, bold=True)
-    click.secho('d2s start demo', bold=True)
-    # click.secho('d2s update', bold=True)
-    # Execute update directly:
-    # click.echo(click.style('[d2s]', bold=True) + ' Running ' + click.style('d2s update', bold=True) + '...')
-    # ctx.invoke(update)
+    init_folder()
 
 @cli.command()
 def config():
     """Show the project configuration"""
-    click.echo(click.style('[d2s]', bold=True) + ' Configuration is stored in the ' 
-        + click.style('.env', bold=True) + ' file:')
-    click.echo()
-    with open('.env') as f:
-        click.echo(f.read())
+    get_config()
 
-
-### Create a folder to map a new dataset
 
 @cli.group()
 def new():
-    """Generate new datasets mappings"""
+    """Generate new datasets mappings files"""
     pass
 
 @new.command()
 def dataset():
     """Create a new folder to map data from a template"""
-    # Automatically fill data about the workflow (git repo URL of mappings)
-    g, dataset_metadata = create_dataset_prompt()
+    new_dataset()
 
-    dataset_id = dataset_metadata['dataset_id']
-    dataset_folder_path = 'datasets/' + dataset_id
-
-    # Copy template folder with example mappings
-    shutil.copytree(pkg_resources.resource_filename('d2s', 'templates/dataset'), dataset_folder_path)
-    os.rename(dataset_folder_path + '/process-dataset.ipynb', dataset_folder_path + '/process-' + dataset_id + '.ipynb')
-    # for filename in os.listdir(pkg_resources.resource_filename('d2s', 'templates/dataset')):
-    #     with open(pkg_resources.resource_filename('d2s', 'queries/' + filename), 'r') as f:
-
-    # Store metadata file
-    os.makedirs(dataset_folder_path + '/metadata', exist_ok=True)
-    g.serialize(destination=dataset_folder_path + '/metadata/' + dataset_id + '-metadata.ttl', format='turtle')
-    print("Metadata stored to " + dataset_folder_path + '/metadata/' + dataset_id + '-metadata.ttl' + ' 📝')
-
-    # Replace metadata in all files from template for the new dataset (mainly for the dataset_id)
-    for dname, dirs, files in os.walk(dataset_folder_path):
-        for fname in files:
-            fpath = os.path.join(dname, fname)
-            print('fpath to replace metadata')
-            print(fpath)
-            with open(fpath) as f:
-                file_content = f.read()
-            for metadata_id, metadata_value in dataset_metadata.items():
-                print('metadata')
-                print(metadata_id)
-                print(metadata_value)
-                file_content = file_content.replace("$" + metadata_id, metadata_value)
-            with open(fpath, "w") as f:
-                f.write(file_content)
-
-    # Copy example GitHub Actions workflow file, and replace dataset_id in it
-    workflow_filepath = '.github/workflows/process-' + dataset_id + '.yml'
-    shutil.copyfile(pkg_resources.resource_filename('d2s', 'templates/process-dataset.yml'), workflow_filepath)
-    with open(workflow_filepath) as f:
-        file_content = f.read()
-        file_content = file_content.replace("$dataset_id", dataset_id)
-    with open(workflow_filepath, "w") as f:
-        f.write(file_content)
-
-    click.echo()
-    click.echo(click.style('[d2s]', bold=True) + ' Metadata, example mapping files and scripts for the ' 
-        + click.style(dataset_id + ' dataset', bold=True) 
-        + ' has been generated')
-    click.echo(click.style('[d2s]', bold=True) + ' 📝 Start edit them in ' + click.style('datasets/' + dataset_id, bold=True))
-    click.echo(click.style('[d2s]', bold=True) + ' 🐈 GitHub Actions workflow file in ' + click.style(workflow_filepath, bold=True))
-
-
-### Generate HCLS metadata using generate_metadata.py 
 
 @cli.group()
 def metadata():
-    """Generate metadata for RDF datasets"""
+    """Generate HCLS descriptive metadata for RDF datasets"""
     pass
 
-# From fair-metadata
-@metadata.command(help='Create metadata for a dataset in the terminal prompt')
-# @click.argument('first_name')
+@metadata.command(help='Create HCLS metadata for a dataset in the terminal prompt (summary, version and distributions)')
 @click.option(
     '-o', '--output', default='', 
     help='Write RDF to output file')
@@ -186,7 +56,7 @@ def create(output):
     create_dataset_prompt(output)
 
 
-@metadata.command(help='Generate descriptive metadata (about types and relations) for a SPARQL endpoint')
+@metadata.command(help='Generate HCLS descriptive metadata (about types and relations) for the graphs in a SPARQL endpoint')
 @click.argument('sparql_endpoint')
 @click.option(
     '-u', '--dataset-uri', default='https://w3id.org/d2s/distribution/default', 
@@ -201,6 +71,7 @@ def analyze(sparql_endpoint, dataset_uri, output):
         print("Metadata stored to " + output + ' 📝')
     else:
         print(g.serialize(format='turtle'))
+
 
 
 ### Commands to run services and workflows:
@@ -597,3 +468,6 @@ def run(workflow, dataset, get_mappings, detached):
     # result = run_workflow(inp=dataset_config_file.read())  # the config yml
     # print('Running!')
     # print(result)
+
+if __name__ == "__main__":
+    sys.exit(cli())

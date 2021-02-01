@@ -16,7 +16,7 @@ map:om_0 a rr:ObjectMap;
     rr:constant "https://w3id.org/d2s/Country";
     rr:termType rr:IRI.
 map:om_1 a rr:ObjectMap;
-    rml:reference "Country";
+    rml:reference "Country Name";
     rr:termType rr:Literal.
 map:om_2 a <http://semweb.mmlab.be/ns/fnml#FunctionTermMap>;
     rr:termType rr:Literal;
@@ -61,5 +61,5 @@ map:pomexec_0 rr:predicateMap map:pmexec_0;
 map:s_0 a rr:SubjectMap;
     rr:template "https://w3id.org/d2s/country/{ISO}".
 map:source_0 a rml:LogicalSource;
-    rml:source "$dataset_id.csv";
+    rml:source "output/$dataset_id.csv";
     rml:referenceFormulation ql:CSV.

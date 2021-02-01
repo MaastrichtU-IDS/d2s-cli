@@ -6,7 +6,7 @@ Check the GitHub Actions workflow file to run this process: `.github/workflows/r
 
 Requirements: Java, `wget` (download manually on Windows)
 
-1. Run bash script to download $dataset_id tsv file in this folder, and convert it to csv:
+1. Run bash script to download `$dataset_id` tsv file in this folder, and convert it to csv:
 
 ```bash
 scripts/download.sh
@@ -25,7 +25,7 @@ wget -O rmlmapper.jar https://github.com/RMLio/rmlmapper-java/releases/download/
 5. Run the RML mapper to generate RDF:
 
 ```bash
-java -jar rmlmapper.jar -m mapping/map-$dataset_id.rml.ttl -o output-$dataset_id.ttl
+java -jar rmlmapper.jar -m mapping/map-$dataset_id.rml.ttl -o output/$dataset_id.ttl
 ```
 
 This will output nquads, the graph is defined in the YARRRML mappings using `g: http://bio2rdf.org`
