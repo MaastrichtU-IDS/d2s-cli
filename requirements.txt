@@ -2,3 +2,4 @@ Click
 SPARQLWrapper
 rdflib
 python-dotenv
+gitpython

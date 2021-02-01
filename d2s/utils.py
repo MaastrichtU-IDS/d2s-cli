@@ -4,29 +4,37 @@ import pkg_resources
 import shutil
 import click
 import dotenv 
+import git
 
 from d2s.generate_metadata import create_dataset_prompt
 
+def get_git_path(path="."):
+    """Return path of the root folder of the git repo the user is in"""
+    git_repo = git.Repo(path, search_parent_directories=True)
+    git_root = git_repo.working_tree_dir
+    return git_root
 
 # Init project and config
 def init_folder():
     """Initialize a project in the current folder"""
     d2s_repository_url = click.prompt(click.style('[?]', bold=True) + ' Enter the Git repository URL for this projects', default="")
 
-    # Create the .env file
-    f = open(".env", "w").close
-
     # Clone git repo if URL provided
     if os.path.exists('.git'):
         click.echo(click.style('[d2s]', bold=True) + ' Git repository already initialized.')
     elif d2s_repository_url:
         click.echo(click.style('[d2s] ', bold=True) + 'Cloning the repository in the current folder...')
-        os.system('git clone --quiet --recursive ' + d2s_repository_url + ' .')
+        git_repo = git.Repo.clone_from(d2s_repository_url, '.')
+        git_repo.git.submodule('update', '--init')
         click.echo(click.style('[d2s]', bold=True) + ' Git repository cloned.')
-        dotenv.set_key('.env', 'GIT_URL', d2s_repository_url, quote_mode="noquote")
     else:
-        os.system('git init')
+        click.echo(click.style('[d2s] ', bold=True) + 'Initializing a bare git repository')
+        git.Repo.init('.git', bare=True)
 
+    # Create the .env file
+    f = open(".env", "w").close
+    if d2s_repository_url:
+        dotenv.set_key('.env', 'GIT_URL', d2s_repository_url, quote_mode="noquote")
     dotenv.set_key('.env', 'VIRTUOSO_PASSWORD', 'dba', quote_mode="noquote")
     # dotenv.set_key('.env', "PATH", os.getcwd(), quote_mode="noquote")
     
@@ -54,12 +62,14 @@ def init_folder():
 
 def new_dataset():
     """Create a folder to map a new dataset"""
-    # Ask dataset metadata to the user and generate rdflib graph
-    g, dataset_metadata = create_dataset_prompt()
-
+    # Go to the root of the git repo
+    os.chdir(get_git_path())
     # Make sure datasets and .github/workflows folder have been created
     os.makedirs('datasets', exist_ok=True)
     os.makedirs('.github/workflows', exist_ok=True)
+
+    # Ask dataset metadata to the user and generate rdflib graph
+    g, dataset_metadata = create_dataset_prompt()
 
     dataset_id = dataset_metadata['dataset_id']
     dataset_folder_path = 'datasets/' + dataset_id
