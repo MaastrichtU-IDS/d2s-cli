@@ -11,6 +11,7 @@ import datetime
 
 from d2s.generate_metadata import create_dataset_prompt, generate_hcls_from_sparql
 from d2s.utils import new_dataset, get_config, init_folder
+from d2s.sparql_operations import sparql_insert_files
 
 
 @click.group()
@@ -72,6 +73,28 @@ def analyze(sparql_endpoint, dataset_uri, output):
     else:
         print(g.serialize(format='turtle'))
 
+@cli.group()
+def sparql():
+    """Execute operations on SPARQL endpoints (e.g. execute SPARQL query files)"""
+    pass
+
+@sparql.command(help='Execute SPARQL queries in provided files on the provided SPARQL endpoint')
+@click.argument('file_pattern')
+@click.argument('sparql_endpoint')
+@click.option(
+    '-u', '--username', default='dba', 
+    help='Username for the SPARQL endpoint')
+@click.option(
+    '-p', '--password', default='dba', 
+    help='Password for the SPARQL endpoint')
+@click.option(
+    '-g', '--graph', default='', 
+    help='Graph where to load the RDF')
+@click.option(
+    '--chunks-size', default='1000', 
+    help='Number of statements per chunks inserted. Use -1 to load all in one shot.')
+def insert(file_pattern, sparql_endpoint, username, password, graph, chunks_size):
+    sparql_insert_files(file_pattern, sparql_endpoint, username, password, graph, chunks_size)
 
 
 ### Commands to run services and workflows:
