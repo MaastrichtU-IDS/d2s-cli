@@ -46,6 +46,8 @@ def insert_file_in_sparql_endpoint(file_path, sparql_endpoint, username, passwor
         file_format = 'ttl'
     elif file_extension in ['.nt']:
         file_format = 'nt'
+    elif file_extension in ['.nq']:
+        file_format = 'nquads'
     g = Graph()
     g.parse(file_path, format=file_format)
     insert_results = insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, graph_uri, chunks_size)
@@ -68,6 +70,7 @@ def insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, grap
         graph_end = ' } '
 
     load_triples = g.serialize(format='nt').decode('utf-8')
+    print(load_triples)
     print('Insert ' + str(len(load_triples.split("\n"))) + ' statements per chunks of ' + str(chunks_size) + ' statements')
     chunks_size = int(chunks_size)
     if chunks_size < 5:
@@ -77,6 +80,7 @@ def insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, grap
         list_of_strings = ['\n'.join(load_triples.split("\n")[i:i + chunks_size]) for i in range(0, len(load_triples.split("\n")), chunks_size)]
 
     for rdf_chunk in list_of_strings:
+        print(rdf_chunk)
         try:
             query = """INSERT DATA {{ 
             {graph_start}

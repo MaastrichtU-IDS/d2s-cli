@@ -1,6 +1,6 @@
 ## Workflow
 
-Check the GitHub Actions workflow file to run this process: `.github/workflows/rml-map-$dataset_id.yml`
+Check the GitHub Actions workflow file to run this process: `.github/workflows/process-$dataset_id.yml`
 
 ## Run locally
 

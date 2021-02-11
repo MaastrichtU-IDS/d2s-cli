@@ -65,8 +65,11 @@ def create(output):
 @click.option(
     '-o', '--output', default='', 
     help='Write RDF to output file')
-def analyze(sparql_endpoint, dataset_uri, output):
-    g = generate_hcls_from_sparql(sparql_endpoint, dataset_uri)
+@click.option(
+    '-g', '--graph', default='', 
+    help='Compute metadata only for specified graph')
+def analyze(sparql_endpoint, dataset_uri, output, graph):
+    g = generate_hcls_from_sparql(sparql_endpoint, dataset_uri, graph)
     if output:
         g.serialize(destination=output, format='turtle')
         print("Metadata stored to " + output + ' 📝')

@@ -2,7 +2,7 @@ import os
 import click
 import pathlib
 import urllib.parse
-from datetime import date
+from datetime import date, datetime
 import pkg_resources
 from rdflib import Graph, plugin, Literal, RDF, XSD, URIRef, Namespace
 from rdflib.namespace import RDFS, DC, DCTERMS, VOID
@@ -141,7 +141,7 @@ def create_dataset(metadata):
     return g
 
 
-def generate_hcls_from_sparql(sparql_endpoint, rdf_distribution_uri, g=Graph()):
+def generate_hcls_from_sparql(sparql_endpoint, rdf_distribution_uri, graph, g=Graph()):
     """Query the provided SPARQL endpoint to compute HCLS metadata"""
     sparql = SPARQLWrapper(sparql_endpoint)
     root = pathlib.Path(__file__).parent.resolve()
@@ -160,18 +160,22 @@ PREFIX dcat: <http://www.w3.org/ns/dcat#>
 PREFIX void: <http://rdfs.org/ns/void#>
 PREFIX void-ext: <http://ldf.fi/void-ext#>\n"""
 
-    query_select_all_graphs = 'SELECT DISTINCT ?graph WHERE { GRAPH ?graph {?s ?p ?o} }'
-    sparql.setQuery(query_select_all_graphs)
-    sparql.setReturnFormat(JSON)
-    results = sparql.query().convert()
-    # print('Get all graphs query Results:')
-    # print(results)
-    select_all_graphs_results = results["results"]["bindings"]
+    if not graph:
+        query_select_all_graphs = 'SELECT DISTINCT ?graph WHERE { GRAPH ?graph {?s ?p ?o} }'
+        sparql.setQuery(query_select_all_graphs)
+        sparql.setReturnFormat(JSON)
+        results = sparql.query().convert()
+        # print('Get all graphs query Results:')
+        # print(results)
+        select_all_graphs_results = results["results"]["bindings"]
+    else: 
+        pass
+        # TODO: just query the single provided graph
 
     # Compute HCLS metadata per graph
     for graph_row in select_all_graphs_results:
         graph = graph_row['graph']['value']
-        print('Computing HCLS metadata for graph ' + graph)
+        print('[' + str(datetime.now()) + '] Computing HCLS metadata for graph ' + graph)
         for filename in os.listdir(pkg_resources.resource_filename('d2s', 'queries')):
             with open(pkg_resources.resource_filename('d2s', 'queries/' + filename), 'r') as f:
                 if (graph):

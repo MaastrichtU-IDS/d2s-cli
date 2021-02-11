@@ -1,0 +1,12 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+# For Bio2RDF statistics
+# So we can capture dataset2dataset links
+SELECT ?ns (count(*) AS ?c)
+FROM <http://bio2rdf.org/drugbank_resource:bio2rdf.dataset.drugbank.R5>
+{
+  ?s <http://bio2rdf.org/bio2rdf_vocabulary:namespace> ?ns .
+} GROUP BY ?ns 
+ORDER BY DESC(?c)
+
