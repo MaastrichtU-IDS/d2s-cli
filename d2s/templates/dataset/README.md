@@ -6,7 +6,7 @@ Check the GitHub Actions workflow file to run this process: `.github/workflows/p
 
 Requirements: Java, `wget` (download manually on Windows)
 
-1. Run bash script to download `$dataset_id` tsv file in this folder, and convert it to csv:
+* Run bash script to download `$dataset_id` tsv file in this folder, and convert it to csv:
 
 ```bash
 scripts/download.sh
@@ -14,15 +14,21 @@ scripts/download.sh
 
 > You can also manually download the file.
 
-2. Use [YARRRML Matey editor](https://rml.io/yarrrml/matey/) to test your YARRRML mappings, and convert them in RML mappings
-3. Store your RML mappings in the `.rml.ttl` file, and the YARRML mappings in the `.yarrr.yml` file
-4. Download the [`rmlmapper.jar`](https://github.com/RMLio/rmlmapper-java/releases) in your home folder to execute the RML mappings easily from anywhere:
+* Run Python preprocessing scripts to prepare data for the RML mapper (replace, generate ID column, etc):
+
+```bash
+python3 scripts/preprocessing.py
+```
+
+* Use [YARRRML Matey editor](https://rml.io/yarrrml/matey/) to test your YARRRML mappings, and convert them in RML mappings
+* Store your RML mappings in the `.rml.ttl` file, and the YARRML mappings in the `.yarrr.yml` file
+* Download the [`rmlmapper.jar`](https://github.com/RMLio/rmlmapper-java/releases) in your home folder to execute the RML mappings easily from anywhere:
 
 ```bash
 wget -O ~/rmlmapper.jar https://github.com/RMLio/rmlmapper-java/releases/download/v4.9.1/rmlmapper-4.9.1.jar
 ```
 
-5. Run the RML mapper to generate RDF:
+* Run the RML mapper to generate RDF:
 
 ```bash
 java -jar ~/rmlmapper.jar -m mapping/mappings.rml.ttl -o output/$dataset_id.ttl
