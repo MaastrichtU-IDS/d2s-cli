@@ -16,7 +16,7 @@ CONSTRUCT {
   ?otype rdfs:label ?olabel .
 } WHERE { 
   <?_graph_start>
-    SELECT (COUNT(DISTINCT ?s) AS ?scount) ?stype ?p ?otype  (COUNT(DISTINCT ?o) AS ?ocount) ?slabel ?olabel
+    SELECT (COUNT(DISTINCT ?s) AS ?scount) ?stype ?p ?otype  (COUNT(DISTINCT ?o) AS ?ocount)
     { 
     ?s ?p ?o . 
     ?s a ?stype .
