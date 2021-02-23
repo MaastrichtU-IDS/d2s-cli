@@ -53,7 +53,7 @@ def insert_file_in_sparql_endpoint(file_path, sparql_endpoint, username, passwor
     insert_results = insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, graph_uri, chunks_size)
     return insert_results
 
-def insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, graph_uri=None, chunks_size=1000):
+def insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, graph_uri=None, chunks_size=1000, operation='INSERT'):
     """Insert rdflib graph in a Update SPARQL endpoint using SPARQLWrapper
     :param g: rdflib graph to insert
     :return: SPARQL update query result
@@ -61,7 +61,7 @@ def insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, grap
     # print(g.serialize(format='nt').decode('utf-8'))
     sparql = SPARQLWrapper(sparql_endpoint)
     sparql.setMethod(POST)
-    # sparql.setHTTPAuth(BASIC)
+    # sparql.setHTTPAuth(BASIC) or DIGEST
     sparql.setCredentials(username, password)
     graph_start = ''
     graph_end = ''
@@ -71,7 +71,7 @@ def insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, grap
 
     load_triples = g.serialize(format='nt').decode('utf-8')
     print(load_triples)
-    print('Insert ' + str(len(load_triples.split("\n"))) + ' statements per chunks of ' + str(chunks_size) + ' statements')
+    print(operation + ' ' + str(len(load_triples.split("\n"))) + ' statements per chunks of ' + str(chunks_size) + ' statements')
     chunks_size = int(chunks_size)
     if chunks_size < 5:
         # Load all in one shot
@@ -82,19 +82,19 @@ def insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, grap
     for rdf_chunk in list_of_strings:
         print(rdf_chunk)
         try:
-            query = """INSERT DATA {{ 
+            query = """{operation} DATA {{ 
             {graph_start}
             {ntriples}
             {graph_end}
             }}
-            """.format(ntriples=rdf_chunk, graph_start=graph_start, graph_end=graph_end)
+            """.format(ntriples=rdf_chunk, graph_start=graph_start, graph_end=graph_end, operation=operation)
             sparql.setQuery(query)
             query_results = sparql.query()
         except:
             print('INSERT DATA failed, trying INSERT')
             # If blank nodes, we need to do INSERT for Virtuoso
             # TODO: split ntriples in chunk to load less than 10000 lines
-            query = """INSERT {{ 
+            query = """{operation} {{ 
             {graph_start}
             {ntriples}
             {graph_end}
@@ -102,5 +102,52 @@ def insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, grap
             """.format(ntriples=rdf_chunk, graph_start=graph_start, graph_end=graph_end)
             sparql.setQuery(query)
             query_results = sparql.query()
-        print('Done')
+        # print('Done')
+        print(query_results.response.read())
     
+def sparql_update_instance(subject_uri, new_graph, sparql_endpoint, username, password, depth=1, graph_uri=None):
+    """Run a construct query to get a RDF graph with all triples for the subject_uri
+    Use rdflib to compare this graph to the new graph we just generated
+    If diff then delete old instance statements and insert new_graph
+    """
+    # https://rdflib.readthedocs.io/en/4.0/_modules/rdflib/compare.html
+    from rdflib.compare import IsomorphicGraph, graph_diff
+
+    construct_array = []
+    where_array = []
+    current_depth = 0
+    while current_depth <= depth:
+        pattern = '?o' + str(depth) + ' ?p' + str(depth) + ' ?o' + str(depth+1) + ' . '
+        construct_array.append(pattern)
+        where_array.append('OPTIONAL{' + pattern + '} ')
+        
+    construct_query = "CONSTRUCT { ?s ?p ?o1 . " + ' '.join(construct_array) + " } WHERE { ?s ?p ?o . " + ' '.join(where_array) + " FILTER(?s = <" + subject_uri + ">)"
+    # CONSTRUCT { ?s ?p ?o1 . ?o1 ?p1 ?o2 . } WHERE { ?s ?p ?o . OPTIONAL{?o1 ?p1 ?o2 .} FILTER... }
+    
+    new_graph.setReturnFormat(TURTLE)
+    results = new_graph.query(construct_query).convert().decode('utf-8')
+    new_g = IsomorphicGraph()
+    new_g.parse(data=results, format=TURTLE)
+    
+    old_g = IsomorphicGraph()
+    sparql = SPARQLWrapper(sparql_endpoint)
+    # TODO: Improve construct to properly include all files statements?
+    # Here getting 1 depth (we could make depth to delete a param)
+
+    # sparql.setQuery(construct_query)
+    # CONSTRUCT query to Nanopubs SPARQL endpoint
+    sparql.setReturnFormat(TURTLE)
+    results = sparql.query(construct_query).convert().decode('utf-8')
+    old_g.parse(data=results, format="turtle")
+    # Write RDF to file
+    # with open(self.get_dir(output_file), 'w') as f:
+    #     f.write(results)
+
+    if new_g == old_g:
+        return 'uptodate'
+    else:
+        in_both, in_first, in_second = graph_diff(new_g, old_g)
+        # Delete old graph and insert new graph
+        insert_graph_in_sparql_endpoint(old_g, sparql_endpoint, username, password, None, 1000, 'DELETE')
+        insert_graph_in_sparql_endpoint(new_graph, sparql_endpoint, username, password, None, 1000, 'INSERT')
+        return { 'in_both': in_both, 'in_first': in_first, 'in_second': in_second }
