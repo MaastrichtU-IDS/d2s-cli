@@ -3,3 +3,4 @@ SPARQLWrapper
 rdflib
 python-dotenv
 gitpython
+requests

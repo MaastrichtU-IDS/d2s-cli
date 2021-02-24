@@ -11,7 +11,7 @@ import datetime
 
 from d2s.generate_metadata import create_dataset_prompt, generate_hcls_from_sparql
 from d2s.utils import new_dataset, get_config, init_folder
-from d2s.sparql_operations import sparql_insert_files
+from d2s.sparql_operations import sparql_insert_files, java_upload_files
 
 
 @click.group()
@@ -98,6 +98,21 @@ def sparql():
     help='Number of statements per chunks inserted. Use -1 to load all in one shot.')
 def insert(file_pattern, sparql_endpoint, username, password, graph, chunks_size):
     sparql_insert_files(file_pattern, sparql_endpoint, username, password, graph, chunks_size)
+
+@sparql.command(help='Upload RDF files to a SPARQL endpoint using Java RDF4J (java installed required)')
+@click.argument('file_pattern')
+@click.argument('sparql_endpoint')
+@click.option(
+    '-u', '--username', default='dba', 
+    help='Username for the SPARQL endpoint')
+@click.option(
+    '-p', '--password', default='dba', 
+    help='Password for the SPARQL endpoint')
+@click.option(
+    '-g', '--graph', default='', 
+    help='Graph where to load the RDF')
+def upload(file_pattern, sparql_endpoint, username, password, graph):
+    java_upload_files(file_pattern, sparql_endpoint, username, password, graph)
 
 
 ### Commands to run services and workflows:

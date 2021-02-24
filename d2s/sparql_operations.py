@@ -5,6 +5,7 @@ from rdflib import Graph, plugin, Literal, RDF, XSD, URIRef, Namespace
 from rdflib.namespace import RDFS, DC, DCTERMS, VOID
 from rdflib.serializer import Serializer
 from SPARQLWrapper import SPARQLWrapper, TURTLE, POST, JSON, JSONLD
+from d2s.utils import init_d2s_java, get_base_dir
 
 # DATASET_NAMESPACE = 'https://w3id.org/d2s/dataset/'
 
@@ -151,3 +152,14 @@ def sparql_update_instance(subject_uri, new_graph, sparql_endpoint, username, pa
         insert_graph_in_sparql_endpoint(old_g, sparql_endpoint, username, password, None, 1000, 'DELETE')
         insert_graph_in_sparql_endpoint(new_graph, sparql_endpoint, username, password, None, 1000, 'INSERT')
         return { 'in_both': in_both, 'in_first': in_first, 'in_second': in_second }
+
+def java_upload_files(file_pattern, sparql_endpoint, username, password, graph=None):
+    """Upload RDF files to a SPARQL endpoint using d2s-sparql-operations Java RDF4J
+    Java installed required"""
+    init_d2s_java('sparql-operations')
+    graph_str = ''
+    if graph:
+        graph_str = ' -g ' + graph
+    os.system('java -jar ' + get_base_dir('sparql-operations.jar') 
+        + ' -o upload -i "' + file_pattern + '" -e ' + sparql_endpoint
+        + ' -u ' + username + ' -p ' + password + graph_str )
