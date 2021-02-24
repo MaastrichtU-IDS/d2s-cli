@@ -132,11 +132,7 @@ def sparql_update_instance(subject_uri, new_graph, sparql_endpoint, username, pa
     
     old_g = IsomorphicGraph()
     sparql = SPARQLWrapper(sparql_endpoint)
-    # TODO: Improve construct to properly include all files statements?
-    # Here getting 1 depth (we could make depth to delete a param)
-
     # sparql.setQuery(construct_query)
-    # CONSTRUCT query to Nanopubs SPARQL endpoint
     sparql.setReturnFormat(TURTLE)
     results = sparql.query(construct_query).convert().decode('utf-8')
     old_g.parse(data=results, format="turtle")
@@ -145,12 +141,14 @@ def sparql_update_instance(subject_uri, new_graph, sparql_endpoint, username, pa
     #     f.write(results)
 
     if new_g == old_g:
+        print('Graph already up to date for file ' + str(subject_uri))
         return 'uptodate'
     else:
+        print('Update graph for file ' + str(subject_uri))
         in_both, in_first, in_second = graph_diff(new_g, old_g)
         # Delete old graph and insert new graph
-        insert_graph_in_sparql_endpoint(old_g, sparql_endpoint, username, password, None, 1000, 'DELETE')
-        insert_graph_in_sparql_endpoint(new_graph, sparql_endpoint, username, password, None, 1000, 'INSERT')
+        insert_graph_in_sparql_endpoint(old_g, sparql_endpoint, username, password, graph_uri, 4500, 'DELETE')
+        insert_graph_in_sparql_endpoint(new_graph, sparql_endpoint, username, password, graph_uri, 4500, 'INSERT')
         return { 'in_both': in_both, 'in_first': in_first, 'in_second': in_second }
 
 def java_upload_files(file_pattern, sparql_endpoint, username, password, graph=None):
