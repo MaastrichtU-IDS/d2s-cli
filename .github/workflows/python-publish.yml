@@ -38,7 +38,7 @@ jobs:
       run: |
         python setup.py pytest
   
-  deploy:
+  publish:
     # if: startsWith(github.event.ref, 'refs/tags')
     if: github.event_name == 'release'
     needs: test
