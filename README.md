@@ -12,7 +12,7 @@ Requirements:
 
 * [Python 3.6+](https://d2s.semanticscience.org/docs/d2s-installation#install-pip) (built using [python:3.6](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/publish.Dockerfile))
 * [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-* Optional: [docker and docker-compose](https://docs.docker.com/compose/install/)
+* Optional: Java 11+ to use `d2s sparql upload`
 * Optional: [`oc` command line tool](https://maastrichtu-ids.github.io/dsri-documentation/docs/openshift-install) for deploying to the [DSRI OpenShift cluster](https://maastrichtu-ids.github.io/dsri-documentation/) (for Maastricht University academics and students)
 
 ### Install from pypi

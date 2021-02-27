@@ -10,7 +10,7 @@ import datetime
 # from rdflib.serializer import Serializer
 
 from d2s.generate_metadata import create_dataset_prompt, generate_hcls_from_sparql
-from d2s.utils import new_dataset, get_config, init_folder
+from d2s.utils import new_dataset, get_config, init_folder, get_base_dir, init_d2s_java
 from d2s.sparql_operations import sparql_insert_files, java_upload_files
 
 
@@ -233,8 +233,12 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
                 # Run locally
                 if mapper:
                     # Run rmlmapper docker image
+                    init_d2s_java('rmlmapper')
                     output_filename = 'rmlmapper-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
-                    rml_cmd = 'docker run ' + detached_arg + ' -v ' + os.getcwd() + '/workspace:/mnt/workspace -v ' + os.getcwd() + '/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename
+                    rml_cmd = 'java -jar ' + get_base_dir('sparql-operations.jar') + ' -m ' + dataset + '/mapping/' + mapping_filename + ' -o import/' + output_filename
+                    # rml_cmd = 'docker run ' + detached_arg + ' -v ' + os.getcwd() + '/workspace:/mnt/workspace -v ' + os.getcwd() + '/datasets:/mnt/datasets umids/rmlmapper:4.7.0 -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename
+
+                    get_base_dir('sparql-operations.jar')
                 else:
                     # Run RMLStreamer in running Apache Flink
                     output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
