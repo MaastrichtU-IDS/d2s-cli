@@ -1,5 +1,5 @@
 from click.testing import CliRunner
-import d2s.cli as d2s
+import d2s.__main__ as d2s
 import os.path
 
 def test_d2s():
