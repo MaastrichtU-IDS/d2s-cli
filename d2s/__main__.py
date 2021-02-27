@@ -163,161 +163,6 @@ def chmod777(path):
             except:
                 click.echo(click.style('[d2s]', bold=True) + ' Issue while updating permissions for ' + os.path.join(dirpath, filename))
 
-# TODO: remove d2s-core references
-@cli.command()
-@click.argument('services', nargs=-1, autocompletion=get_services_list)
-@click.option(
-    '--images/--no-images', default=False, 
-    help='Update files permissions (Docker images by default)')
-@click.option(
-    '--permissions/--no-permissions', default=False, 
-    help='Update files permissions (Docker images by default)')
-@click.option(
-    '--submodules/--no-submodule', default=False, 
-    help='Update the Git submodules (d2s-core)')
-def update(services, images, permissions, submodules):
-    """Update d2s (images, permissions, submodules)"""
-    if submodules:
-        print("Update submodules: d2s-core")
-        project_dir = os.getcwd()
-        os.chdir('d2s-core')
-        os.system('git checkout master')
-        os.system('git pull')
-        os.chdir(project_dir)
-    if permissions:
-        listToUpdate = ["input", "output", "import", "dumps", "tmp-virtuoso", "virtuoso"]
-        click.echo(click.style('[d2s]', bold=True) + ' Password might be asked to updates following folder permissions in workspace: ' + ", ".join(listToUpdate))
-        for fileToUpdate in listToUpdate:
-            chmod777('workspace/' + fileToUpdate)
-            os.makedirs('workspace/' + fileToUpdate, exist_ok=True)
-        click.echo(click.style('[d2s]', bold=True) + ' Most permissions issues can be fixed by changing the owner of the file while running as administrator')
-        click.secho('sudo chown -R ' + os.getuid() + ':' + os.getgid() + ' workspace', bold=True)
-    if images:
-        # Update Docker images (pull and build graphdb)
-        services_string = " ".join(services)
-        os.system(docker_compose_cmd + 'pull ' + services_string)
-        if not services or ("graphdb" and "graphdb-preload") in services:
-            os.system(docker_compose_cmd + 'build graphdb graphdb-preload')
-        click.echo(click.style('[d2s]', bold=True) + ' All images pulled and built.')
-        click.echo(click.style('[d2s]', bold=True) + ' You can now start services (e.g. demo services):')
-        click.secho('d2s start demo', bold=True)
-
-
-@cli.command()
-@click.argument('services', nargs=-1, autocompletion=get_services_list)
-@click.option(
-    '-d', '--deploy', default='', 
-    help='Use custom deployment config')
-def start(services, deploy):
-    """Start services"""
-    if not services or services[0] == "demo":
-        deploy = "demo"
-        services_string = "graphdb tmp-virtuoso drill"
-        click.echo(click.style('[d2s] ', bold=True) + ' Starting the services for the demo: ' + services_string)
-    else:
-        services_string = " ".join(services)
-    
-    # Run docker-compose:
-    if deploy:
-        os.system(docker_compose_cmd + '-f d2s-core/deployments/'
-        + deploy + '.yml up -d --force-recreate ' + services_string)
-    else:
-        os.system(docker_compose_cmd + 'up -d --force-recreate ' + services_string)
-
-    # Ask user to create the GraphDB test repository
-    click.echo(click.style('[d2s] ', bold=True) + services_string + ' started.')
-    if 'graphdb' in services or 'demo' in services:
-        click.echo(click.style('[d2s] ', bold=True) 
-                + 'Create repository on GraphDB: http://localhost:7200/repository')
-        # TODO: Creating GraphDB repo by posting multiform with urllib needs to be changed
-        # if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the ' 
-        # + click.style('demo repository', bold=True) + ' in GraphDB?'):
-        #     click.echo(click.style('[d2s] ', bold=True) 
-        #         + 'Creating the repository, it should take about 20s.')
-        #     time.sleep(10)
-        #     localGraphdbUrl = 'http://localhost:7200/rest/repositories'
-        #     headers = {'Content-Type': 'multipart/form-data'}
-        #     request = urllib.request.Request(localGraphdbUrl, 
-        #         open('d2s-core/support/graphdb-repo-config.ttl', 'rb'),
-        #                             headers=headers)
-        #     response = urllib.request.urlopen(request)
-        #     os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-core/support/graphdb-repo-config.ttl" -H "Content-Type: multipart/form-data"')
-    click.echo()
-    click.echo(click.style('[d2s]', bold=True) 
-        + ' You can now download data to run a first workflow:')
-    click.secho('d2s download', bold=True)
-
-
-@cli.command()
-@click.argument('services', nargs=-1, autocompletion=get_services_list)
-@click.option(
-    '--all/--no-all', default=False, 
-    help='Stop all services')
-def stop(services, all):
-    """Stop services (--all to stop all services)"""
-    if all:
-        os.system(docker_compose_cmd + 'down')
-        click.echo(click.style('[d2s] ', bold=True) + 'All services stopped.')
-    else:
-        services_string = " ".join(services)
-        os.system(docker_compose_cmd + 'stop ' + services_string)
-        click.echo(click.style('[d2s] ', bold=True) + services_string + ' stopped.')
-
-
-@cli.command()
-def services():
-    """List running services"""
-    os.system('docker ps --format="table {{.Names}}\t{{.Ports}}\t{{.Status}}\t{{.Networks}}"')
-
-
-@cli.command()
-def process_running():
-    """List running workflows processes"""
-    os.system('echo "PID    CPU  Mem Start    Command"')
-    os.system('ps ax -o pid,%cpu,%mem,start,command | grep "[c]wl-runner"')
-
-@cli.command()
-@click.argument('process', autocompletion=get_running_processes)
-def process_stop(process):
-    """Stop a running workflows process"""
-    if (process == "0"):
-        click.echo(click.style('[d2s] ', bold=True) + 'No process to stop.')
-    else:
-        os.system('kill -9 ' + process)
-        click.echo(click.style('[d2s] ', bold=True) + 'Process ' + click.style(process, bold=True) + ' stopped.')
-
-
-@cli.command()
-@click.argument('workflow', autocompletion=get_running_workflows)
-def watch(workflow):
-    """Watch running workflow"""
-    os.system('watch tail -n 30 workspace/logs/' + workflow)
-
-
-@cli.command()
-@click.argument('workflow', autocompletion=get_workflow_history)
-def log(workflow):
-    """Display logs of a workflow"""
-    os.system('less +G workspace/logs/' + workflow)
-
-@cli.command()
-@click.argument('datasets', nargs=-1, autocompletion=get_datasets_list)
-def download(datasets):
-    """Download a dataset to be processed"""
-    start_time = datetime.datetime.now()
-    for dataset in datasets:
-        os.system('docker run -it -v ' + os.getcwd() + ':/srv \
-            umids/d2s-bash-exec:latest \
-            /srv/datasets/' + dataset + '/download/download.sh workspace/input/' + dataset)
-        click.echo(click.style('[d2s] ' + dataset, bold=True) + ' dataset downloaded at ' 
-        + click.style('workspace/input/' + dataset, bold=True))
-    run_time = datetime.datetime.now() - start_time
-    click.echo(click.style('[d2s] ', bold=True) 
-            + 'Datasets downloaded in: '
-            + click.style(str(datetime.timedelta(seconds=run_time.total_seconds())), bold=True))
-    click.echo()
-    click.echo(click.style('[d2s]', bold=True) + ' You can now run the transformation workflow:')
-    click.secho('d2s run', bold=True)
 
 @cli.command()
 @click.argument('dataset', autocompletion=get_datasets_list)
@@ -417,82 +262,239 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
     # rmlstreamer_cmd = docker_compose_cmd + 'exec -d rmlstreamer /opt/flink/bin/flink run /opt/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '"'
     # print(rmlstreamer_cmd)
 
-@cli.command()
-@click.argument('workflow', autocompletion=get_workflows_list)
-@click.argument('dataset', autocompletion=get_datasets_list)
-@click.option(
-    '--get-mappings/--no-copy', default=False, 
-    help='Copy the mappings generated by the workflow to our datasets folder')
-@click.option(
-    '--detached/--watch', default=True, 
-    help='Run in detached mode or watch workflow')
-def run(workflow, dataset, get_mappings, detached):
-    """Run CWL workflows"""
-    start_time = datetime.datetime.now()
-    cwl_workflow_path = 'd2s-core/cwl/workflows/' + workflow
-    dataset_config_path = 'datasets/' + dataset + '/config.yml'
 
-    # TODO: Trying to fix issue where virtuoso bulk load only the first dataset we run
-    # It needs restart to work a second time
-    # click.echo(click.style('[d2s] ', bold=True) 
-    #     + 'Restart tmp Virtuoso and delete file in '
-    #     + click.style('workspace/output', bold=True))
-    # os.system(docker_compose_cmd + 'stop tmp-virtuoso')
-    # shutil.rmtree('workspace/tmp-virtuoso', ignore_errors=True, onerror=None)
-    # os.system(docker_compose_cmd + 'up -d --force-recreate tmp-virtuoso')
-    # TODO: fix this dirty Virtuoso deployment 
-    # Virtuoso unable to handle successive bulk load + permission issues + load.sh in the virtuoso containers
-    # I don't know how, they managed to not put it in the container... They had one job...
+# # TODO: remove d2s-core references
+# @cli.command()
+# @click.argument('services', nargs=-1, autocompletion=get_services_list)
+# @click.option(
+#     '--images/--no-images', default=False, 
+#     help='Update files permissions (Docker images by default)')
+# @click.option(
+#     '--permissions/--no-permissions', default=False, 
+#     help='Update files permissions (Docker images by default)')
+# @click.option(
+#     '--submodules/--no-submodule', default=False, 
+#     help='Update the Git submodules (d2s-core)')
+# def update(services, images, permissions, submodules):
+#     """Update d2s (images, permissions, submodules)"""
+#     if submodules:
+#         print("Update submodules: d2s-core")
+#         project_dir = os.getcwd()
+#         os.chdir('d2s-core')
+#         os.system('git checkout master')
+#         os.system('git pull')
+#         os.chdir(project_dir)
+#     if permissions:
+#         listToUpdate = ["input", "output", "import", "dumps", "tmp-virtuoso", "virtuoso"]
+#         click.echo(click.style('[d2s]', bold=True) + ' Password might be asked to updates following folder permissions in workspace: ' + ", ".join(listToUpdate))
+#         for fileToUpdate in listToUpdate:
+#             chmod777('workspace/' + fileToUpdate)
+#             os.makedirs('workspace/' + fileToUpdate, exist_ok=True)
+#         click.echo(click.style('[d2s]', bold=True) + ' Most permissions issues can be fixed by changing the owner of the file while running as administrator')
+#         click.secho('sudo chown -R ' + os.getuid() + ':' + os.getgid() + ' workspace', bold=True)
+#     if images:
+#         # Update Docker images (pull and build graphdb)
+#         services_string = " ".join(services)
+#         os.system(docker_compose_cmd + 'pull ' + services_string)
+#         if not services or ("graphdb" and "graphdb-preload") in services:
+#             os.system(docker_compose_cmd + 'build graphdb graphdb-preload')
+#         click.echo(click.style('[d2s]', bold=True) + ' All images pulled and built.')
+#         click.echo(click.style('[d2s]', bold=True) + ' You can now start services (e.g. demo services):')
+#         click.secho('d2s start demo', bold=True)
 
-    # Delete previous output (not archived). See article: https://thispointer.com/python-how-to-delete-a-directory-recursively-using-shutil-rmtree/
-    shutil.rmtree('workspace/output', ignore_errors=True, onerror=None)
-    # for file in glob.glob("workspace/tmp-virtuoso/*.nq"):
-    #     os.remove(file)
 
-    if (detached):
-        # TODO: Find a better solution to work on windows.
-        # time allows to get running time of detached process but require to be installed
-        # e.g. yum install time
-        # cwl_command = 'nohup time '
-        cwl_command = 'nohup '
-    else:
-        cwl_command = ''
-    cwl_command = cwl_command +'cwl-runner --custom-net d2s-core_network --outdir {0}/output --tmp-outdir-prefix={0}/output/tmp-outdir/ --tmpdir-prefix={0}/output/tmp-outdir/tmp- {1} {2}'.format('workspace',cwl_workflow_path,dataset_config_path)
-    if (detached):
-        log_filename = workflow + '-' + dataset + '-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.txt'
-        cwl_command = cwl_command + ' > workspace/logs/' + log_filename + ' &'
-    click.echo()
-    click.echo(click.style('[d2s] ', bold=True) 
-        + 'Running CWL worklow...')
-    click.echo(cwl_command)
-    os.system(cwl_command)
+# @cli.command()
+# @click.argument('services', nargs=-1, autocompletion=get_services_list)
+# @click.option(
+#     '-d', '--deploy', default='', 
+#     help='Use custom deployment config')
+# def start(services, deploy):
+#     """Start services"""
+#     if not services or services[0] == "demo":
+#         deploy = "demo"
+#         services_string = "graphdb tmp-virtuoso drill"
+#         click.echo(click.style('[d2s] ', bold=True) + ' Starting the services for the demo: ' + services_string)
+#     else:
+#         services_string = " ".join(services)
+    
+#     # Run docker-compose:
+#     if deploy:
+#         os.system(docker_compose_cmd + '-f d2s-core/deployments/'
+#         + deploy + '.yml up -d --force-recreate ' + services_string)
+#     else:
+#         os.system(docker_compose_cmd + 'up -d --force-recreate ' + services_string)
 
-    # Copy mappings generated by the workflow to datasets folder
-    if (get_mappings):
-        os.system('cp workspace/output/sparql_mapping_templates/* datasets/' 
-        + dataset + '/mapping/')
-        click.echo()
-        click.echo(click.style('[d2s] ', bold=True) 
-            + 'Browse the generated mappings files in '
-            + click.style('datasets/' + dataset + '/mapping', bold=True))
-    else:
-        click.echo()
-        click.echo(click.style('[d2s] ', bold=True) + 'Browse the file generated by the workflow in ' 
-            + click.style('workspace/output/' + dataset, bold=True))
+#     # Ask user to create the GraphDB test repository
+#     click.echo(click.style('[d2s] ', bold=True) + services_string + ' started.')
+#     if 'graphdb' in services or 'demo' in services:
+#         click.echo(click.style('[d2s] ', bold=True) 
+#                 + 'Create repository on GraphDB: http://localhost:7200/repository')
+#         # TODO: Creating GraphDB repo by posting multiform with urllib needs to be changed
+#         # if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the ' 
+#         # + click.style('demo repository', bold=True) + ' in GraphDB?'):
+#         #     click.echo(click.style('[d2s] ', bold=True) 
+#         #         + 'Creating the repository, it should take about 20s.')
+#         #     time.sleep(10)
+#         #     localGraphdbUrl = 'http://localhost:7200/rest/repositories'
+#         #     headers = {'Content-Type': 'multipart/form-data'}
+#         #     request = urllib.request.Request(localGraphdbUrl, 
+#         #         open('d2s-core/support/graphdb-repo-config.ttl', 'rb'),
+#         #                             headers=headers)
+#         #     response = urllib.request.urlopen(request)
+#         #     os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-core/support/graphdb-repo-config.ttl" -H "Content-Type: multipart/form-data"')
+#     click.echo()
+#     click.echo(click.style('[d2s]', bold=True) 
+#         + ' You can now download data to run a first workflow:')
+#     click.secho('d2s download', bold=True)
 
-    if (detached):
-        click.echo()
-        click.echo(click.style('[d2s] ', bold=True) 
-            + 'Watch your workflow running: ')
-        click.secho('d2s watch ' + log_filename, bold=True)
-        click.echo(click.style('[d2s] ', bold=True) 
-            + 'Or display the complete workflow logs: ')
-        click.secho('d2s log ' + log_filename, bold=True)
-    else:
-        run_time = datetime.datetime.now() - start_time
-        click.echo(click.style('[d2s] ', bold=True) 
-                + 'Workflow runtime: '
-                + click.style(str(datetime.timedelta(seconds=run_time.total_seconds())), bold=True))
+
+# @cli.command()
+# @click.argument('services', nargs=-1, autocompletion=get_services_list)
+# @click.option(
+#     '--all/--no-all', default=False, 
+#     help='Stop all services')
+# def stop(services, all):
+#     """Stop services (--all to stop all services)"""
+#     if all:
+#         os.system(docker_compose_cmd + 'down')
+#         click.echo(click.style('[d2s] ', bold=True) + 'All services stopped.')
+#     else:
+#         services_string = " ".join(services)
+#         os.system(docker_compose_cmd + 'stop ' + services_string)
+#         click.echo(click.style('[d2s] ', bold=True) + services_string + ' stopped.')
+
+
+# @cli.command()
+# def services():
+#     """List running services"""
+#     os.system('docker ps --format="table {{.Names}}\t{{.Ports}}\t{{.Status}}\t{{.Networks}}"')
+
+
+# @cli.command()
+# def process_running():
+#     """List running workflows processes"""
+#     os.system('echo "PID    CPU  Mem Start    Command"')
+#     os.system('ps ax -o pid,%cpu,%mem,start,command | grep "[c]wl-runner"')
+
+# @cli.command()
+# @click.argument('process', autocompletion=get_running_processes)
+# def process_stop(process):
+#     """Stop a running workflows process"""
+#     if (process == "0"):
+#         click.echo(click.style('[d2s] ', bold=True) + 'No process to stop.')
+#     else:
+#         os.system('kill -9 ' + process)
+#         click.echo(click.style('[d2s] ', bold=True) + 'Process ' + click.style(process, bold=True) + ' stopped.')
+
+
+# @cli.command()
+# @click.argument('workflow', autocompletion=get_running_workflows)
+# def watch(workflow):
+#     """Watch running workflow"""
+#     os.system('watch tail -n 30 workspace/logs/' + workflow)
+
+
+# @cli.command()
+# @click.argument('workflow', autocompletion=get_workflow_history)
+# def log(workflow):
+#     """Display logs of a workflow"""
+#     os.system('less +G workspace/logs/' + workflow)
+
+# @cli.command()
+# @click.argument('datasets', nargs=-1, autocompletion=get_datasets_list)
+# def download(datasets):
+#     """Download a dataset to be processed"""
+#     start_time = datetime.datetime.now()
+#     for dataset in datasets:
+#         os.system('docker run -it -v ' + os.getcwd() + ':/srv \
+#             umids/d2s-bash-exec:latest \
+#             /srv/datasets/' + dataset + '/download/download.sh workspace/input/' + dataset)
+#         click.echo(click.style('[d2s] ' + dataset, bold=True) + ' dataset downloaded at ' 
+#         + click.style('workspace/input/' + dataset, bold=True))
+#     run_time = datetime.datetime.now() - start_time
+#     click.echo(click.style('[d2s] ', bold=True) 
+#             + 'Datasets downloaded in: '
+#             + click.style(str(datetime.timedelta(seconds=run_time.total_seconds())), bold=True))
+#     click.echo()
+#     click.echo(click.style('[d2s]', bold=True) + ' You can now run the transformation workflow:')
+#     click.secho('d2s run', bold=True)
+
+# @cli.command()
+# @click.argument('workflow', autocompletion=get_workflows_list)
+# @click.argument('dataset', autocompletion=get_datasets_list)
+# @click.option(
+#     '--get-mappings/--no-copy', default=False, 
+#     help='Copy the mappings generated by the workflow to our datasets folder')
+# @click.option(
+#     '--detached/--watch', default=True, 
+#     help='Run in detached mode or watch workflow')
+# def run(workflow, dataset, get_mappings, detached):
+#     """Run CWL workflows"""
+#     start_time = datetime.datetime.now()
+#     cwl_workflow_path = 'd2s-core/cwl/workflows/' + workflow
+#     dataset_config_path = 'datasets/' + dataset + '/config.yml'
+
+#     # TODO: Trying to fix issue where virtuoso bulk load only the first dataset we run
+#     # It needs restart to work a second time
+#     # click.echo(click.style('[d2s] ', bold=True) 
+#     #     + 'Restart tmp Virtuoso and delete file in '
+#     #     + click.style('workspace/output', bold=True))
+#     # os.system(docker_compose_cmd + 'stop tmp-virtuoso')
+#     # shutil.rmtree('workspace/tmp-virtuoso', ignore_errors=True, onerror=None)
+#     # os.system(docker_compose_cmd + 'up -d --force-recreate tmp-virtuoso')
+#     # TODO: fix this dirty Virtuoso deployment 
+#     # Virtuoso unable to handle successive bulk load + permission issues + load.sh in the virtuoso containers
+#     # I don't know how, they managed to not put it in the container... They had one job...
+
+#     # Delete previous output (not archived). See article: https://thispointer.com/python-how-to-delete-a-directory-recursively-using-shutil-rmtree/
+#     shutil.rmtree('workspace/output', ignore_errors=True, onerror=None)
+#     # for file in glob.glob("workspace/tmp-virtuoso/*.nq"):
+#     #     os.remove(file)
+
+#     if (detached):
+#         # TODO: Find a better solution to work on windows.
+#         # time allows to get running time of detached process but require to be installed
+#         # e.g. yum install time
+#         # cwl_command = 'nohup time '
+#         cwl_command = 'nohup '
+#     else:
+#         cwl_command = ''
+#     cwl_command = cwl_command +'cwl-runner --custom-net d2s-core_network --outdir {0}/output --tmp-outdir-prefix={0}/output/tmp-outdir/ --tmpdir-prefix={0}/output/tmp-outdir/tmp- {1} {2}'.format('workspace',cwl_workflow_path,dataset_config_path)
+#     if (detached):
+#         log_filename = workflow + '-' + dataset + '-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.txt'
+#         cwl_command = cwl_command + ' > workspace/logs/' + log_filename + ' &'
+#     click.echo()
+#     click.echo(click.style('[d2s] ', bold=True) 
+#         + 'Running CWL worklow...')
+#     click.echo(cwl_command)
+#     os.system(cwl_command)
+
+#     # Copy mappings generated by the workflow to datasets folder
+#     if (get_mappings):
+#         os.system('cp workspace/output/sparql_mapping_templates/* datasets/' 
+#         + dataset + '/mapping/')
+#         click.echo()
+#         click.echo(click.style('[d2s] ', bold=True) 
+#             + 'Browse the generated mappings files in '
+#             + click.style('datasets/' + dataset + '/mapping', bold=True))
+#     else:
+#         click.echo()
+#         click.echo(click.style('[d2s] ', bold=True) + 'Browse the file generated by the workflow in ' 
+#             + click.style('workspace/output/' + dataset, bold=True))
+
+#     if (detached):
+#         click.echo()
+#         click.echo(click.style('[d2s] ', bold=True) 
+#             + 'Watch your workflow running: ')
+#         click.secho('d2s watch ' + log_filename, bold=True)
+#         click.echo(click.style('[d2s] ', bold=True) 
+#             + 'Or display the complete workflow logs: ')
+#         click.secho('d2s log ' + log_filename, bold=True)
+#     else:
+#         run_time = datetime.datetime.now() - start_time
+#         click.echo(click.style('[d2s] ', bold=True) 
+#                 + 'Workflow runtime: '
+#                 + click.style(str(datetime.timedelta(seconds=run_time.total_seconds())), bold=True))
 
     ## Trying to run using CWL Python library don't work
     # Loading the dataset config.yml file fails
