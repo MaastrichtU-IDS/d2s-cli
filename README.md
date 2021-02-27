@@ -1,30 +1,78 @@
 [![Build](https://github.com/MaastrichtU-IDS/d2s-cli/workflows/Test%20and%20publish%20package/badge.svg)](https://github.com/MaastrichtU-IDS/d2s-cli/actions?query=workflow%3A%22Test+and+publish+package%22) [![Version](https://img.shields.io/pypi/v/d2s)](https://pypi.org/project/d2s)
 
-A Command Line Interface to orchestrate the integration of heterogenous data sources under a common [RDF Knowledge Graph](https://www.w3.org/RDF/) using [CWL workflows](https://www.commonwl.org/), and the deployment of user-facing services over the integrated data using [Docker](https://www.docker.com/) ([SPARQL](https://yasgui.triply.cc/), [BioThings APIs](https://biothings.io/explorer/), [GraphQL-LD](https://comunica.github.io/Article-ISWC2018-Demo-GraphQlLD/), [OpenAPI](https://www.openapis.org/), [Web UI](https://github.com/MaastrichtU-IDS/into-the-graph)).
+A Command Line Interface to help orchestrate the integration of heterogenous data sources under a common [RDF Knowledge Graph](https://www.w3.org/RDF/) using Python, RML mappings, Bash, and GitHub Actions workflows (YAML). 
+
+We also provide guidelines and help to deploy of user-facing services over the integrated data using [Docker](https://www.docker.com/) ([SPARQL](https://yasgui.triply.cc/), [BioThings APIs](https://biothings.io/explorer/), [GraphQL-LD](https://comunica.github.io/Article-ISWC2018-Demo-GraphQlLD/), [OpenAPI](https://www.openapis.org/), [Web UI](https://github.com/MaastrichtU-IDS/into-the-graph)).
 
 ## Installation 
 
 Complete documentation about the `d2s-cli` on the [d2s documentation website 📖](https://d2s.semanticscience.org/docs/d2s-installation)
 
-### Install with pipx
+Requirements:
+
+* [Python 3.6+](https://d2s.semanticscience.org/docs/d2s-installation#install-pip) (built using [python:3.6](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/publish.Dockerfile))
+* [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+* Optional: [docker and docker-compose](https://docs.docker.com/compose/install/)
+
+### Install from pypi
 
 ```bash
-pipx install d2s cwlref-runner
+pip install d2s
 ```
 
 > Use [pip](https://pypi.org/project/pip/), pip3 or [pipx](https://pipxproject.github.io/pipx/) depending on your system preferences.
 
-Requirements:
+You can also install it from the `master` branch, if you want the latest updates:
 
-* [Python 3.6+](https://d2s.semanticscience.org/docs/d2s-installation#install-pip) (built using [python:3.6](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/publish.Dockerfile))
-* [docker-compose](https://docs.docker.com/compose/install/)
-* git, time (bash)
+```bash
+pip install git+https://github.com/MaastrichtU-IDS/d2s-cli.git@master
+```
 
-More detailed documentation to install pipx and `d2s` on various platforms available at [d2s.semanticscience.org](https://d2s.semanticscience.org/docs/d2s-installation#install-pipx)
+> See [those instructions to install d2s on Windows](/docs/d2s-installation#install-pipx-on-windows) using the [Chocolatey package manager](https://chocolatey.org/) and [pipx](https://pipxproject.github.io/pipx/). 
 
-See [those instructions to install d2s on Windows](/docs/d2s-installation#install-pipx-on-windows) using the [Chocolatey package manager](https://chocolatey.org/) and [pipx](https://pipxproject.github.io/pipx/). 
+### Install d2s for development
 
-> Some features support are still a work in progress on Windows, such as CWL workflows (see the [official CWL Windows documentation](https://github.com/common-workflow-language/cwltool/blob/master/windowsdoc.md) to make it work)
+Install `d2s` as executable in local for development. 
+
+`d2s` will be updated directly on change in the code.
+
+```bash
+pip install -e .
+```
+
+### Try it
+
+Display the default help command
+
+```bash
+d2s
+```
+
+Create a d2s project in the given folder 
+
+```bash
+d2s init project-folder-name
+```
+
+All `d2s` commands are designed to be run from the project folder, move to it
+
+```shell
+cd project-folder-name/
+```
+
+> Project settings stored if `.d2sconfig` file.
+
+### Update d2s installation
+
+```bash
+pip install --upgrade d2s 
+```
+
+### Uninstall
+
+```bash
+pip uninstall d2s
+```
 
 ### Enable autocompletion
 
@@ -53,76 +101,6 @@ echo 'eval "$(_D2S_COMPLETE=source d2s)"' >> ~/.bashrc
 ```
 
 > **To be tested.**
-
-### Install d2s for development
-
-Install `d2s` as executable in local for development. 
-
-`d2s` will be updated directly on change in the code.
-
-```bash
-pip install --editable .
-```
-
-### Try it
-
-Display the default help command
-
-```bash
-d2s
-```
-
-Create a d2s project in the given folder 
-
-```bash
-d2s init project-folder-name
-```
-
-All `d2s` commands are designed to be run from the project folder, move to it
-
-```shell
-cd project-folder-name/
-```
-
-> Project settings stored if `.d2sconfig` file.
-
-### Upgrade d2s
-
-With `pipx`:
-
-```bash
-pipx upgrade d2s
-```
-
-With `pip`:
-
-```bash
-pip install --upgrade d2s 
-```
-
-### Uninstall
-
-With `pipx`:
-
-```bash
-pipx uninstall d2s cwlref-runner
-```
-
-With `pip`:
-
-```bash
-pip uninstall d2s cwlref-runner
-```
-
-### Add new package
-
-Add new packages to use to [setup.py](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/setup.py#L16) (to be imported during the build). 
-
-And install it locally for dev:
-
-```bash
-pip install <package>
-```
 
 ## Build and publish
 
@@ -153,7 +131,7 @@ twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 Additional instructions to install twine locally (not needed)
 
 ```bash
-pipx install twine
+pip install twine
 ```
 
 > If you experience issues with Bash or ZSH because `d2s` is not defined when installing for dev. Then add `pip install --editable develop/d2s-cli` to `.zshrc`
