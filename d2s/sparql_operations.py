@@ -113,22 +113,27 @@ def sparql_update_instance(subject_uri, new_graph, sparql_endpoint, username, pa
     """
     # https://rdflib.readthedocs.io/en/4.0/_modules/rdflib/compare.html
     from rdflib.compare import IsomorphicGraph, graph_diff
-
+    print('Starting graph diff for ' + str(subject_uri))
     construct_array = []
     where_array = []
     current_depth = 0
     while current_depth <= depth:
-        pattern = '?o' + str(depth) + ' ?p' + str(depth) + ' ?o' + str(depth+1) + ' . '
+        pattern = '?o' + str(current_depth) + ' ?p' + str(current_depth) + ' ?o' + str(current_depth+1) + ' . '
         construct_array.append(pattern)
         where_array.append('OPTIONAL{' + pattern + '} ')
+        current_depth += 1
         
-    construct_query = "CONSTRUCT { ?s ?p ?o1 . " + ' '.join(construct_array) + " } WHERE { ?s ?p ?o . " + ' '.join(where_array) + " FILTER(?s = <" + subject_uri + ">)"
+    construct_query = "CONSTRUCT { ?s ?p ?o1 . " + ' '.join(construct_array) + " } WHERE { ?s ?p ?o . " + ' '.join(where_array) + " FILTER(?s = <" + subject_uri + ">) }"
     # CONSTRUCT { ?s ?p ?o1 . ?o1 ?p1 ?o2 . } WHERE { ?s ?p ?o . OPTIONAL{?o1 ?p1 ?o2 .} FILTER... }
+    print(sparql_endpoint)
+    print(construct_query)
     
-    new_graph.setReturnFormat(TURTLE)
-    results = new_graph.query(construct_query).convert().decode('utf-8')
+    # new_graph.setReturnFormat(TURTLE)
+    # results = new_graph.query(construct_query).convert().decode('utf-8')
+    results = new_graph.query(construct_query)
     new_g = IsomorphicGraph()
-    new_g.parse(data=results, format=TURTLE)
+    new_g.parse(data=results.serialize(format='xml'), format=TURTLE)
+    print('New G done')
     
     old_g = IsomorphicGraph()
     sparql = SPARQLWrapper(sparql_endpoint)
@@ -136,6 +141,7 @@ def sparql_update_instance(subject_uri, new_graph, sparql_endpoint, username, pa
     sparql.setReturnFormat(TURTLE)
     results = sparql.query(construct_query).convert().decode('utf-8')
     old_g.parse(data=results, format="turtle")
+    print('Old G done')
     # Write RDF to file
     # with open(self.get_dir(output_file), 'w') as f:
     #     f.write(results)

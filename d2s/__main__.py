@@ -117,8 +117,7 @@ def upload(file_pattern, sparql_endpoint, username, password, graph):
 
 ### Commands to run services and workflows:
 
-# Start of the docker-compose using d2s-core yml
-docker_compose_cmd = 'docker-compose -f d2s-core/docker-compose.yml '
+docker_compose_cmd = 'docker-compose '
 
 # Used for autocompletion
 def get_services_list(ctx, args, incomplete):
@@ -130,20 +129,20 @@ def get_services_list(ctx, args, incomplete):
     'limes-server', 'mapeathor', 'neo4j', 'nanobench', 'fairdatapoint' ])
 def get_datasets_list(ctx, args, incomplete):
     return filter(lambda x: x.startswith(incomplete), os.listdir("./datasets"))
-def get_workflows_list(ctx, args, incomplete):
-    return filter(lambda x: x.startswith(incomplete), os.listdir("./d2s-core/cwl/workflows"))
-def get_workflow_history(ctx, args, incomplete):
-    # Sorted from latest to oldest
-    files = list(filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/logs")))
-    return sorted(files, key=lambda x: os.path.getmtime("./workspace/logs/" + x), reverse=True)
-def get_running_workflows(ctx, args, incomplete):
-    # Only show workflow logs that have been modified in the last 2 minutes
-    # TODO: Will not work for workflow with SPARQL queries longer than 2 minutes
-    files = filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/logs"))
-    return filter(lambda x: datetime.datetime.fromtimestamp(os.path.getmtime("./workspace/logs/" + x)) > (datetime.datetime.now() - datetime.timedelta(minutes=2)), files)
-def get_running_processes(ctx, args, incomplete):
-    # Show running processes to be stopped
-    return [os.system("ps ax | grep '[c]wl-runner' | awk '{print $1}'")]
+# def get_workflows_list(ctx, args, incomplete):
+#     return filter(lambda x: x.startswith(incomplete), os.listdir("./d2s-core/cwl/workflows"))
+# def get_workflow_history(ctx, args, incomplete):
+#     # Sorted from latest to oldest
+#     files = list(filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/logs")))
+#     return sorted(files, key=lambda x: os.path.getmtime("./workspace/logs/" + x), reverse=True)
+# def get_running_workflows(ctx, args, incomplete):
+#     # Only show workflow logs that have been modified in the last 2 minutes
+#     # TODO: Will not work for workflow with SPARQL queries longer than 2 minutes
+#     files = filter(lambda x: x.startswith(incomplete), os.listdir("./workspace/logs"))
+#     return filter(lambda x: datetime.datetime.fromtimestamp(os.path.getmtime("./workspace/logs/" + x)) > (datetime.datetime.now() - datetime.timedelta(minutes=2)), files)
+# def get_running_processes(ctx, args, incomplete):
+#     # Show running processes to be stopped
+#     return [os.system("ps ax | grep '[c]wl-runner' | awk '{print $1}'")]
 
 # Change permissions to 777 recursively. 
 # See https://stackoverflow.com/questions/16249440/changing-file-permission-in-python
