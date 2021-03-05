@@ -27,5 +27,11 @@ setup(
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License"
-    ]
+    ],
+    project_urls={
+        "Issues": "https://github.com/MaastrichtU-IDS/d2s-cli/issues",
+        "Source Code": "https://github.com/MaastrichtU-IDS/d2s-cli",
+        "CI": "https://github.com/MaastrichtU-IDS/d2s-cli/actions",
+        "Releases": "https://github.com/MaastrichtU-IDS/d2s-cli/releases"
+    },
 )

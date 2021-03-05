@@ -35,6 +35,12 @@ pip install git+https://github.com/MaastrichtU-IDS/d2s-cli.git@master
 
 Install `d2s` as executable in local for development. 
 
+Clone the repository:
+
+```bash
+git clone https://github.com/MaastrichtU-IDS/d2s-cli.git
+```
+
 `d2s` will be updated directly on change in the code.
 
 ```bash
@@ -49,10 +55,16 @@ Display the default help command
 d2s
 ```
 
-Create a d2s project in the given folder 
+Analyze a SPARQL endpoint metadata:
 
 ```bash
-d2s init project-folder-name
+d2s metadata analyze https://graphdb.dumontierlab.com/repositories/test -o hcls-metadata.ttl
+```
+
+Start a d2s project in the current folder 
+
+```bash
+d2s init
 ```
 
 All `d2s` commands are designed to be run from the project folder, move to it
