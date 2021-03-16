@@ -1,4 +1,5 @@
 import os
+import re
 import click
 import pathlib
 import urllib.parse
@@ -140,8 +141,7 @@ def create_dataset(metadata):
     
     return g
 
-
-def generate_hcls_from_sparql(sparql_endpoint, rdf_distribution_uri, graph, g=Graph()):
+def generate_hcls_from_sparql(sparql_endpoint, rdf_distribution_uri, metadata_type, graph, g=Graph()):
     """Query the provided SPARQL endpoint to compute HCLS metadata"""
     sparql = SPARQLWrapper(sparql_endpoint)
     root = pathlib.Path(__file__).parent.resolve()
@@ -160,6 +160,7 @@ PREFIX dcat: <http://www.w3.org/ns/dcat#>
 PREFIX void: <http://rdfs.org/ns/void#>
 PREFIX void-ext: <http://ldf.fi/void-ext#>\n"""
 
+    # If no specific graph provided we get graphs from the SPARQL endpoint
     if not graph:
         query_select_all_graphs = 'SELECT DISTINCT ?graph WHERE { GRAPH ?graph {?s ?p ?o} }'
         sparql.setQuery(query_select_all_graphs)
@@ -175,17 +176,33 @@ PREFIX void-ext: <http://ldf.fi/void-ext#>\n"""
     # Compute HCLS metadata per graph
     for graph_row in select_all_graphs_results:
         graph = graph_row['graph']['value']
-        print('[' + str(datetime.now()) + '] Computing HCLS metadata for graph ' + graph)
-        for filename in os.listdir(pkg_resources.resource_filename('d2s', 'queries')):
-            with open(pkg_resources.resource_filename('d2s', 'queries/' + filename), 'r') as f:
-                if (graph):
-                    sparql_query = f.read().replace('?_graph_uri', graph)
-                    sparql_query = sparql_query.replace('<?_graph_start>', 'GRAPH <' + graph + '> {')
-                    sparql_query = sparql_query.replace('<?_graph_end>', '}')
-                else:
-                    sparql_query = f.read().replace('?_graph_uri', rdf_distribution_uri)
-                    sparql_query = sparql_query.replace('<?_graph_start>', '')
-                    sparql_query = sparql_query.replace('<?_graph_end>', '')
+
+        if metadata_type == 'bio2rdf' and not graph.startswith('http://bio2rdf.org'):
+            # For bio2rdf ignore Virtuoso default graphs
+            continue
+
+        print('[' + str(datetime.now()) + '] Computing metadata for graph ' + graph)
+        for filename in os.listdir(pkg_resources.resource_filename('d2s', 'queries/' + metadata_type)):
+            with open(pkg_resources.resource_filename('d2s', 'queries/' + metadata_type + '/' + filename), 'r') as f:
+                sparql_query = f.read()
+
+                # Define variables to replace for the different metadata type here
+                if metadata_type == 'bio2rdf':
+                    namespace_search = re.search('http:\/\/bio2rdf\.org\/(.*)_resource:bio2rdf\.dataset\.(.*)\.R[0-9]*', graph, re.IGNORECASE)
+                    if namespace_search:
+                        graph_namespace = namespace_search.group(1)
+                        sparql_query = sparql_query.replace('?_graph_namespace', graph_namespace)
+                    # extract namespace from graph URI
+
+                if metadata_type == 'hcls':
+                    if (graph):
+                        sparql_query = sparql_query.replace('?_graph_uri', graph)
+                        sparql_query = sparql_query.replace('<?_graph_start>', 'GRAPH <' + graph + '> {')
+                        sparql_query = sparql_query.replace('<?_graph_end>', '}')
+                    else:
+                        sparql_query = sparql_query.replace('?_graph_uri', rdf_distribution_uri)
+                        sparql_query = sparql_query.replace('<?_graph_start>', '')
+                        sparql_query = sparql_query.replace('<?_graph_end>', '')
 
                 complete_query = query_prefixes + sparql_query 
                 # print(complete_query)

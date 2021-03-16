@@ -1,0 +1,44 @@
+# Count namespace entities in each graph
+PREFIX sio: <http://semanticscience.org/resource/>
+PREFIX void: <http://rdfs.org/ns/void#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX void-ext: <http://ldf.fi/void-ext#>
+
+CONSTRUCT {
+  ?guri void:propertyPartition [
+		void:triples ?triples;
+    void:classPartition [
+        void:class ?ns1u
+    ];
+    void-ext:objectClassPartition [
+      void:class ?ns2u
+    ]
+  ].
+}
+WHERE
+{
+    SELECT ?guri ?ns1u ?ns2u (COUNT(*) AS ?triples)
+    {
+      GRAPH ?g {
+        ?s <http://bio2rdf.org/bio2rdf_vocabulary:namespace> ?ns1 .
+        ?s ?p ?o .
+        ?o <http://bio2rdf.org/bio2rdf_vocabulary:namespace> ?ns2 .
+      }
+      FILTER (?g = ?guri)
+      FILTER (?ns1 != ?ns2)
+      FILTER (str(?ns2) != ?nsr && str(?ns2) != ?nsv && str(?ns1) != ?nsr && str(?ns1) != ?nsr)
+      BIND( "?_graph_namespace" AS ?ns)
+      # BIND( "<?_graph_start>" AS ?ns)
+      # BIND( "drugbank" AS ?ns)
+
+      BIND( URI(CONCAT("http://bio2rdf.org/lsr:",$ns1)) AS ?ns1u)
+      BIND( URI(CONCAT("http://bio2rdf.org/lsr:",$ns2)) AS ?ns2u)
+      BIND( CONCAT($ns, "_resource") AS $nsr)
+      BIND( CONCAT(?ns, "_vocabulary") AS ?nsv)
+      BIND( URI(CONCAT("http://bio2rdf.org/", ?ns, "_resource:bio2rdf.dataset.", ?ns, ".R5")) AS ?guri)
+      #BIND( COUNT(*) AS ?triples)
+    }
+    GROUP BY ?guri ?ns1u ?ns2u
+    # ORDER BY asc(?ns1) DESC(?triples) ASC(?ns2)
+}
+  

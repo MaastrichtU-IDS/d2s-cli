@@ -2,8 +2,6 @@
 
 A Command Line Interface to help orchestrate the integration of heterogenous data sources under a common [RDF Knowledge Graph](https://www.w3.org/RDF/) using Python, RML mappings, Bash, and GitHub Actions workflows (YAML). 
 
-We also provide guidelines and help to deploy of user-facing services over the integrated data using [Docker](https://www.docker.com/) ([SPARQL](https://yasgui.triply.cc/), [BioThings APIs](https://biothings.io/explorer/), [GraphQL-LD](https://comunica.github.io/Article-ISWC2018-Demo-GraphQlLD/), [OpenAPI](https://www.openapis.org/), [Web UI](https://github.com/MaastrichtU-IDS/into-the-graph)).
-
 ## Installation 
 
 Complete documentation about the `d2s-cli` on the [d2s documentation website 📖](https://d2s.semanticscience.org/docs/d2s-installation)
@@ -22,6 +20,14 @@ pip install d2s
 ```
 
 > Use [pip](https://pypi.org/project/pip/), pip3 or [pipx](https://pipxproject.github.io/pipx/) depending on your system preferences.
+
+### Update
+
+```bash
+pip install --upgrade d2s 
+```
+
+### Install from GitHub branch
 
 You can also install it from the `master` branch, if you want the latest updates:
 
@@ -47,7 +53,13 @@ git clone https://github.com/MaastrichtU-IDS/d2s-cli.git
 pip install -e .
 ```
 
-### Try it
+### Uninstall
+
+```bash
+pip uninstall d2s
+```
+
+## Use d2s
 
 Display the default help command
 
@@ -55,39 +67,69 @@ Display the default help command
 d2s
 ```
 
-Analyze a SPARQL endpoint metadata:
+### Generate metadata
+
+Analyze a SPARQL endpoint metadata to generate [HCLS descriptive metadata](https://www.w3.org/TR/hcls-dataset/) for each graph:
 
 ```bash
-d2s metadata analyze https://graphdb.dumontierlab.com/repositories/test -o hcls-metadata.ttl
+d2s metadata analyze https://graphdb.dumontierlab.com/repositories/test -o metadata.ttl
 ```
 
-Start a d2s project in the current folder 
+Analyze a SPARQL endpoint metadata to generate metadata specific to Bio2RDF for each graph:
+
+```bash
+d2s metadata analyze https://bio2rdf.137.120.31.102.nip.io/sparql -o metadata.ttl -m bio2rdf
+```
+
+You can also generate detailed HCLS metadata for the dataset version and distribution by answering the questions after running this command:
+
+```bash
+d2s metadata create -o metadata.ttl
+```
+
+### Bootstrap a datasets conversion project
+
+`d2s` can be used to help you converting datasets to RDF.
+
+You will need to initialize the current folder, it is highly recommended to do this at the root of a Git repository where the conversion will be stored:
 
 ```bash
 d2s init
 ```
 
-All `d2s` commands are designed to be run from the project folder, move to it
+This command will create a `datasets` folder to store the datasets conversions and a `.github/workflows` folder for the workflows, if it does not exist already. 
 
-```shell
-cd project-folder-name/
-```
+> All `d2s` commands are designed to be run from the project folder
 
-> Project settings stored if `.d2sconfig` file.
-
-### Update d2s installation
+You can create a new dataset conversion:
 
 ```bash
-pip install --upgrade d2s 
+d2s new dataset
 ```
 
-### Uninstall
+You will be asked a few questions about the dataset via the terminal, then a folder will be generated with:
+
+* Your dataset metadata
+* Example YARRRML and RML mappings
+* Example python preprocessing script
+* Example bash script to download the data to convert
+* A GitHub Action workflow to run the different steps of the processing
+
+You can now edit the file generated in the `datasets` folder to implement your data conversion.
+
+### Run the RML mapper
+
+Requirements: Java installed
+
+This feature is still experimental
+
+`d2s` can be used to easily run the RML mapper:
 
 ```bash
-pip uninstall d2s
+d2s rml my-dataset
 ```
 
-### Enable autocompletion
+## Enable autocompletion
 
 Enable commandline autocompletion in the terminal
 
