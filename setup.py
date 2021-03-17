@@ -13,7 +13,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     # package_dir={'': 'src'},
-    package_data={'': ['queries/**/*', 'templates/**']},
+    package_data={'': ['queries/hcls/*', 'queries/bio2rdf/*', 'templates/**']},
     include_package_data=True,
     # py_modules=['d2s'],
     setup_requires=['pytest-runner'],

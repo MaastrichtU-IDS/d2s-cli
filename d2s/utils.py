@@ -11,6 +11,8 @@ from d2s.generate_metadata import create_dataset_prompt
 
 def get_git_path(path="."):
     """Return path of the root folder of the git repo the user is in"""
+    # TODO: Does not work for some git repository, without no reason
+    # Just find the .git folder and handle this shit ffs, no weird stuff to do here 
     git_repo = git.Repo(path, search_parent_directories=True)
     git_root = git_repo.working_tree_dir
     return git_root
