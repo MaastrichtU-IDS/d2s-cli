@@ -3,7 +3,7 @@ import setuptools
 
 setup(
     name='d2s',
-    version='0.3.0',
+    version='0.3.1',
     license="MIT License",
     url="https://github.com/MaastrichtU-IDS/d2s-cli",
     author="Vincent Emonet",
@@ -13,7 +13,9 @@ setup(
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     # package_dir={'': 'src'},
-    package_data={'': ['queries/hcls/*', 'queries/bio2rdf/*', 'templates/**']},
+    package_data={'': ['queries/hcls/*', 'queries/bio2rdf/*', 
+                        'templates/*', 'templates/project/*', 'templates/dataset/*',
+                        'templates/dataset/mapping/*', 'templates/dataset/scripts/*']},
     include_package_data=True,
     # py_modules=['d2s'],
     setup_requires=['pytest-runner'],
