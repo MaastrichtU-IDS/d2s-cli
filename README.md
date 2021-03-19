@@ -13,6 +13,8 @@ Requirements:
 * Optional: Java 11+ to use `d2s sparql upload`
 * Optional: [`oc` command line tool](https://maastrichtu-ids.github.io/dsri-documentation/docs/openshift-install) for deploying to the [DSRI OpenShift cluster](https://maastrichtu-ids.github.io/dsri-documentation/) (for Maastricht University academics and students)
 
+<!-- 
+
 ### Install from pypi
 
 ```bash
@@ -37,21 +39,26 @@ pip install git+https://github.com/MaastrichtU-IDS/d2s-cli.git@master
 
 > See [those instructions to install d2s on Windows](/docs/d2s-installation#install-pipx-on-windows) using the [Chocolatey package manager](https://chocolatey.org/) and [pipx](https://pipxproject.github.io/pipx/). 
 
-### Install d2s for development
+-->
 
-Install `d2s` as executable in local for development. 
+### Install d2s
+
+Install `d2s` as executable
 
 Clone the repository:
 
 ```bash
 git clone https://github.com/MaastrichtU-IDS/d2s-cli.git
+cd d2s-cli
 ```
 
-`d2s` will be updated directly on change in the code.
+Install `d2s`:
 
 ```bash
 pip install -e .
 ```
+
+> `d2s` will be updated directly on change in the code.
 
 #### Optional: isolate with a Virtual Environment
 
@@ -83,7 +90,7 @@ d2s
 Analyze a SPARQL endpoint metadata to generate [HCLS descriptive metadata](https://www.w3.org/TR/hcls-dataset/) for each graph:
 
 ```bash
-d2s metadata analyze https://graphdb.dumontierlab.com/repositories/test -o metadata.ttl
+d2s metadata analyze https://graphdb.dumontierlab.com/repositories/umids-kg -o metadata.ttl
 ```
 
 Analyze a SPARQL endpoint metadata to generate metadata specific to Bio2RDF for each graph:
