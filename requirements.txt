@@ -2,5 +2,5 @@ Click
 SPARQLWrapper
 rdflib
 python-dotenv
-gitpython
+GitPython
 requests

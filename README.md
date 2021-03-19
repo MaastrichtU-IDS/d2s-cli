@@ -53,6 +53,17 @@ git clone https://github.com/MaastrichtU-IDS/d2s-cli.git
 pip install -e .
 ```
 
+#### Optional: isolate with a Virtual Environment
+
+If you face conflicts with already installed packages, then you might want to use a [Virtual Environment](https://docs.python.org/3/tutorial/venv.html) to isolate the installation in the current folder before installing `d2s`:
+
+```bash
+# Create the virtual environment folder in your workspace
+python3 -m venv .venv
+# Activate it using a script in the created folder
+source .venv/bin/activate
+```
+
 ### Uninstall
 
 ```bash
