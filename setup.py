@@ -13,7 +13,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     # package_dir={'': 'src'},
-    package_data={'': ['queries/hcls/*', 'queries/bio2rdf/*', 
+    package_data={'': [ 'queries/*', 'queries/hcls/*', 'queries/bio2rdf/*', 
                         'templates/*', 'templates/project/*', 'templates/dataset/*',
                         'templates/dataset/mapping/*', 'templates/dataset/scripts/*']},
     # package_data={'': ['queries/**', 
