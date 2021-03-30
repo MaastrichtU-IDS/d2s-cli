@@ -1,0 +1,28 @@
+# Box 1 SPARQL Query templates to extract schema descriptions from the LSLOD Cloud.
+------------------ SPARQL QUERY 1 ------------------
+SELECT DISTINCT ?g WHERE {
+GRAPH ?g {?s ?p ?o}
+}
+
+------------------ SPARQL QUERY 2 ------------------
+SELECT ?Concept (COUNT (?x) AS ?cCount) WHERE {
+GRAPH <GRAPH_URI> {?x rdf:type ?Concept}
+}GROUP BY ?Concept ORDER BY DESC(?cCount)
+
+------------------ SPARQL QUERY 3 ------------------
+SELECT DISTINCT ?p ?c (COUNT (?x) AS ?count)?valType WHERE {
+GRAPH <GRAPH_URI> {?x rdf:type <CONCEPT_URI> ; ?p ?o .
+OPTIONAL {?o rdf:type ?c}.
+FILTER(!(?p = rdf:type)).
+BIND (DATATYPE(?o) AS ?valType)}
+} GROUP BY ?p ?c ?valType ORDER BY DESC(?count)
+
+------------------ SPARQL QUERY 4 ------------------
+SELECT ?x WHERE {
+GRAPH <GRAPH_URI> {?x rdf:type <CONCEPT_URI> }
+} ORDER BY RAND() LIMIT 2000
+
+------------------ SPARQL QUERY 5 ------------------
+SELECT ?x WHERE {
+GRAPH <GRAPH_URI> { ?c rdf:type <CONCEPT_URI> ; <PROPERTY_URI> ?x }
+} ORDER BY RAND() LIMIT 2000

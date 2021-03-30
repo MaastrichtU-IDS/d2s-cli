@@ -18,11 +18,11 @@ CONSTRUCT {
   <?_graph_start>
     SELECT (COUNT(DISTINCT ?s) AS ?scount) ?stype ?p ?otype  (COUNT(DISTINCT ?o) AS ?ocount)
     { 
-    ?s ?p ?o . 
-    ?s a ?stype .
-    ?o a ?otype .
-    } GROUP BY ?p ?stype ?otype
+      ?s ?p ?o . 
+      ?s a ?stype .
+      ?o a ?otype .
+    } GROUP BY ?p ?stype ?otype 
   <?_graph_end>
-  OPTIONAL { ?s rdfs:label ?slabel}
-  OPTIONAL { ?o rdfs:label ?olabel}
+  OPTIONAL { ?stype rdfs:label ?slabel}
+  OPTIONAL { ?otype rdfs:label ?olabel}
 }
