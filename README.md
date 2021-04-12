@@ -2,9 +2,9 @@
 
 A Command Line Interface to help orchestrate the integration of heterogenous data sources under a common [RDF Knowledge Graph](https://www.w3.org/RDF/) using Python, RML mappings, Bash, and GitHub Actions workflows (YAML). 
 
-## Installation 
+You can find more informations about the Data2Services project on the [d2s documentation website 📖](https://d2s.semanticscience.org/docs/d2s-installation)
 
-Complete documentation about the `d2s-cli` on the [d2s documentation website 📖](https://d2s.semanticscience.org/docs/d2s-installation)
+## Installation 
 
 Requirements:
 
@@ -13,7 +13,7 @@ Requirements:
 * Optional: Java 11+ to use `d2s sparql upload`
 * Optional: [`oc` command line tool](https://maastrichtu-ids.github.io/dsri-documentation/docs/openshift-install) for deploying to the [DSRI OpenShift cluster](https://maastrichtu-ids.github.io/dsri-documentation/) (for Maastricht University academics and students)
 
-<!-- 
+<!-- COMMENTED
 
 ### Install from pypi
 
@@ -43,7 +43,7 @@ pip install git+https://github.com/MaastrichtU-IDS/d2s-cli.git@master
 
 ### Install d2s
 
-Install `d2s` as executable
+Install `d2s` as executable to run it from the terminal
 
 Clone the repository:
 
@@ -167,13 +167,11 @@ echo 'eval "$(_D2S_COMPLETE=source_zsh d2s)"' >> ~/.zshrc
 
 > A [oh-my-zsh](https://ohmyz.sh/) theme can be easily chosen for a personalized experience. See [the zsh-theme-biradate](https://github.com/vemonet/zsh-theme-biradate) to easily install a simple theme and configure your terminal in a few minutes.
 
-* **Bash**: add the import autocomplete line to the `~/.bashrc` file.
+* **Bash**: add the import autocomplete line to the `~/.bashrc` file. Something like this probably:
 
 ```bash
 echo 'eval "$(_D2S_COMPLETE=source d2s)"' >> ~/.bashrc
 ```
-
-> **To be tested.**
 
 ## Build and publish
 
