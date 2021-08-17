@@ -9,13 +9,20 @@ import requests
 
 from d2s.generate_metadata import create_dataset_prompt
 
-def get_git_path(path="."):
+def get_git_path(path=None):
     """Return path of the root folder of the git repo the user is in"""
-    # TODO: Does not work for some git repository, without no reason
-    # Just find the .git folder and handle this shit ffs, no weird stuff to do here 
-    git_repo = git.Repo(path, search_parent_directories=True)
-    git_root = git_repo.working_tree_dir
-    return git_root
+    if not path:
+        path = os.getcwd()
+    for folder in Path(path).parents:
+        # Check whether "path/.git" exists and is a directory
+        git_dir = folder / ".git"
+        if git_dir.is_dir():
+            return folder
+    return path
+    # Note: gitPython does not work for some git repository, without no reason
+    # git_repo = git.Repo(path, search_parent_directories=True)
+    # git_root = git_repo.working_tree_dir
+    # return git_root
 
 def get_base_dir(file=''):
     """XDG base dir for d2s executables and jar in ~/.local/share/d2s"""
