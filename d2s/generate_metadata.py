@@ -6,27 +6,19 @@ import urllib.parse
 from datetime import date, datetime
 import pkg_resources
 from rdflib import Graph, plugin, Literal, RDF, XSD, URIRef, Namespace
-from rdflib.namespace import RDFS, DC, DCTERMS, VOID
+from rdflib.namespace import RDFS, DC, DCTERMS, VOID, SKOS, DCAT, PROV, FOAF
 from rdflib.serializer import Serializer
 from SPARQLWrapper import SPARQLWrapper, TURTLE, POST, JSON, JSONLD
 
 DATASET_NAMESPACE = 'https://w3id.org/d2s/dataset/'
 
-RDFS = Namespace("http://www.w3.org/2000/01/rdf-schema#")
-RDF = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-OWL = Namespace("http://www.w3.org/2002/07/owl#")
-SKOS = Namespace("http://www.w3.org/2004/02/skos/core#")
 SCHEMA = Namespace("http://schema.org/")
-DCAT = Namespace("http://www.w3.org/ns/dcat#")
-PROV = Namespace("http://www.w3.org/ns/prov#")
-DC = Namespace("http://purl.org/dc/elements/1.1/")
 DCTYPES = Namespace("http://purl.org/dc/dcmitype/")
 PAV = Namespace("http://purl.org/pav/")
 IDOT = Namespace("http://identifiers.org/idot/")
-FOAF = Namespace("http://xmlns.com/foaf/0.1/")
+D2S = Namespace("https://w3id.org/d2s/vocab/")
 
-
-def create_dataset_prompt():
+def create_dataset_prompt(output_file):
     """Create a new dataset from questions asked in the prompt"""
     metadataArray = []
     metadataArray.append({'id': 'dataset_id', 'description': 'Enter the identifier of your datasets, e.g. drugbank (lowercase, no space or weird characters)'})
@@ -57,9 +49,9 @@ def create_dataset_prompt():
 
     g = create_dataset(metadata_answers)
 
-    # if output_file:
-    #     g.serialize(destination=output_file, format='turtle')
-    #     print("Metadata stored to " + output_file + ' 📝')
+    if output_file:
+        g.serialize(destination=output_file, format='turtle')
+        print("Metadata stored to " + output_file + ' 📝')
     # else:
     #     print(g.serialize(format='turtle'))
 
@@ -81,6 +73,8 @@ def create_dataset(metadata):
     g.bind("dcterms", DCTERMS)
     g.bind("pav", PAV)
     g.bind("idot", IDOT)
+    g.bind("void", VOID)
+    g.bind("d2s", D2S)
     # g.bind("owl", OWL)
 
     # Summary

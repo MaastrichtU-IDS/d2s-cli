@@ -6,41 +6,89 @@ import click
 import dotenv 
 import git
 import requests
+# For JSON-LD:
+from rdflib.serializer import Serializer
+from rdflib import plugin
+import yaml
 
 from d2s.generate_metadata import create_dataset_prompt
 
-def get_git_path(path=None):
-    """Return path of the root folder of the git repo the user is in"""
-    if not path:
-        path = os.getcwd()
+def get_git_path(find_file=None):
+    """Return path of the root folder of the git repo the user is in. Or the asked file in this folder"""
+    # if not path:
+    path = os.getcwd()
     for folder in Path(path).parents:
         # Check whether "path/.git" exists and is a directory
         git_dir = folder / ".git"
         if git_dir.is_dir():
-            return folder
-    return path
+            # print(os.path.isfile(folder / find_file))
+            if find_file and os.path.isfile(str(folder) + '/' + find_file):
+                return str(folder) + '/' + find_file
+            else:
+                return str(folder)
+    print('Warning: could not find a git repository among parents folder, using the current folder.')
+    return str(path)
     # Note: gitPython does not work for some git repository, without no reason
     # git_repo = git.Repo(path, search_parent_directories=True)
     # git_root = git_repo.working_tree_dir
     # return git_root
 
+def get_yaml_config(key=None):
+    """Return path of the root folder of the git repo the user is in"""
+    yaml_path = get_git_path('d2s.yml')
+    if os.path.isfile(yaml_path):
+        with open(yaml_path) as file:
+            yaml_file = yaml.load(file, Loader=yaml.FullLoader)
+            if not key:
+                return yaml_file
+            else: 
+                if key in yaml_file.keys():
+                    return yaml_file[key]
+                else:
+                    return None
+    else:
+        return {}
+
+
 def get_base_dir(file=''):
-    """XDG base dir for d2s executables and jar in ~/.local/share/d2s"""
+    """Base dir (XDG standard) for d2s executables and jar in ~/.local/share/d2s"""
     return str(Path.home()) + '/.local/share/d2s/' + file
 
 def init_d2s_java(init_file=''):
-    """Check and download jar files"""
+    """Download jar files if not present"""
     os.makedirs(get_base_dir(), exist_ok=True)
     if init_file == 'sparql-operations' and not os.path.isfile(get_base_dir('sparql-operations.jar')):
+        print('Downloading sparql-operations.jar in ' + get_base_dir())
         r = requests.get('https://github.com/MaastrichtU-IDS/d2s-sparql-operations/releases/latest/download/sparql-operations.jar')
         with open(get_base_dir('sparql-operations.jar'), 'wb') as f:
             f.write(r.content)
 
     if init_file == 'rmlmapper' and not os.path.isfile(get_base_dir('rmlmapper.jar')):
-        # Download rmlmapper 4.9.1
-        r = requests.get('https://github.com/RMLio/rmlmapper-java/releases/download/v4.9.1/rmlmapper-4.9.1.jar')
+        print('Downloading rmlmapper.jar in ' + get_base_dir())
+        r = requests.get('https://github.com/RMLio/rmlmapper-java/releases/download/v4.12.0/rmlmapper.jar')
         with open(get_base_dir('rmlmapper.jar'), 'wb') as f:
             f.write(r.content)
+
+
+def get_parse_format(input_file):
+    """Given a filepath, return the format use by RDFLib to parse this file"""
+    filename, file_extension = os.path.splitext(input_file)
+    file_format = ''
+    # Get file format for rdflib.parse based on file extension
+    if file_extension in ['.trig', '.n3']:
+        file_format = 'n3'
+    elif file_extension in ['.json', '.jsonld', '.json-ld']:
+        file_format = 'json-ld'
+    elif file_extension in ['.xml', '.rdf']:
+        file_format = 'xml'
+    elif file_extension in ['.ttl', '.shacl']:
+        file_format = 'ttl'
+    elif file_extension in ['.nt']:
+        file_format = 'nt'
+    elif file_extension in ['.nq']:
+        file_format = 'nquads'
+    return file_format
+
 
 # Init project and config
 def init_folder():
@@ -109,9 +157,10 @@ def new_dataset():
     #     with open(pkg_resources.resource_filename('d2s', 'queries/' + filename), 'r') as f:
 
     # Store metadata file
-    os.makedirs(dataset_folder_path + '/metadata', exist_ok=True)
-    g.serialize(destination=dataset_folder_path + '/metadata/' + dataset_id + '-metadata.ttl', format='turtle')
-    print("Metadata stored to " + dataset_folder_path + '/metadata/' + dataset_id + '-metadata.ttl' + ' 📝')
+    # os.makedirs(dataset_folder_path + '/metadata', exist_ok=True)
+    g.serialize(destination=dataset_folder_path + '/metadata-' + dataset_id + '.ttl', format='turtle')
+    # g.serialize(destination=dataset_folder_path + '/metadata/' + dataset_id + '-metadata.jsonld', format='json-ld')
+    print("Metadata stored to " + dataset_folder_path + '/metadata-' + dataset_id + '.ttl' + ' 📝')
 
     # Replace metadata in all files from template for the new dataset (mainly for the dataset_id)
     for dname, dirs, files in os.walk(dataset_folder_path):

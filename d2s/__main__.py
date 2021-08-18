@@ -12,6 +12,7 @@ import datetime
 from d2s.generate_metadata import create_dataset_prompt, generate_hcls_from_sparql
 from d2s.utils import new_dataset, get_config, init_folder, get_base_dir, init_d2s_java
 from d2s.sparql_operations import sparql_insert_files, java_upload_files
+from d2s.process_datasets import process_datasets_metadata
 
 
 @click.group()
@@ -55,6 +56,28 @@ def metadata():
     help='Write RDF to output file')
 def create(output):
     create_dataset_prompt(output)
+
+
+
+@cli.command(help='Download and convert a dataset to RDF based on its metadata file')
+@click.option(
+    '-i', '--input-file', default=None, 
+    help='Input datasets metadata file to process. If not provided d2s will search for a metadata-*.ttl file')
+@click.option(
+    '-o', '--output', default='', 
+    help='Write RDF to the given output file')
+@click.option(
+    '--sample/--full', default=False, 
+    help='Run in detached mode or watch workflow')
+def run(input_file, output, sample ):
+    process_datasets_metadata(input_file, sample)
+    # if output:
+    #     g.serialize(destination=output, format='turtle')
+    #     print("Metadata stored to " + output + ' 📝')
+    # else:
+    #     print(g.serialize(format='turtle'))
+
+
 
 
 @metadata.command(help='Generate HCLS descriptive metadata (about types and relations) for the graphs in a SPARQL endpoint')
@@ -116,6 +139,11 @@ def insert(file_pattern, sparql_endpoint, username, password, graph, chunks_size
     help='Graph where to load the RDF')
 def upload(file_pattern, sparql_endpoint, username, password, graph):
     java_upload_files(file_pattern, sparql_endpoint, username, password, graph)
+
+
+
+
+
 
 
 ### Commands to run services and workflows:

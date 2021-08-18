@@ -1,6 +1,8 @@
 Click
 SPARQLWrapper
 rdflib
+rdflib-jsonld
 python-dotenv
 GitPython
 requests
+PyYAML

@@ -9,7 +9,7 @@ Requirements: Java, `wget` (download manually on Windows)
 * Run bash script to download `$dataset_id` tsv file in this folder, and convert it to csv:
 
 ```bash
-scripts/download.sh
+./download.sh
 ```
 
 > You can also manually download the file.
@@ -17,7 +17,7 @@ scripts/download.sh
 * Run Python preprocessing scripts to prepare data for the RML mapper (replace, generate ID column, etc):
 
 ```bash
-python3 scripts/preprocessing.py
+python3 preprocessing.py
 ```
 
 * Use [YARRRML Matey editor](https://rml.io/yarrrml/matey/) to test your YARRRML mappings, and convert them in RML mappings
@@ -31,7 +31,7 @@ wget -O ~/rmlmapper.jar https://github.com/RMLio/rmlmapper-java/releases/downloa
 * Run the RML mapper to generate RDF:
 
 ```bash
-java -jar ~/rmlmapper.jar -m mapping/mappings.rml.ttl -o output/$dataset_id.ttl
+java -jar ~/rmlmapper.jar -m data/mappings.rml.ttl -o output/$dataset_id.ttl
 ```
 
 > YARRRML to RML mapping conversion can be automated using the [yarrrml-parser](https://github.com/RMLio/yarrrml-parser) GitHub Action
