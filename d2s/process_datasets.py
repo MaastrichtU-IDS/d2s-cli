@@ -149,10 +149,10 @@ def process_datasets_metadata(input_file=None, sample=False):
         # For each YARRRML mappings: convert to RML and run mapper
         for file in glob.glob('*.yarrr.yml'):
             yarrrml_filename = os.fsdecode(file)
-            rml_filepath = yarrrml_filename.replace('.yarrr.yml', '.rml.ttl')
-            print('🦜 Converting YARRRML mapping '+ yarrrml_filename + ' to RML ' + rml_filepath)
+            rml_filename = yarrrml_filename.replace('.yarrr.yml', '.rml.ttl')
+            print('🦜 Converting YARRRML mapping '+ yarrrml_filename + ' to RML ' + rml_filename)
             output_filepath = '../output/' + yarrrml_filename.replace('.yarrr.yml', '.ttl')
-            os.system('yarrrml-parser -i ' + yarrrml_filename + ' -o ' + rml_filepath)
+            os.system('yarrrml-parser -i ' + yarrrml_filename + ' -o data/' + rml_filename)
 
             # Run RML mapper depending on processor given in the metadata file
             if processor.lower() == 'rmlmapper-java':
@@ -162,7 +162,7 @@ def process_datasets_metadata(input_file=None, sample=False):
                 os.chdir('data')
                 # Copy functions jar file in the same folder where we run the rmlmapper to fix issues with finding the functions
                 shutil.copyfile('../../IdsRmlFunctions.jar', 'IdsRmlFunctions.jar')
-                rml_cmd = 'java -jar ' + get_base_dir('rmlmapper.jar') + ' -s turtle -f ../../functions_ids.ttl -m ' + rml_filepath + ' -o ' + output_filepath
+                rml_cmd = 'java -jar ' + get_base_dir('rmlmapper.jar') + ' -s turtle -f ../../functions_ids.ttl -m ' + rml_filename + ' -o ' + output_filepath
                 os.system(rml_cmd)
                 os.chdir('..')
 
@@ -172,7 +172,7 @@ def process_datasets_metadata(input_file=None, sample=False):
             if processor.lower() == 'rocketrml':
                 print('🚀 Running RocketRML with NodeJS to generate the RDF to ' + output_filepath)
                 os.chdir('data')
-                os.system('node ../../rocketrml.js -m ' + rml_filepath + ' -o ' + output_filepath)
+                os.system('node ../../rocketrml.js -m ' + rml_filename + ' -o ' + output_filepath)
                 os.chdir('..')
 
         # file_time = datetime.datetime.fromtimestamp(os.path.getmtime(dstFile))
