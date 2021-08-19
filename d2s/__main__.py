@@ -67,10 +67,13 @@ def create(output):
     '-o', '--output', default='', 
     help='Write RDF to the given output file')
 @click.option(
+    '--dryrun/--publish', default=True, 
+    help='Dry run (default) or publish to the production endpoint')
+@click.option(
     '--sample/--full', default=False, 
-    help='Run in detached mode or watch workflow')
-def run(input_file, output, sample ):
-    process_datasets_metadata(input_file, sample)
+    help='Produce a sample file with 100 lines for TSV/CSV files')
+def run(input_file, output, dryrun, sample):
+    process_datasets_metadata(input_file, dryrun, sample)
     # if output:
     #     g.serialize(destination=output, format='turtle')
     #     print("Metadata stored to " + output + ' 📝')

@@ -6,3 +6,4 @@ python-dotenv
 GitPython
 requests
 PyYAML
+python-dateutil

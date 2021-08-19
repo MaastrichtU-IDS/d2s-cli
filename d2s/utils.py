@@ -49,7 +49,6 @@ def get_yaml_config(key=None):
     else:
         return {}
 
-
 def get_base_dir(file=''):
     """Base dir (XDG standard) for d2s executables and jar in ~/.local/share/d2s"""
     return str(Path.home()) + '/.local/share/d2s/' + file
