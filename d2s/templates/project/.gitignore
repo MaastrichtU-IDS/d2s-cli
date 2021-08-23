@@ -7,6 +7,7 @@ rmlmapper.jar
 workspace/
 output/
 input/
+data/
 
 # Ignore temporary and system files
 **/.ipynb_checkpoints

@@ -1,3 +1,5 @@
 rdflib
 rdflib-jsonld
 SPARQLWrapper
+git+https://github.com/MaastrichtU-IDS/d2s-cli.git@master
+# d2s

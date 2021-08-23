@@ -18,7 +18,7 @@ PAV = Namespace("http://purl.org/pav/")
 IDOT = Namespace("http://identifiers.org/idot/")
 D2S = Namespace("https://w3id.org/d2s/vocab/")
 
-def create_dataset_prompt(output_file):
+def create_dataset_prompt(output_file=None):
     """Create a new dataset from questions asked in the prompt"""
     metadataArray = []
     metadataArray.append({'id': 'dataset_id', 'description': 'Enter the identifier of your datasets, e.g. drugbank (lowercase, no space or weird characters)'})

@@ -1,0 +1,33 @@
+{
+    "@context": "https://raw.githubusercontent.com/bio2kg/bio2kg-etl/main/resources/context.jsonld",
+    "@type": "http://purl.org/dc/dcmitype/Dataset",
+    "@id": "https://w3id.org/bio2kg/dataset/$dataset_id",
+
+    "identifier": "$dataset_id",
+    "preferredPrefix": "$dataset_id",
+    "label": "$name dataset",
+    "title": "$name",
+    "description": "$description",
+    "license": "$license",
+    "keyword": "$keyword",
+    "page": "$homepage",
+    "references": "$references",
+    "publisher": {
+        "@type": "http://purl.org/dc/terms/Agent",
+        "name": "$publisher_name",
+        "page": "$publisher_url"
+    },
+
+    "sparqlEndpoint": "https://triplestore-bio2kg.apps.dsri2.unimaas.nl/sparql",
+    "graph": "https://triplestore-bio2kg.apps.dsri2.unimaas.nl/DAV/ldp/$dataset_id",
+    "processor": "rmlmapper-java",
+    "rdfSyntax": "turtle",
+    "downloadFiles": [
+        {
+            "@type": "https://w3id.org/d2s/vocab/FileDownload",
+            "downloadURL": "$downloadURL",
+            "downloadScript": "wget -N $downloadURL",
+            "postProcessScript": "prepare.sh"
+        }
+    ]
+}

@@ -1,36 +1,12 @@
 name: Process $dataset_id
-
-## Edit this workflow to keep only the steps you want to do
-#  * Download file
-#  * Preprocess with python if necessary
-#  * Convert to RDF with RML mapper
-#  * Convert RDF to HDT (compressed RDF)
-#  * Upload the RDF to a SPARQL endpoint
-#  * Generate HCLS descriptive statistics for the SPARQL endpoint
-#  * Upload the HCLS descriptive statistics to the SPARQL endpoint
-
-# To upload to the SPARQL endpoint, you need to set 2 secrets:
-# SPARQL_USER and SPARQL_PASSWORD
-
 on:
   workflow_dispatch:
-    inputs:
-      endpoint:
-        description: 'Upload to SPARQL endpoint'
-        required: true
-        default: 'https://graphdb.dumontierlab.com/repositories/test/statements'
-      graph:
-        description: 'In the Graph'
-        required: true
-        default: 'https://w3id.org/d2s/graph/$dataset_id'
-      clear:
-        description: 'Clear the graph before upload'
-        required: true
-        default: 'false'
 
+# To upload to the Virtuoso triplestores (production or staging), 
+# you need to set 1 secret: VIRTUOSO_PASSWORD
 jobs:
 
-  generate-rdf:
+  process-dataset:
     runs-on: ubuntu-latest
     outputs:
       rdf-output: ${{ steps.stepupload.outputs.rdf_output }}
@@ -43,79 +19,17 @@ jobs:
       with:
         python-version: 3.7
 
-    - name: Download data
-      run: datasets/$dataset_id/scripts/download.sh
-
-    - name: Run preprocessing Python script
+    - name: Run dataset processing
+      env:
+        DBA_PASSWORD: ${{ secrets.VIRTUOSO_PASSWORD }}
       run: |
-        python -m pip install -r requirements.txt
-        python datasets/$dataset_id/scripts/preprocessing.py
+        python -m pip install git+https://github.com/MaastrichtU-IDS/d2s-cli.git@master
+        cd datasets/$dataset_id
+        d2s run
 
-    # Generates ntriples if no graph has been defined in the RML mappings
-    # Adding a graph to the RML mappings will generate nquads
-    - name: Run RML mapper to generate RDF
-      uses: vemonet/rmlmapper-java@v4.9.0
-      with:
-        mapping: datasets/$dataset_id/mapping/mappings.rml.ttl
-        output: rdf-output.nt
-        
     - name: Upload RDF output artifact to GitHub
       id: stepupload
       uses: actions/upload-artifact@v1
       with:
         name: rdf-output
-        path: rdf-output.nt
-
-    - name: Clear existing graph in the triplestore
-      if: github.event.inputs.clear == 'true'
-      uses: vemonet/sparql-operations-action@v1
-      with:
-        query: "CLEAR GRAPH <${{ github.event.inputs.graph }}>"
-        endpoint: ${{ github.event.inputs.endpoint }}
-        user: ${{ secrets.SPARQL_USER }}
-        password: ${{ secrets.SPARQL_PASSWORD }}
-
-    - name: Upload RDF to the defined SPARQL endpoint
-      uses: MaastrichtU-IDS/RdfUpload@master
-      with:
-        file: rdf-output.nt
-        endpoint: ${{ github.event.inputs.endpoint }}
-        user: ${{ secrets.SPARQL_USER }}
-        password: ${{ secrets.SPARQL_PASSWORD }}
-        graph: ${{ github.event.inputs.graph }}
-
-  # generate-metadata:
-  #   runs-on: ubuntu-latest
-  #   needs: generate-rdf
-    
-  #   steps:
-  #   - uses: actions/checkout@v2
-
-  #   - name: Get RDF output artifact from previous job
-  #     uses: actions/download-artifact@v1
-  #     with:
-  #       name: rdf-output
-
-  #   - name: Generate HDT compressed file from RDF output
-  #     uses: vemonet/rdfhdt-action@master
-  #     with:
-  #       input: rdf-output/rdf-output.nt
-  #       output: hdt-geonames.hdt
-
-  #   - name: Upload HDT output artifact to GitHub
-  #     uses: actions/upload-artifact@v1
-  #     with:
-  #       name: hdt-output
-  #       path: hdt-geonames.hdt
-
-  #   - name: Generate HCLS metadata for the SPARQL endpoint
-  #     run: |
-  #       pip install --upgrade pip
-  #       pip install git+https://github.com/MaastrichtU-IDS/d2s-cli@master
-  #       d2s metadata analyze ${{ github.event.inputs.endpoint }} -o metadata.ttl
-
-  #   - name: Upload HCLS metadata artifact to GitHub
-  #     uses: actions/upload-artifact@v1
-  #     with:
-  #       name: hcls-metadata
-  #       path: metadata.ttl
+        path: output/*

@@ -58,22 +58,24 @@ def create(output):
     create_dataset_prompt(output)
 
 
-
 @cli.command(help='Download and convert a dataset to RDF based on its metadata file')
 @click.option(
     '-i', '--input-file', default=None, 
-    help='Input datasets metadata file to process. If not provided d2s will search for a metadata-*.ttl file')
-@click.option(
-    '-o', '--output', default='', 
-    help='Write RDF to the given output file')
+    help='Input datasets metadata file to process. If not provided d2s will search for a .ttl or .jsonld file in the current folder.')
+# @click.option(
+#     '-o', '--output', default='', 
+#     help='Write RDF to the given output file')
 @click.option(
     '--dryrun/--publish', default=True, 
-    help='Dry run (default) or publish to the production endpoint')
+    help='Dry run in the staging triplestore(default), or publish to the production triplestore.')
 @click.option(
-    '--sample/--full', default=False, 
-    help='Produce a sample file with 100 lines for TSV/CSV files')
-def run(input_file, output, dryrun, sample):
-    process_datasets_metadata(input_file, dryrun, sample)
+    '-s', '--sample', default=0, 
+    help='Produce a sample file with given number of lines for TSV/CSV files (e.g. --sample 100).')
+@click.option(
+    '-m', '--memory', default='4g', 
+    help='Memory given to the processing, e.g. for java -Xmx. Default: 4g')
+def run(input_file, dryrun, sample, memory):
+    process_datasets_metadata(input_file, dryrun, sample, memory)
     # if output:
     #     g.serialize(destination=output, format='turtle')
     #     print("Metadata stored to " + output + ' 📝')

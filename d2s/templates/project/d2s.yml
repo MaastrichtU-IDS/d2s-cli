@@ -1,0 +1,54 @@
+production:
+  sparql-endpoint: https://your-endpoint/sparql
+  virtuoso-ldp-url: https://your-endpoint/DAV/ldp
+staging:
+  sparql-endpoint: https://staging-endpoint/sparql
+  virtuoso-ldp-url: https://staging-endpoint/DAV/ldp
+base-url: https://w3id.org/d2s/
+
+prefixes:
+  rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+  xsd: "http://www.w3.org/2001/XMLSchema#"
+  grel: "http://users.ugent.be/~bjdmeest/function/grel.ttl#"
+  rr: "http://www.w3.org/ns/r2rml#"
+  idlab: "http://example.com/idlab/function/"
+  idsf: "https://w3id.org/um/ids/rmlfunctions.ttl#"
+  pubmed: "https://identifiers.org/pubmed:"
+  drugbank: "https://identifiers.org/drugbank:"
+  clinicaltrials: "https://identifiers.org/clinicaltrials:"
+  KEGG: "https://identifiers.org/kegg:"
+  kegg: "https://identifiers.org/kegg:"
+  REACT: "https://identifiers.org/react:"
+  react: "https://identifiers.org/react:"
+  MESH: "https://identifiers.org/mesh:"
+  mesh: "https://identifiers.org/mesh:"
+  pubchemcompound: "https://identifiers.org/pubchem.compound:"
+  schema: "https://schema.org/"
+  sio: "http://semanticscience.org/resource/"
+  bl: "https://w3id.org/biolink/vocab/"
+  ensembl: "http://www.ensembl.org/id/" # or https://identifiers.org/ensembl: ?
+  hgnc: "https://identifiers.org/hgnc:"
+  HGNC: "https://identifiers.org/hgnc:"
+  uniprot: "https://identifiers.org/uniprot:"
+  uniprotkb: "https://identifiers.org/uniprot:"
+  refseq: "http://www.ncbi.nlm.nih.gov/nuccore/"
+  GenBank: "http://www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?val="
+  entrezgene: "https://identifiers.org/ncbigene:"
+  ncbigene: "https://identifiers.org/ncbigene:"
+  ncbitaxon: "http://purl.org/obo/owl/NCBITaxon#"
+  taxid: "http://purl.org/obo/owl/NCBITaxon#"
+  psi-mi: "http://purl.obolibrary.org/psi-mi/"
+  intact: "http://www.ebi.ac.uk/intact/pages/details/details.xhtml?interactionAc="
+  complex: "https://identifiers.org/irefindex.complex:"
+  atc: "https://identifiers.org/atc:"
+  MGI: "https://identifiers.org/mgi:"
+  mgi: "https://identifiers.org/mgi:"
+  rxnorm: "https://www.nlm.nih.gov/research/umls/rxnorm/"
+  pharmgkbDrug: "https://identifiers.org/pharmgkb.drug:"
+  pharmgkbGene: "https://identifiers.org/pharmgkb.gene:"
+  pharmgkbDisease: "https://identifiers.org/pharmgkb.disease:"
+  pharmgkbPathways: "https://identifiers.org/pharmgkb.pathways:"
+  pharmgkb: "http://www.pharmgkb.org/do/serve?objId=$id"
+
+  d2s: "https://w3id.org/d2s/"
