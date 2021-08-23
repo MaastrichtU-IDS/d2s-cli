@@ -25,9 +25,13 @@ def execute_script(script):
     print('📇 Running the script: ' + script)
     if script.startswith('https://') or script.startswith('http://'):
         # Download script from URL
+        script_filename = os.path.basename(urlparse(script).path)
         os.system('wget -N ' + script)
-        os.chmod(script, stat.S_IEXEC)
-        script_cmd = './' + script
+        # os.system('chmod +x *.sh ')
+        import stat
+        st = os.stat(script_filename)
+        os.chmod(script_filename, st.st_mode | stat.S_IEXEC)
+        script_cmd = './' + script_filename
     elif script.endswith('.sh'):
         # Local shell script, first copy to data folder, then run
         shutil.copy('../' + script, script)
@@ -124,7 +128,7 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
 
 
     # TODO: Get lastUpdated date and version infos from the production endpoint
-    date_last_updated = None
+    # date_last_updated = None
     # if prod_endpoint:
     #     print('Querying the SPARQL endpoint ' + prod_endpoint + ' to retrieve version infos for the dataset ' + dataset_uri)
     #     query = """PREFIX d2s: <https://w3id.org/d2s/vocab/>
@@ -148,11 +152,6 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
     #     print(results["results"]["bindings"]["lastUpdated"]["value"])
     # else:
     #     print('No SPARQL endpoint associated, running the download without checking if the graphs need to be updated')
-    
-    date_last_modified = None
-    dataset_version = None
-
-    # IF ONE FILE IS NEWLY MODIFIED AFTER LAST UPDATE DATE: PROCESS EVERYTHING 
 
     print('\n🗃️  Checking files to download: \n')
 
@@ -181,7 +180,7 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
     # Download file in the data subfolder
     os.chdir('data')
     skip_global_download = True
-    # Run download and post process scripts defined for each file
+    # Check last modified date, then download and post process scripts defined for each file
     for ddl_file in download_file_list:
         ddl_url = ddl_file['downloadUrl']
         # # Extract filename from URI:
@@ -190,25 +189,33 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
 
         skip_download = True
 
-        # Download only if prepared file does not exist, is older than the file to ddl, 
+        # Check Last Modified date of the URL to download
+        print('🔎 Checking Last Modified date of file at ' + ddl_url)
+        r = requests.head(ddl_url)
+        if 'last-modified' in r.headers.keys():
+            url_last_modified = r.headers['last-modified']
+            ddl_file['lastModified'] = parsedate(url_last_modified)
+            print('📅 File to download last modified on ' + url_last_modified)
+
+
+        # if date_last_updated:
+        #     # Check if last date updated from SPARQL endpoint is older than the URL Last Modified date
+
+        # Download only if processed file does not exist, is older than the file to ddl, 
         # or if the file to ddl has no LastModified date
         if os.path.exists(processed_filename):
 
             # For if the file to download is newer than existing local file 
             print('🔎 Checking Last Modified date of file at ' + ddl_url)
             r = requests.head(ddl_url)
-            if 'last-modified' in r.headers.keys():
-                url_last_modified = r.headers['last-modified']
-                ddl_file['lastModified'] = parsedate(url_last_modified)
-                print('📅 File last modified on ' + url_last_modified)
-
+            if 'lastModified' in ddl_file.keys():
                 local_file_time = datetime.fromtimestamp(os.path.getmtime(processed_filename), timezone.utc)
-                if ddl_file['lastModified'] >= local_file_time:
-                    print('📥 According to Last Modified date, the remote file to download is newer than the existing local file. Downloading it.')
+                if ddl_file['lastModified'] > local_file_time:
+                    print('📥 According to Last Modified date, the remote file to download is newer than the existing local file (' + str(local_file_time) + '). Downloading it.')
                     skip_download = False
                     skip_global_download = False
                 else: 
-                    print('⏩️ According to Last Modified date, the remote file to download is not newer than the existing local file at data/' + processed_filename + '. Skipping download.')
+                    print('⏩️ According to Last Modified date, the remote file to download is not newer than the existing local file at data/' + processed_filename + ' (' + str(local_file_time) + '). Skipping download.')
             else:
                 print('📥 No Last Modified date for this file. Downloading it.')
                 skip_download = False
@@ -218,14 +225,7 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
             skip_download = False
             skip_global_download = False
 
-        # # Check if file to download (e.g. zip file) exists locally and last modified time
-        # if os.path.exists(ddl_filename):
-        #     if 'lastModified' in ddl_file:
-        #         local_file_time = datetime.fromtimestamp(os.path.getmtime(ddl_filename), timezone.utc)
-        #         if ddl_file['lastModified'] <= local_file_time:
-        #             print('According to Last Modified date, the remote file to download is not newer to the existing local file. Skipping download.')
-        #             skip_download = True
-
+        # Run the download and preprocess scripts if download required
         if not skip_download:
             if 'downloadScript' in ddl_file:
                 execute_script(ddl_file['downloadScript'])
@@ -246,7 +246,7 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
 
     print('')
 
-    # Automatically unzip files, to be done ad-hoc in prepare.sh?
+    ## Automatically unzip files, to be done ad-hoc in prepare.sh?
     # print("""find . -name "*.tar.gz" -exec tar -xzvf {} \;""")
     # if len(glob.glob('*.zip')) > 0:
     #     print('Unzipping .zip files ' + ', '.join(glob.glob('*.zip')))
@@ -278,7 +278,7 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
             # if not os.path.exists(filename):
             full_csv_file = csv_file + '.full'
             shutil.copy(csv_file, full_csv_file)
-            sample_cmd = 'tail -n ' + sample + ' ' + full_csv_file + ' > ' + csv_file
+            sample_cmd = 'head -n ' + str(sample) + ' ' + full_csv_file + ' > ' + csv_file
             os.system(sample_cmd)
 
     # Go back to dataset folder to convert YARRML files
