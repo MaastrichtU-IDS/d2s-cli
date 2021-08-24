@@ -13,6 +13,8 @@ import pandas as pd
 # import datetime
 from datetime import datetime, timezone
 import pathlib
+import datapane as dp
+import re
 
 from d2s.utils import init_d2s_java, get_base_dir, get_parse_format, get_yaml_config
 from d2s.sparql_operations import insert_graph_in_sparql_endpoint, java_upload_files
@@ -43,8 +45,14 @@ def execute_script(script):
         script_cmd = script
     os.system(script_cmd)
 
+def load_rdf_to_ldp(upload_file, upload_mimetype, ldp_url, ldp_slug, endpoint_user, endpoint_password):
+    print('📤 Loading the RDF file ' + upload_file + ' to the graph ' + ldp_url + '/' + ldp_slug)
+    load_cmd = 'curl -u ' + endpoint_user + ':' + endpoint_password + ' --data-binary @' + upload_file + ' -H "Accept: ' + upload_mimetype + '" -H "Content-type: ' + upload_mimetype + '" -H "Slug: ' + ldp_slug + '" ' + ldp_url
+    print(load_cmd)
+    os.system(load_cmd)
 
-def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g'):
+
+def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=False, memory='4g'):
     """Read a RDF metadata file with infos about datasets, check if the dataset exist in the project SPARQL endpoint
     Download the data if new"""
 
@@ -118,12 +126,17 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
         output_file_extension = '.ttl'
         output_file_mimetype = 'text/turtle'
 
+    if (dataset_uri, D2S.versionRegex, None) in g:
+        versionRegex = str(g.value(dataset_uri, D2S.versionRegex))
+    else:
+        versionRegex = None
+
     prod_endpoint = get_yaml_config('production')['sparql-endpoint']
     prod_ldp = get_yaml_config('production')['virtuoso-ldp-url']
     staging_endpoint = get_yaml_config('staging')['sparql-endpoint']
     if 'virtuoso-ldp-url' in get_yaml_config('staging').keys():
         staging_ldp = get_yaml_config('staging')['virtuoso-ldp-url']
-    endpoint_user = os.getenv('DBA_USER', 'dba')
+    endpoint_user = os.getenv('DBA_USER', 'dav')
     endpoint_password = os.getenv('DBA_PASSWORD')
 
 
@@ -155,24 +168,6 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
 
     print('\n🗃️  Checking files to download: \n')
 
-    # For each file to download, check the LastModified date
-    # for dataset_download in download_file_list:
-    #     url = dataset_download['downloadUrl']
-    #     print('🔎 Checking file at ' + url)
-    #     r = requests.head(url)
-    #     if 'last-modified' in r.headers.keys():
-    #         url_last_modified = r.headers['last-modified']
-    #         dataset_download['lastModified'] = parsedate(url_last_modified)
-    #         print('📅 File last modified on ' + url_last_modified)
-    #         # if date_last_updated and date_last_updated < dataset_download['lastModified']:
-    #         #     dataset_download['doDownload'] = True
-    #     else:
-    #         print('Last modified date of the file could not be found')
-    #         date_last_modified = None
-
-    # skip_download = False
-    # if date_last_modified:
-
     # Download if last modified date is later than last updated date (or if modified/updated date could not be fetched)
     # file_time = datetime.fromtimestamp(os.path.getmtime(dstFile))
     # if not date_last_modified or not date_last_updated or date_last_modified > date_last_updated:
@@ -186,6 +181,15 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
         # # Extract filename from URI:
         # ddl_filename = os.path.basename(urlparse(ddl_url).path)
         processed_filename = ddl_file['processedFilename']
+        
+        if versionRegex:
+            # TODO: Extract version, then increment it 
+            # and check if new version available
+            version_search = re.search(versionRegex, ddl_url, re.IGNORECASE)
+            if version_search:
+                file_version = version_search.group(1)
+                print(file_version)
+                
 
         skip_download = True
 
@@ -197,17 +201,17 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
             ddl_file['lastModified'] = parsedate(url_last_modified)
             print('📅 File to download last modified on ' + url_last_modified)
 
-
-        # if date_last_updated:
-        #     # Check if last date updated from SPARQL endpoint is older than the URL Last Modified date
+        ## Check if last date updated from SPARQL endpoint is older than the URL Last Modified date
+        # if ddl_file['lastModified'] > date_last_updated:
+        #     print('📥 According to Last Modified date, the remote file to download is newer than the existing local file (' + str(local_file_time) + '). Downloading it.')
+        #     skip_download = False
+        #     skip_global_download = False
+        # elif os.path.exists(processed_filename):
 
         # Download only if processed file does not exist, is older than the file to ddl, 
         # or if the file to ddl has no LastModified date
         if os.path.exists(processed_filename):
-
-            # For if the file to download is newer than existing local file 
-            print('🔎 Checking Last Modified date of file at ' + ddl_url)
-            r = requests.head(ddl_url)
+            # If the file to download is newer than existing local file 
             if 'lastModified' in ddl_file.keys():
                 local_file_time = datetime.fromtimestamp(os.path.getmtime(processed_filename), timezone.utc)
                 if ddl_file['lastModified'] > local_file_time:
@@ -245,6 +249,19 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
         print('⏩️ No dataset has been downloaded, skipping global post processing.')
 
     print('')
+
+    # Generating reports for CSV
+    if report:
+        print('📋 Produce HTML report for CSV files in data folder with datapane')
+        for ddl_file in download_file_list:
+            processed_filename = ddl_file['processedFilename']
+            if processed_filename.endswith('.csv'):
+                df = pd.read_csv(processed_filename)
+                dp.Report(
+                    dp.Text('## ' + processed_filename),
+                    dp.DataTable(df)
+                ).save(path='report-' + processed_filename.replace('.csv', '') + '.html', 
+                    open=True, formatting=dp.ReportFormatting(width=dp.ReportWidth.FULL))
 
     ## Automatically unzip files, to be done ad-hoc in prepare.sh?
     # print("""find . -name "*.tar.gz" -exec tar -xzvf {} \;""")
@@ -324,8 +341,6 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
         os.system('cat output/*.nt > ' + output_filepath)
         os.system('ls output/*.nt | grep -v ' + output_filepath + ' | xargs rm')
         # os.system('ls *.nt | grep -v ' + dataset_id + '.nt' + ' | parallel rm')
-    if len(glob.glob('output/*.ttl')) > 1:
-        raise Exception("More than 1 turtle output file found. If you produce multiple files as output, use the rdfSyntax ntriples, so the output can be concatenated in one graph per dataset") 
 
     if dryrun:
         print('🧪 Dry run, publishing to staging endpoint')
@@ -337,49 +352,62 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, memory='4g
         update_ldp = prod_ldp
         raise Exception("Publishing not implemented yet") 
         
-    dataset_graph = update_ldp + '/' + dataset_id
+
+    if (dataset_uri, D2S.graph, None) in g:
+        dataset_graph = str(g.value(dataset_uri, D2S.graph))
+    else:
+        dataset_graph = update_ldp + '/' + dataset_id
+    output_metadata_file = 'output/metadata.ttl'
     metadata_graph = update_ldp + '/metadata-' + dataset_id
     metadata_slug = 'metadata-' + dataset_id
+
+    if os.path.exists(output_metadata_file):
+        os.remove(output_metadata_file)
+        # os.system('rm ' + output_metadata_file)
+    if len(glob.glob('output/*.ttl')) > 1:
+        raise Exception("More than 1 turtle output file found. If you produce multiple files as output, use the rdfSyntax ntriples, so the output can be concatenated in one graph per dataset") 
 
     # TODO: once RDF ouput files generated, if new version and not dry run: load to production Virtuoso
     # Otherwise load to staging Virtuoso and generate metadata
     # TODO: do we want 1 graph per dataset or 1 graph per file? I would say 1 per dataset to improve metadata generation per graph
+    
+    # print(update_endpoint)
+    # print(endpoint_user)
+    # print(endpoint_password)
 
-    # # Iterates the output file to upload them, should be only one turtle or ntriples file
-    # for output_file in glob.glob('output/*'):
-    #     # Clear graph SPARQL query
-    #     sparql = SPARQLWrapper(update_endpoint)
-    #     sparql.setMethod(POST)
-    #     # sparql.setHTTPAuth(BASIC) or DIGEST
-    #     sparql.setCredentials(endpoint_user, endpoint_password)
-    #     query = 'CLEAR GRAPH <' + dataset_graph + '>'
-    #     print('🗑️ Clearing previous graph')
-    #     sparql.setQuery(query)
-    #     query_results = sparql.query()
-    #     print(query_results.response.read())
-
-    #     # TODO: also delete file from the DAV? 
-    #     # The file overwritten automatically at upload (to verify)
-
-    #     # Load the RDF output file after deleting previous graph
-    #     print('📤 Loading the RDF ouput file ' + output_file)
-    #     load_cmd = 'curl -u ' + endpoint_user + ':' + endpoint_password + ' --data-binary @' + output_file + ' -H "Accept: ' + output_file_mimetype + '" -H "Content-type: ' + output_file_mimetype + '" -H "Slug: ' + dataset_id + '" ' + dataset_graph
-    #     os.system(load_cmd)
-
-    #     # TODO: then run d2s metadata to get HCLS metadata and upload it in the dataset metadata graph
-    #     # And compare new version metadata to the current version in production
-    #     # generate_hcls_from_sparql(sparql_endpoint, rdf_distribution_uri, metadata_type, graph)
-    #     g_metadata = generate_hcls_from_sparql(update_endpoint, dataset_graph, 'hcls', dataset_graph)
-    #     output_metadata_file = 'output/metadata.ttl'
-    #     g_metadata.serialize(destination=output_metadata_file, format='turtle', indent=4)
-
-    #     print('📤 Loading the metadata file ' + output_file)
-    #     load_metadata_cmd = 'curl -u ' + endpoint_user + ':' + endpoint_password + ' --data-binary @' + output_metadata_file + ' -H "Accept: text/turtle" -H "Content-type: text/turtle" -H "Slug: ' + metadata_slug + '" ' + metadata_graph
-    #     os.system(load_metadata_cmd)
-    #     # TODO: handle dataset_version
+    # Iterates the output file to upload them, should be only one turtle or ntriples file
+    for output_file in glob.glob('output/*'):
+        # Load the RDF output file to the Virtuoso LDP DAV
+        # Existing file is overwritten automatically at upload
+        load_rdf_to_ldp(output_file, output_file_mimetype, update_ldp, dataset_id, endpoint_user, endpoint_password)
         
-    #     print('✔️ Dataset processed and loaded to ' + update_endpoint)
+        # TODO: then run d2s metadata to get HCLS metadata and upload it in the dataset metadata graph
+        # And compare new version metadata to the current version in production
+        # generate_hcls_from_sparql(sparql_endpoint, rdf_distribution_uri, metadata_type, graph)
+        g_metadata = generate_hcls_from_sparql(update_endpoint, dataset_graph, 'hcls', dataset_graph)
+        
+        g_metadata.serialize(destination=output_metadata_file, format='turtle', indent=4)
 
+        load_rdf_to_ldp(output_metadata_file, "Accept: text/turtle", update_ldp, metadata_slug, endpoint_user, endpoint_password)
+        
+        # TODO: handle dataset_version
+        
+        print('✔️ Dataset processed and loaded to ' + update_endpoint)
+
+
+        # Clear graph SPARQL query
+        # try:
+        #     sparql = SPARQLWrapper(update_endpoint)
+        #     sparql.setMethod(POST)
+        #     # sparql.setHTTPAuth(BASIC) or DIGEST
+        #     sparql.setCredentials(endpoint_user, endpoint_password)
+        #     query = 'CLEAR GRAPH <' + dataset_graph + '>'
+        #     print('🗑️ Clearing previous graph')
+        #     sparql.setQuery(query)
+        #     query_results = sparql.query()
+        #     print(query_results.response.read())
+        # except:
+        #     print('Could not delete the graph (probably it does not exist)')
 
     # try:
     #     insert_results = insert_file_in_sparql_endpoint(file_path, sparql_endpoint, username, password, graph_uri, chunks_size)

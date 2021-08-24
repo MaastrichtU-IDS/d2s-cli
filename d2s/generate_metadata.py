@@ -164,8 +164,8 @@ PREFIX void-ext: <http://ldf.fi/void-ext#>\n"""
         # print(results)
         select_all_graphs_results = results["results"]["bindings"]
     else: 
-        pass
-        # TODO: just query the single provided graph
+        # Just query the single provided graph
+        select_all_graphs_results = [{ 'graph': {'value': str(graph)}}]
 
     # Compute HCLS metadata per graph
     for graph_row in select_all_graphs_results:

@@ -1,4 +1,4 @@
-Click
+Click<8.0.0,>=7.0.0
 SPARQLWrapper
 rdflib
 rdflib-jsonld
@@ -7,3 +7,4 @@ GitPython
 requests
 PyYAML
 python-dateutil
+datapane>=0.10.0

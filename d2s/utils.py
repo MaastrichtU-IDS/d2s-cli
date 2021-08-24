@@ -13,6 +13,8 @@ from rdflib import plugin
 
 from d2s.generate_metadata import create_dataset_prompt
 
+# logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+
 def get_git_path(find_file=None):
     """Return path of the root folder of the git repo the user is in. Or the asked file in this folder"""
     # if not path:

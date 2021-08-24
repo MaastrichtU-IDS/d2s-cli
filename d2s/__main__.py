@@ -72,10 +72,13 @@ def create(output):
     '-s', '--sample', default=0, 
     help='Produce a sample file with given number of lines for TSV/CSV files (e.g. --sample 100).')
 @click.option(
+    '--report/--no-report', default=False, 
+    help='Activate the generation of a HTML report to explore downloaded tabular files')
+@click.option(
     '-m', '--memory', default='4g', 
     help='Memory given to the processing, e.g. for java -Xmx. Default: 4g')
-def run(input_file, dryrun, sample, memory):
-    process_datasets_metadata(input_file, dryrun, sample, memory)
+def run(input_file, dryrun, sample, report, memory):
+    process_datasets_metadata(input_file, dryrun, sample, report, memory)
     # if output:
     #     g.serialize(destination=output, format='turtle')
     #     print("Metadata stored to " + output + ' 📝')
