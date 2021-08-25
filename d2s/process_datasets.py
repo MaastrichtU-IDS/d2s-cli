@@ -341,7 +341,7 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=Fal
             rmlstreamer_dataset_path = os.getcwd()
             parallel_cores = str(get_yaml_config('resources')['flink-cores'])
             os.chdir('data')
-            rmlstreamer_cmd = '/opt/flink/bin/flink run -p ' + parallel_cores + ' -c io.rml.framework.Main /mnt/RMLStreamer.jar toFile -m ' + rmlstreamer_dataset_path + '/data/' + rml_filename + ' -o ' + rmlstreamer_dataset_path + '/output/output-' + dataset_id + '.nt --job-name "RMLStreamer Bio2KG - ' + dataset_id + '"'
+            rmlstreamer_cmd = '/opt/flink/bin/flink run -p ' + parallel_cores + ' -c io.rml.framework.Main /opt/flink/lib/RMLStreamer.jar toFile -m ' + rmlstreamer_dataset_path + '/data/' + rml_filename + ' -o ' + rmlstreamer_dataset_path + '/output/output-' + dataset_id + '.nt --job-name "RMLStreamer Bio2KG - ' + dataset_id + '"'
             os.system(rmlstreamer_cmd)
             os.chdir('..')
             
