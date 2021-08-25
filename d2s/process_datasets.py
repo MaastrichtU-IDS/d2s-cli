@@ -51,8 +51,10 @@ def load_rdf_to_ldp(upload_file, upload_mimetype, ldp_url, ldp_slug, endpoint_us
     print(load_cmd)
     os.system(load_cmd)
 
+# def local_or_rmlstreamer():
 
-def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=False, memory='4g'):
+
+def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=False, memory='4g', rmlstreamer_run=False):
     """Read a RDF metadata file with infos about datasets, check if the dataset exist in the project SPARQL endpoint
     Download the data if new"""
 
@@ -106,7 +108,8 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=Fal
         dataset_uri = datasets_described.pop()
     
     if (dataset_uri, DC.identifier, None) in g:
-        dataset_id = str(g.value(dataset_uri, DC.identifier))
+        dataset_id_cap = str(g.value(dataset_uri, DC.identifier))
+        dataset_id = dataset_id_cap.lower()
     else:
         raise Exception("Could not find the dc:identifier property for the dataset in the metadata file") 
 
@@ -114,6 +117,16 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=Fal
         processor = str(g.value(dataset_uri, D2S.processor))
     else:
         processor = 'rmlmapper-java'
+
+    if processor.lower() == 'rmlstreamer':
+        if not rmlstreamer_run:
+            # Run this same processing directly in the RMLStreamer
+            run_d2s_cmd = '"cd /mnt/datasets/' + dataset_id_cap + ' && d2s run --rmlstreamer'
+            rmlstreamer_cmd = 'oc exec $(oc get pod --selector app=flink --selector component=jobmanager --no-headers -o=custom-columns=NAME:.metadata.name) -- bash -c ' + run_d2s_cmd
+            os.system(rmlstreamer_cmd)
+            # return process_datasets_metadata(input_file, dryrun, sample, report, memory, True)
+            return None
+
 
     if (dataset_uri, D2S.rdfSyntax, None) in g:
         rdfSyntax = str(g.value(dataset_uri, D2S.rdfSyntax))
@@ -322,8 +335,16 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=Fal
             os.system(rml_cmd)
             os.chdir('..')
 
-        if processor.lower() == 'rmlstreamer':
-            print('🐿️ RMLStreamer not implemented yet')
+        # if processor.lower() == 'rmlstreamer':
+        if rmlstreamer_run:
+            print('🐿️ Running the RMLStreamer')
+            rmlstreamer_dataset_path = os.getcwd()
+            parallel_cores = str(get_yaml_config('resources')['flink-cores'])
+            os.chdir('data')
+            rmlstreamer_cmd = '/opt/flink/bin/flink run -p ' + parallel_cores + ' -c io.rml.framework.Main /mnt/RMLStreamer.jar toFile -m ' + rmlstreamer_dataset_path + '/data/' + rml_filename + ' -o ' + rmlstreamer_dataset_path + '/output/output-' + dataset_id + '.nt --job-name "RMLStreamer Bio2KG - ' + dataset_id + '"'
+            os.system(rmlstreamer_cmd)
+            os.chdir('..')
+            
 
         if processor.lower() == 'rocketrml':
             print('🚀 Running RocketRML with NodeJS to generate the RDF to ' + output_filepath)
