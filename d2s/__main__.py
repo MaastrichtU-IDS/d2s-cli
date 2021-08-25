@@ -77,8 +77,11 @@ def create(output):
 @click.option(
     '-m', '--memory', default='4g', 
     help='Memory given to the processing, e.g. for java -Xmx. Default: 4g')
-def run(input_file, dryrun, sample, report, memory):
-    process_datasets_metadata(input_file, dryrun, sample, report, memory)
+@click.option(
+    '--rmlstreamer/--local', default=False, 
+    help='Activate the generation of a HTML report to explore downloaded tabular files')
+def run(input_file, dryrun, sample, report, memory, rmlstreamer):
+    process_datasets_metadata(input_file, dryrun, sample, report, memory, rmlstreamer)
     # if output:
     #     g.serialize(destination=output, format='turtle')
     #     print("Metadata stored to " + output + ' 📝')
