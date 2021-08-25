@@ -28,7 +28,7 @@ def execute_script(script):
     if script.startswith('https://') or script.startswith('http://'):
         # Download script from URL
         script_filename = os.path.basename(urlparse(script).path)
-        os.system('wget -N ' + script)
+        os.system('wget -qN ' + script)
         # os.system('chmod +x *.sh ')
         import stat
         st = os.stat(script_filename)
@@ -120,9 +120,20 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=Fal
 
     if processor.lower() == 'rmlstreamer':
         if not rmlstreamer_run:
-            # Run this same processing directly in the RMLStreamer
-            run_d2s_cmd = '"cd /mnt/datasets/' + dataset_id_cap + ' && d2s run --rmlstreamer'
+            print('📤 Copying mappings to the RMLStreamer.')
+            # Make sure the YARRRML mappings on the DSRI RMLStreamer are up to date
+            rmlstreamer_dataset_path = '/mnt/datasets/' + dataset_id_cap + '/'
+            oc_cp_cmd = 'oc cp *.yarrr.yml $(oc get pod --selector app=flink --selector component=jobmanager --no-headers -o=custom-columns=NAME:.metadata.name):' + rmlstreamer_dataset_path
+            os.system(oc_cp_cmd)
+            oc_cp_cmd = 'oc cp *.jsonld $(oc get pod --selector app=flink --selector component=jobmanager --no-headers -o=custom-columns=NAME:.metadata.name):' + rmlstreamer_dataset_path
+            os.system(oc_cp_cmd)
+            oc_cp_cmd = 'oc cp prepare.sh $(oc get pod --selector app=flink --selector component=jobmanager --no-headers -o=custom-columns=NAME:.metadata.name):' + rmlstreamer_dataset_path
+            os.system(oc_cp_cmd)
+            # Run this same function directly in the RMLStreamer
+            print('☁️  Running the process in the RMLStreamer.')
+            run_d2s_cmd = '"cd ' + rmlstreamer_dataset_path + ' && d2s run --rmlstreamer"'
             rmlstreamer_cmd = 'oc exec $(oc get pod --selector app=flink --selector component=jobmanager --no-headers -o=custom-columns=NAME:.metadata.name) -- bash -c ' + run_d2s_cmd
+            print(rmlstreamer_cmd)
             os.system(rmlstreamer_cmd)
             # return process_datasets_metadata(input_file, dryrun, sample, report, memory, True)
             return None
@@ -247,7 +258,7 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=Fal
             if 'downloadScript' in ddl_file:
                 execute_script(ddl_file['downloadScript'])
             elif 'downloadUrl' in ddl_file:
-                os.system("wget -N " + ddl_url)
+                os.system("wget -qN " + ddl_url)
             if 'postProcessScript' in ddl_file:
                 execute_script(ddl_file['postProcessScript'])
         print('')
