@@ -7,5 +7,5 @@ GitPython
 requests
 PyYAML
 python-dateutil
-datapane>=0.10.0
 pandas
+# datapane>=0.12.1

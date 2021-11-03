@@ -12,8 +12,7 @@ from urllib.parse import urlparse
 import pandas as pd 
 # import datetime
 from datetime import datetime, timezone
-import pathlib
-import datapane as dp
+# import pathlib
 import re
 
 from d2s.utils import init_d2s_java, get_base_dir, get_parse_format, get_yaml_config
@@ -51,8 +50,30 @@ def load_rdf_to_ldp(upload_file, upload_mimetype, ldp_url, ldp_slug, endpoint_us
     print(load_cmd)
     os.system(load_cmd)
 
-# def local_or_rmlstreamer():
 
+# TODO: example of a workflow to build entities and associations 
+# following SIO reificatedgraph patterns (hasAttribute)
+def sio_builder_csv(filename, row):
+    ## For large files:
+    chunksize = 10000
+    with pd.read_csv(filename, chunksize=chunksize) as reader:
+        for chunk in reader:
+            print(chunk)
+            # TODO: create SioBuilder
+            sioBuilder = {}
+            # sioBuilder = SioBuilder(row['hgnc_id'])
+            sioBuilder.subject(row['hgnc_id'])
+            sioBuilder.addAttribute(
+                value=row['symbol'], 
+                type='sio:Symbol'
+            )
+            sioBuilder.addAssociation(
+                subject=row['hgnc_id'],
+                object=row['associated with'],
+                predicate='sio:isAssociatedWith',
+                supportedBy=row['pmid']
+            )
+            sioBuilder.to_rdf()
 
 def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=False, memory='4g', rmlstreamer_run=False):
     """Read a RDF metadata file with infos about datasets, check if the dataset exist in the project SPARQL endpoint
@@ -274,18 +295,20 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=Fal
 
     print('')
 
-    # Generating reports for CSV
-    if report:
-        print('📋 Produce HTML report for CSV files in data folder with datapane')
-        for ddl_file in download_file_list:
-            processed_filename = ddl_file['processedFilename']
-            if processed_filename.endswith('.csv'):
-                df = pd.read_csv(processed_filename)
-                dp.Report(
-                    dp.Text('## ' + processed_filename),
-                    dp.DataTable(df)
-                ).save(path='report-' + processed_filename.replace('.csv', '') + '.html', 
-                    open=True, formatting=dp.ReportFormatting(width=dp.ReportWidth.FULL))
+    # TODO: Create a HTML report about input CSV data with Datapane
+    # import datapane as dp
+    # if report:
+    #     print('📋 Produce HTML report for CSV files in data folder with datapane')
+    #     for ddl_file in download_file_list:
+    #         processed_filename = ddl_file['processedFilename']
+    #         if processed_filename.endswith('.csv'):
+    #             df = pd.read_csv(processed_filename)
+    #             dp.Report(
+    #                 dp.Text('## ' + processed_filename),
+    #                 dp.DataTable(df)
+    #             ).save(path='report-' + processed_filename.replace('.csv', '') + '.html', 
+    #                 open=True, formatting=dp.ReportFormatting(width=dp.ReportWidth.FULL))
+
 
     ## Automatically unzip files, to be done ad-hoc in prepare.sh?
     # print("""find . -name "*.tar.gz" -exec tar -xzvf {} \;""")
@@ -311,6 +334,7 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=Fal
     #         # csv_table.to_csv(csv_file, index=False)
     #     except Exception as e:
     #         print('Could not convert the file ' + tsv_file + ' to CSV')
+
 
     # Create sample for CSV files
     if sample > 0:
@@ -407,7 +431,9 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=Fal
     # print(endpoint_user)
     # print(endpoint_password)
 
-    # Iterates the output file to upload them, should be only one turtle or ntriples file
+
+    # Iterates the output file to upload them to the Virtuoso LDP triplestore
+    # Should be only one turtle or ntriples file because the LDP create 1 graph per file
     for output_file in glob.glob('output/*'):
         # Load the RDF output file to the Virtuoso LDP DAV
         # Existing file is overwritten automatically at upload

@@ -1,0 +1,47 @@
+{% set name = "d2s" %}
+{% set version = "0.3.1" %}
+
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/d2s-{{ version }}.tar.gz
+  sha256: b62170b202b1a1302ef291691b65772fbe80dc8b49c963a07d329ebe3918a691
+
+build:
+  number: 0
+  noarch: python
+  script: {{ PYTHON }} -m pip install . 
+
+requirements:
+  host:
+    - pip
+    - python
+  run:
+    - click
+    - gitpython
+    - python
+    - python-dotenv
+    - rdflib
+    - requests
+    - sparqlwrapper
+
+test:
+  imports:
+    - d2s
+  commands:
+    - pip check
+  requires:
+    - pip
+
+about:
+  home: https://github.com/MaastrichtU-IDS/d2s-cli
+  summary: A Command Line Interface to orchestrate the integration of heterogenous data and the deployment of services consuming the integrated data. See https://d2s.semanticscience.org
+  license: MIT
+  license_file: LICENSE
+
+extra:
+  recipe-maintainers:
+    - vemonet
