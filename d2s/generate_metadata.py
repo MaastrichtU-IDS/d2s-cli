@@ -213,8 +213,9 @@ PREFIX void-ext: <http://ldf.fi/void-ext#>\n"""
                     hcls_graph.parse(data=results, format="turtle")
                     g += hcls_graph
                     with open(root / '../REPORT_SUCCESS.md', 'a') as f:
-                        f.write('## Returned RDF \n\n```turtle\n' + results.decode('utf-8') + "\n```\n\n"
-                            + 'Query: \n\n```sparql\n' + complete_query + "\n```\n\n"
+                        # f.write('## Returned RDF \n\n```turtle\n' + results.decode('utf-8') + "\n```\n\n"
+                        f.write('## Successfull query \n\n'
+                            + '```sparql\n' + complete_query + "\n```\n\n"
                             + 'In SPARQL endpoint: ' + sparql_endpoint + "\n\n---\n")
                 except Exception as e:
                     print('SPARQL query failed:')
