@@ -8,8 +8,8 @@ import git
 import requests
 import yaml
 # For JSON-LD:
-from rdflib.serializer import Serializer
-from rdflib import plugin
+# from rdflib.serializer import Serializer
+# from rdflib import plugin
 
 from d2s.generate_metadata import create_dataset_prompt
 

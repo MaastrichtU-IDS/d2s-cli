@@ -1,8 +1,7 @@
 import os
 import glob
-from rdflib import Graph, plugin, Literal, RDF, XSD, URIRef, Namespace
+from rdflib import Graph, Literal, RDF, XSD, URIRef, Namespace
 from rdflib.namespace import RDFS, DC, DCTERMS, VOID, DCAT
-from rdflib.serializer import Serializer
 from SPARQLWrapper import SPARQLWrapper, TURTLE, POST, JSON, JSONLD
 import requests
 from dateutil.parser import parse as parsedate
@@ -75,7 +74,7 @@ def sio_builder_csv(filename, row):
             )
             sioBuilder.to_rdf()
 
-def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=False, memory='4g', rmlstreamer_run=False):
+def process_datasets_metadata(input_file=None, dryrun=True, staging=True, sample=0, report=False, memory='4g', rmlstreamer_run=False):
     """Read a RDF metadata file with infos about datasets, check if the dataset exist in the project SPARQL endpoint
     Download the data if new"""
 
@@ -384,6 +383,7 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=Fal
         if processor.lower() == 'rocketrml':
             print('🚀 Running RocketRML with NodeJS to generate the RDF to ' + output_filepath)
             os.chdir('data')
+            # Try to increase node memory to 2G for large files with --max_old_space_size=2048
             os.system('node ../../rocketrml.js -m ' + rml_filename + ' -o ' + output_filepath)
             os.chdir('..')
 
@@ -399,73 +399,76 @@ def process_datasets_metadata(input_file=None, dryrun=True, sample=0, report=Fal
         # os.system('ls *.nt | grep -v ' + dataset_id + '.nt' + ' | parallel rm')
 
     if dryrun:
-        print('🧪 Dry run, publishing to staging endpoint')
-        update_endpoint = staging_endpoint
-        update_ldp = staging_ldp
+        print('✅ Dry run completed: RDF generated, but not published')
     else:
-        print('📰 Publishing the processed file to the production endpoint')
-        update_endpoint = prod_endpoint
-        update_ldp = prod_ldp
-        raise Exception("Publishing not implemented yet") 
+        if staging:
+            print('🧪 Publishing to staging endpoint')
+            update_endpoint = staging_endpoint
+            update_ldp = staging_ldp
+        else:
+            print('📰 Publishing the processed file to the production endpoint')
+            update_endpoint = prod_endpoint
+            update_ldp = prod_ldp
+            raise Exception("Publishing not implemented yet") 
+            
+
+        if (dataset_uri, D2S.graph, None) in g:
+            dataset_graph = str(g.value(dataset_uri, D2S.graph))
+        else:
+            dataset_graph = update_ldp + '/' + dataset_id
+        output_metadata_file = 'output/metadata.ttl'
+        metadata_graph = update_ldp + '/metadata-' + dataset_id
+        metadata_slug = 'metadata-' + dataset_id
+
+        if os.path.exists(output_metadata_file):
+            os.remove(output_metadata_file)
+            # os.system('rm ' + output_metadata_file)
+        if len(glob.glob('output/*.ttl')) > 1:
+            raise Exception("More than 1 turtle output file found. If you produce multiple files as output, use the rdfSyntax ntriples, so the output can be concatenated in one graph per dataset") 
+
+        # TODO: once RDF ouput files generated, if new version and not dry run: load to production Virtuoso
+        # Otherwise load to staging Virtuoso and generate metadata
+        # TODO: do we want 1 graph per dataset or 1 graph per file? I would say 1 per dataset to improve metadata generation per graph
         
-
-    if (dataset_uri, D2S.graph, None) in g:
-        dataset_graph = str(g.value(dataset_uri, D2S.graph))
-    else:
-        dataset_graph = update_ldp + '/' + dataset_id
-    output_metadata_file = 'output/metadata.ttl'
-    metadata_graph = update_ldp + '/metadata-' + dataset_id
-    metadata_slug = 'metadata-' + dataset_id
-
-    if os.path.exists(output_metadata_file):
-        os.remove(output_metadata_file)
-        # os.system('rm ' + output_metadata_file)
-    if len(glob.glob('output/*.ttl')) > 1:
-        raise Exception("More than 1 turtle output file found. If you produce multiple files as output, use the rdfSyntax ntriples, so the output can be concatenated in one graph per dataset") 
-
-    # TODO: once RDF ouput files generated, if new version and not dry run: load to production Virtuoso
-    # Otherwise load to staging Virtuoso and generate metadata
-    # TODO: do we want 1 graph per dataset or 1 graph per file? I would say 1 per dataset to improve metadata generation per graph
-    
-    # print(update_endpoint)
-    # print(endpoint_user)
-    # print(endpoint_password)
+        # print(update_endpoint)
+        # print(endpoint_user)
+        # print(endpoint_password)
 
 
-    # Iterates the output file to upload them to the Virtuoso LDP triplestore
-    # Should be only one turtle or ntriples file because the LDP create 1 graph per file
-    for output_file in glob.glob('output/*'):
-        # Load the RDF output file to the Virtuoso LDP DAV
-        # Existing file is overwritten automatically at upload
-        load_rdf_to_ldp(output_file, output_file_mimetype, update_ldp, dataset_id, endpoint_user, endpoint_password)
-        
-        # TODO: then run d2s metadata to get HCLS metadata and upload it in the dataset metadata graph
-        # And compare new version metadata to the current version in production
-        # generate_hcls_from_sparql(sparql_endpoint, rdf_distribution_uri, metadata_type, graph)
-        g_metadata = generate_hcls_from_sparql(update_endpoint, dataset_graph, 'hcls', dataset_graph)
-        
-        g_metadata.serialize(destination=output_metadata_file, format='turtle', indent=4)
+        # Iterates the output file to upload them to the Virtuoso LDP triplestore
+        # Should be only one turtle or ntriples file because the LDP create 1 graph per file
+        for output_file in glob.glob('output/*'):
+            # Load the RDF output file to the Virtuoso LDP DAV
+            # Existing file is overwritten automatically at upload
+            load_rdf_to_ldp(output_file, output_file_mimetype, update_ldp, dataset_id, endpoint_user, endpoint_password)
+            
+            # TODO: then run d2s metadata to get HCLS metadata and upload it in the dataset metadata graph
+            # And compare new version metadata to the current version in production
+            # generate_hcls_from_sparql(sparql_endpoint, rdf_distribution_uri, metadata_type, graph)
+            g_metadata = generate_hcls_from_sparql(update_endpoint, dataset_graph, 'hcls', dataset_graph)
+            
+            g_metadata.serialize(destination=output_metadata_file, format='turtle', indent=4)
 
-        load_rdf_to_ldp(output_metadata_file, "Accept: text/turtle", update_ldp, metadata_slug, endpoint_user, endpoint_password)
-        
-        # TODO: handle dataset_version
-        
-        print('✔️ Dataset processed and loaded to ' + update_endpoint)
+            load_rdf_to_ldp(output_metadata_file, "Accept: text/turtle", update_ldp, metadata_slug, endpoint_user, endpoint_password)
+            
+            # TODO: handle dataset_version
+            
+            print('✅ Dataset processed and loaded to ' + update_endpoint)
 
 
-        # Clear graph SPARQL query
-        # try:
-        #     sparql = SPARQLWrapper(update_endpoint)
-        #     sparql.setMethod(POST)
-        #     # sparql.setHTTPAuth(BASIC) or DIGEST
-        #     sparql.setCredentials(endpoint_user, endpoint_password)
-        #     query = 'CLEAR GRAPH <' + dataset_graph + '>'
-        #     print('🗑️ Clearing previous graph')
-        #     sparql.setQuery(query)
-        #     query_results = sparql.query()
-        #     print(query_results.response.read())
-        # except:
-        #     print('Could not delete the graph (probably it does not exist)')
+            # Clear graph SPARQL query
+            # try:
+            #     sparql = SPARQLWrapper(update_endpoint)
+            #     sparql.setMethod(POST)
+            #     # sparql.setHTTPAuth(BASIC) or DIGEST
+            #     sparql.setCredentials(endpoint_user, endpoint_password)
+            #     query = 'CLEAR GRAPH <' + dataset_graph + '>'
+            #     print('🗑️ Clearing previous graph')
+            #     sparql.setQuery(query)
+            #     query_results = sparql.query()
+            #     print(query_results.response.read())
+            # except:
+            #     print('Could not delete the graph (probably it does not exist)')
 
     # try:
     #     insert_results = insert_file_in_sparql_endpoint(file_path, sparql_endpoint, username, password, graph_uri, chunks_size)

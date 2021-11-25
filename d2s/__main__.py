@@ -5,10 +5,6 @@ import shutil
 import click
 import datetime
 
-# from rdflib import Graph, plugin, Literal, RDF, URIRef, Namespace
-# from rdflib.namespace import RDFS, XSD, DC, DCTERMS, VOID
-# from rdflib.serializer import Serializer
-
 from d2s.generate_metadata import create_dataset_prompt, generate_hcls_from_sparql
 from d2s.utils import new_dataset, get_config, init_folder, get_base_dir, init_d2s_java
 from d2s.sparql_operations import sparql_insert_files, java_upload_files
@@ -67,7 +63,10 @@ def create(output):
 #     help='Write RDF to the given output file')
 @click.option(
     '--dryrun/--publish', default=True, 
-    help='Dry run in the staging triplestore(default), or publish to the production triplestore.')
+    help='Dry run, only generate RDF and does not publish to a triplestore')
+@click.option(
+    '--staging/--production', default=True, 
+    help='If --publish enabled: publish in the staging triplestore(default), or publish to the production triplestore. And generate metadata about the graph')
 @click.option(
     '-s', '--sample', default=0, 
     help='Produce a sample file with given number of lines for TSV/CSV files (e.g. --sample 100).')
@@ -80,8 +79,8 @@ def create(output):
 @click.option(
     '--rmlstreamer/--local', default=False, 
     help='Activate the generation of a HTML report to explore downloaded tabular files')
-def run(input_file, dryrun, sample, report, memory, rmlstreamer):
-    process_datasets_metadata(input_file, dryrun, sample, report, memory, rmlstreamer)
+def run(input_file, dryrun, staging, sample, report, memory, rmlstreamer):
+    process_datasets_metadata(input_file, dryrun, staging, sample, report, memory, rmlstreamer)
     # if output:
     #     g.serialize(destination=output, format='turtle')
     #     print("Metadata stored to " + output + ' 📝')

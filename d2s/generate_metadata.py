@@ -5,9 +5,8 @@ import pathlib
 import urllib.parse
 from datetime import date, datetime
 import pkg_resources
-from rdflib import Graph, plugin, Literal, RDF, XSD, URIRef, Namespace
+from rdflib import Graph, Literal, RDF, XSD, URIRef, Namespace
 from rdflib.namespace import RDFS, DC, DCTERMS, VOID, SKOS, DCAT, PROV, FOAF
-from rdflib.serializer import Serializer
 from SPARQLWrapper import SPARQLWrapper, TURTLE, POST, JSON, JSONLD
 
 DATASET_NAMESPACE = 'https://w3id.org/d2s/dataset/'

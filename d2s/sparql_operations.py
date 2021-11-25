@@ -1,9 +1,8 @@
 import os
 import pathlib
 import glob
-from rdflib import Graph, plugin, Literal, RDF, XSD, URIRef, Namespace
+from rdflib import Graph, Literal, RDF, XSD, URIRef, Namespace
 from rdflib.namespace import RDFS, DC, DCTERMS, VOID
-from rdflib.serializer import Serializer
 from SPARQLWrapper import SPARQLWrapper, TURTLE, POST, JSON, JSONLD
 from d2s.utils import init_d2s_java, get_base_dir
 

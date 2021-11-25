@@ -1,7 +1,6 @@
 Click<8.0.0,>=7.0.0
 SPARQLWrapper
-rdflib
-rdflib-jsonld
+rdflib>=6.0.0
 python-dotenv
 GitPython
 requests
