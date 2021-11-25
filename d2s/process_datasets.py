@@ -358,12 +358,14 @@ def process_datasets_metadata(input_file=None, dryrun=True, staging=True, sample
 
         # Run RML mapper depending on processor given in the metadata file
         if processor.lower() == 'rmlmapper-java':
-            print('🗜️  Running the RML mapper with java to generate the RDF to ' + output_filepath.replace('../', ''))
+            print('☕️ Running the RML mapper with java to generate the RDF to ' + output_filepath.replace('../', ''))
             init_d2s_java('rmlmapper')
             # Change dir to fix issue with rmlmapper requiring to load a .dtd locally when reading DrugBank RML
             os.chdir('data')
             # Copy functions jar file in the same folder where we run the rmlmapper to fix issues with finding the functions
             shutil.copy('../../IdsRmlFunctions.jar', 'IdsRmlFunctions.jar')
+            if 'memory' in get_yaml_config('resources').keys():
+                memory = get_yaml_config('resources')['memory']
             java_opts = "-Xms" + memory + " -Xmx" + memory
             rml_cmd = 'java ' + java_opts + ' -jar ' + get_base_dir('rmlmapper.jar') + ' -s ' + rdfSyntax + ' -f ../../functions_ids.ttl -m ' + rml_filename + ' -o ' + output_filepath
             os.system(rml_cmd)
@@ -383,8 +385,11 @@ def process_datasets_metadata(input_file=None, dryrun=True, staging=True, sample
         if processor.lower() == 'rocketrml':
             print('🚀 Running RocketRML with NodeJS to generate the RDF to ' + output_filepath)
             os.chdir('data')
+            nodejs_memory='2048'
+            if 'nodejs-memory' in get_yaml_config('resources').keys():
+                nodejs_memory = str(get_yaml_config('resources')['nodejs-memory'])
             # Try to increase node memory to 2G for large files with --max_old_space_size=2048
-            os.system('node ../../rocketrml.js -m ' + rml_filename + ' -o ' + output_filepath)
+            os.system(f'node --max_old_space_size={nodejs_memory} ../../rocketrml.js -m {rml_filename} -o {output_filepath}')
             os.chdir('..')
 
     # TO CHECK: concatenate produced nt files in 1 file if multiple files
