@@ -43,6 +43,7 @@ def execute_script(script):
         script_cmd = script
     os.system(script_cmd)
 
+
 def load_rdf_to_ldp(upload_file, upload_mimetype, ldp_url, ldp_slug, endpoint_user, endpoint_password):
     print('📤 Loading the RDF file ' + upload_file + ' to the graph ' + ldp_url + '/' + ldp_slug)
     load_cmd = 'curl -u ' + endpoint_user + ':' + endpoint_password + ' --data-binary @' + upload_file + ' -H "Accept: ' + upload_mimetype + '" -H "Content-type: ' + upload_mimetype + '" -H "Slug: ' + ldp_slug + '" ' + ldp_url
@@ -50,7 +51,7 @@ def load_rdf_to_ldp(upload_file, upload_mimetype, ldp_url, ldp_slug, endpoint_us
     os.system(load_cmd)
 
 
-# TODO: example of a workflow to build entities and associations 
+# TODO: unfinished example of a workflow to build entities and associations
 # following SIO reificatedgraph patterns (hasAttribute)
 def sio_builder_csv(filename, row):
     ## For large files:
@@ -73,6 +74,7 @@ def sio_builder_csv(filename, row):
                 supportedBy=row['pmid']
             )
             sioBuilder.to_rdf()
+
 
 def process_datasets_metadata(input_file=None, dryrun=True, staging=True, sample=0, report=False, memory='4g', rmlstreamer_run=False):
     """Read a RDF metadata file with infos about datasets, check if the dataset exist in the project SPARQL endpoint

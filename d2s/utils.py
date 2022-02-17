@@ -123,11 +123,11 @@ def init_folder():
         os.makedirs(file_to_create, exist_ok=True)
 
     # Create the .env file
-    f = open(".env", "w").close
+    # f = open(".env", "w").close
     # if d2s_repository_url:
     #     dotenv.set_key('.env', 'GIT_URL', d2s_repository_url, quote_mode="noquote")
-    click.echo(click.style('[d2s] ', bold=True) + 'Setting the VIRTUOSO_PASSWORD if the .env file (not commited in git) to dba, change it to your password')
-    dotenv.set_key('.env', 'VIRTUOSO_PASSWORD', 'dba', quote_mode="noquote")
+    # click.echo(click.style('[d2s] ', bold=True) + 'Setting the VIRTUOSO_PASSWORD if the .env file (not commited in git) to dba, change it to your password')
+    # dotenv.set_key('.env', 'VIRTUOSO_PASSWORD', 'dba', quote_mode="noquote")
     # dotenv.set_key('.env', "PATH", os.getcwd(), quote_mode="noquote")
 
     click.echo()
