@@ -1,6 +1,6 @@
 # Run test at each push to master
 # Build and publish to PyPI if tests pass, and if a tag (release) has been created
-name: Test and publish Python package
+name: Test Python package
 
 on:
   workflow_dispatch:
