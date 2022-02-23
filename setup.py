@@ -3,7 +3,7 @@ import setuptools
 
 setup(
     name='d2s',
-    version='0.3.1',
+    version='0.3.2',
     license="MIT License",
     url="https://github.com/MaastrichtU-IDS/d2s-cli",
     author="Vincent Emonet",
