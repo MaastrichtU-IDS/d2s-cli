@@ -1,4 +1,4 @@
-[![Build](https://github.com/MaastrichtU-IDS/d2s-cli/workflows/Test%20and%20publish%20package/badge.svg)](https://github.com/MaastrichtU-IDS/d2s-cli/actions?query=workflow%3A%22Test+and+publish+package%22) [![Version](https://img.shields.io/pypi/v/d2s)](https://pypi.org/project/d2s)
+[![Version](https://img.shields.io/pypi/v/d2s)](https://pypi.org/project/d2s) [![Test Python package](https://github.com/MaastrichtU-IDS/d2s-cli/actions/workflows/test.yml/badge.svg)](https://github.com/MaastrichtU-IDS/d2s-cli/actions/workflows/test.yml) [![Publish Python package](https://github.com/MaastrichtU-IDS/d2s-cli/actions/workflows/publish.yml/badge.svg)](https://github.com/MaastrichtU-IDS/d2s-cli/actions/workflows/publish.yml)
 
 A Command Line Interface to help orchestrate the integration of heterogenous data sources under a common [RDF Knowledge Graph](https://www.w3.org/RDF/) using Python, RML mappings, Bash, and GitHub Actions workflows (YAML). 
 
@@ -8,7 +8,7 @@ You can find more informations about the Data2Services project on the [d2s docum
 
 Requirements:
 
-* [Python 3.6+](https://d2s.semanticscience.org/docs/d2s-installation#install-pip) (built using [python:3.6](https://github.com/MaastrichtU-IDS/d2s-cli/blob/master/publish.Dockerfile))
+* [Python 3.7+](https://d2s.semanticscience.org/docs/d2s-installation#install-pip)
 * [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 * Optional: Java 11+ to use `d2s sparql upload`
 * Optional: [`oc` command line tool](https://maastrichtu-ids.github.io/dsri-documentation/docs/openshift-install) for deploying to the [DSRI OpenShift cluster](https://maastrichtu-ids.github.io/dsri-documentation/) (for Maastricht University academics and students)
@@ -207,19 +207,19 @@ pip install twine
 
 > If you experience issues with Bash or ZSH because `d2s` is not defined when installing for dev. Then add `pip install --editable develop/d2s-cli` to `.zshrc`
 
-You might need to install Python3.6 for dev (dev with python3.6 should work though)
+You might need to install Python3.7 for dev (dev with python3.7 should work though)
 
 ```bash
-sudo apt-get install python3.6 python3.6-venv python3.6-dev
-# Set python3 to use 3.6
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1
+sudo apt-get install python3.7 python3.7-venv python3.7-dev
+# Set python3 to use 3.7
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
 sudo update-alternatives --config python3
 ```
 
 > ```bash
 >vim /usr/bin/gnome-terminal
 > 
-> #!/usr/bin/python3.6
+> #!/usr/bin/python3.7
 > ```
 
 If you face issue uploading the package on pypi:
