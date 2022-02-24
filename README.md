@@ -1,4 +1,6 @@
-[![Version](https://img.shields.io/pypi/v/d2s)](https://pypi.org/project/d2s) [![Test Python package](https://github.com/MaastrichtU-IDS/d2s-cli/actions/workflows/test.yml/badge.svg)](https://github.com/MaastrichtU-IDS/d2s-cli/actions/workflows/test.yml) [![Publish Python package](https://github.com/MaastrichtU-IDS/d2s-cli/actions/workflows/publish.yml/badge.svg)](https://github.com/MaastrichtU-IDS/d2s-cli/actions/workflows/publish.yml)
+[![Version](https://img.shields.io/pypi/v/d2s)](https://pypi.org/project/d2s) [![Python versions](https://img.shields.io/pypi/pyversions/d2s)](https://pypi.org/project/d2s)
+
+[![Test Python package](https://github.com/MaastrichtU-IDS/d2s-cli/actions/workflows/test.yml/badge.svg)](https://github.com/MaastrichtU-IDS/d2s-cli/actions/workflows/test.yml) [![Publish Python package](https://github.com/MaastrichtU-IDS/d2s-cli/actions/workflows/publish.yml/badge.svg)](https://github.com/MaastrichtU-IDS/d2s-cli/actions/workflows/publish.yml)
 
 A Command Line Interface to help orchestrate the integration of heterogenous data sources under a common [RDF Knowledge Graph](https://www.w3.org/RDF/) using Python, RML mappings, Bash, and GitHub Actions workflows (YAML). 
 
@@ -13,15 +15,13 @@ Requirements:
 * Optional: Java 11+ to use `d2s sparql upload`
 * Optional: [`oc` command line tool](https://maastrichtu-ids.github.io/dsri-documentation/docs/openshift-install) for deploying to the [DSRI OpenShift cluster](https://maastrichtu-ids.github.io/dsri-documentation/) (for Maastricht University academics and students)
 
-<!-- COMMENTED
-
 ### Install from pypi
 
 ```bash
 pip install d2s
 ```
 
-> Use [pip](https://pypi.org/project/pip/), pip3 or [pipx](https://pipxproject.github.io/pipx/) depending on your system preferences.
+> Use [pip](https://pypi.org/project/pip/), pip3 or [pipx](https://pipxproject.github.io/pipx/) depending on your preferences.
 
 ### Update
 
@@ -35,40 +35,6 @@ You can also install it from the `master` branch, if you want the latest updates
 
 ```bash
 pip install git+https://github.com/MaastrichtU-IDS/d2s-cli.git@master
-```
-
-> See [those instructions to install d2s on Windows](/docs/d2s-installation#install-pipx-on-windows) using the [Chocolatey package manager](https://chocolatey.org/) and [pipx](https://pipxproject.github.io/pipx/). 
-
--->
-
-### Install d2s
-
-Install `d2s` as executable to run it from the terminal
-
-Clone the repository:
-
-```bash
-git clone https://github.com/MaastrichtU-IDS/d2s-cli.git
-cd d2s-cli
-```
-
-Install `d2s`:
-
-```bash
-pip install -e .
-```
-
-> `d2s` will be updated directly on change in the code.
-
-#### Optional: isolate with a Virtual Environment
-
-If you face conflicts with already installed packages, then you might want to use a [Virtual Environment](https://docs.python.org/3/tutorial/venv.html) to isolate the installation in the current folder before installing `d2s`:
-
-```bash
-# Create the virtual environment folder in your workspace
-python3 -m venv .venv
-# Activate it using a script in the created folder
-source .venv/bin/activate
 ```
 
 ### Uninstall
@@ -174,6 +140,36 @@ echo 'eval "$(_D2S_COMPLETE=source d2s)"' >> ~/.bashrc
 ```
 
 ## Build and publish
+
+### Install d2s for development
+
+Install `d2s` as executable to run it from the terminal
+
+Clone the repository:
+
+```bash
+git clone https://github.com/MaastrichtU-IDS/d2s-cli.git
+cd d2s-cli
+```
+
+Install `d2s`:
+
+```bash
+pip install -e .
+```
+
+> `d2s` will be updated directly on change in the code.
+
+#### Optional: isolate with a Virtual Environment
+
+If you face conflicts with already installed packages, then you might want to use a [Virtual Environment](https://docs.python.org/3/tutorial/venv.html) to isolate the installation in the current folder before installing `d2s`:
+
+```bash
+# Create the virtual environment folder in your workspace
+python3 -m venv .venv
+# Activate it using a script in the created folder
+source .venv/bin/activate
+```
 
 ### Publish using Docker
 

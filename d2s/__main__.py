@@ -9,7 +9,8 @@ from d2s.generate_metadata import create_dataset_prompt, generate_hcls_from_spar
 from d2s.utils import new_dataset, get_config, init_folder, get_base_dir, init_d2s_java
 from d2s.sparql_operations import sparql_insert_files, java_upload_files
 from d2s.process_datasets import process_datasets_metadata
-
+from d2s.generate_shacl import generate_shacl
+from rdflib import Graph
 
 @click.group()
 def cli():
@@ -50,8 +51,46 @@ def metadata():
 @click.option(
     '-o', '--output', default='', 
     help='Write RDF to output file')
-def create(output):
-    create_dataset_prompt(output)
+@click.option(
+    '-u', '--dataset-uri', 
+    help='URI of the dataset distribution to describe')
+def create(output, dataset_uri):
+    create_dataset_prompt(dataset_uri, output=output)
+
+
+
+@metadata.command(help='Generate HCLS descriptive metadata (about types and relations) for the graphs in a SPARQL endpoint')
+@click.argument('sparql_endpoint')
+@click.option(
+    '-u', '--dataset-uri', 
+    help='URI of the dataset distribution to describe')
+@click.option(
+    '-o', '--output', default='', 
+    help='Write RDF to output file')
+@click.option(
+    '-m', '--metadata-type', default='hcls', 
+    help='Type of metadata to generate (hcls, bio2rdf). Default is hcls')
+@click.option(
+    '-g', '--graph', default='', 
+    help='Compute metadata only for the specified graph in the triplestore (compute for all graphs by default)')
+@click.option(
+    '--create-dataset/--analyze-only', default=True, 
+    help='Prompt questions to generate the dataset metadata and analyze the endpoint (default), or only analyze')
+def analyze(sparql_endpoint, dataset_uri, output, metadata_type, graph, create_dataset):
+
+    if not dataset_uri:
+        dataset_uri = 'https://w3id.org/d2s/distribution/default'
+    g = Graph()
+    if create_dataset:
+        g, metadata_answers = create_dataset_prompt(dataset_uri, g)
+    g = generate_hcls_from_sparql(sparql_endpoint, dataset_uri, metadata_type, graph, g)
+    if output:
+        g.serialize(destination=output, format='turtle')
+        print(f"Metadata stored to {output} 📝")
+    else:
+        print(g.serialize(format='turtle'))
+
+
 
 
 @cli.command(help='Download and convert a dataset to RDF based on its metadata file')
@@ -90,27 +129,15 @@ def run(input_file, dryrun, staging, sample, report, memory, rmlstreamer):
 
 
 
-@metadata.command(help='Generate HCLS descriptive metadata (about types and relations) for the graphs in a SPARQL endpoint')
-@click.argument('sparql_endpoint')
-@click.option(
-    '-u', '--dataset-uri', default='https://w3id.org/d2s/distribution/default', 
-    help='URI of the dataset distribution to describe')
-@click.option(
-    '-o', '--output', default='', 
-    help='Write RDF to output file')
-@click.option(
-    '-m', '--metadata-type', default='hcls', 
-    help='Type of metadata to generate (hcls, bio2rdf). Default is hcls')
-@click.option(
-    '-g', '--graph', default='', 
-    help='Compute metadata only for the specified graph in the triplestore (compute for all graphs by default)')
-def analyze(sparql_endpoint, dataset_uri, output, metadata_type, graph):
-    g = generate_hcls_from_sparql(sparql_endpoint, dataset_uri, metadata_type, graph)
-    if output:
-        g.serialize(destination=output, format='turtle')
-        print("Metadata stored to " + output + ' 📝')
-    else:
-        print(g.serialize(format='turtle'))
+# TODO: new command to automatically generate SHACL from a RDF snippet
+@cli.command(help='Generate SHACL shapes from a RDF metadata')
+@click.argument('rdf_file')
+def shacl(rdf_file):
+    generate_shacl(rdf_file)
+
+
+
+
 
 @cli.group()
 def sparql():

@@ -9,7 +9,7 @@ from rdflib import Graph, Literal, RDF, XSD, URIRef, Namespace
 from rdflib.namespace import RDFS, DC, DCTERMS, VOID, SKOS, DCAT, PROV, FOAF
 from SPARQLWrapper import SPARQLWrapper, TURTLE, POST, JSON, JSONLD
 
-DATASET_NAMESPACE = 'https://w3id.org/d2s/dataset/'
+# DATASET_NAMESPACE = 'https://w3id.org/d2s/dataset/'
 
 SCHEMA = Namespace("http://schema.org/")
 DCTYPES = Namespace("http://purl.org/dc/dcmitype/")
@@ -17,7 +17,8 @@ PAV = Namespace("http://purl.org/pav/")
 IDOT = Namespace("http://identifiers.org/idot/")
 D2S = Namespace("https://w3id.org/d2s/vocab/")
 
-def create_dataset_prompt(output_file=None):
+
+def create_dataset_prompt(dataset_uri, g=Graph(), output_file=None):
     """Create a new dataset from questions asked in the prompt"""
     metadataArray = []
     metadataArray.append({'id': 'dataset_id', 'description': 'Enter the identifier of your datasets, e.g. drugbank (lowercase, no space or weird characters)'})
@@ -46,7 +47,7 @@ def create_dataset_prompt(output_file=None):
             metadata_answers[metadataObject['id']] = click.prompt(click.style('[?]', bold=True) 
             + ' ' + metadataObject['description'])
 
-    g = create_dataset(metadata_answers)
+    g = create_dataset(metadata_answers, dataset_uri, g)
 
     if output_file:
         g.serialize(destination=output_file, format='turtle')
@@ -57,9 +58,8 @@ def create_dataset_prompt(output_file=None):
     return g, metadata_answers
 
 
-def create_dataset(metadata):
+def create_dataset(metadata, dataset_namespace, g):
     """Create a new dataset from provided metadata JSON object"""
-    g = Graph()
     g.bind("foaf", FOAF)
     g.bind("rdf", RDF)
     g.bind("rdfs", RDFS)
@@ -76,8 +76,10 @@ def create_dataset(metadata):
     g.bind("d2s", D2S)
     # g.bind("owl", OWL)
 
+    dataset_namespace = dataset_namespace + '/'
+
     # Summary
-    summary_uri = URIRef(DATASET_NAMESPACE + metadata['dataset_id'])
+    summary_uri = URIRef(dataset_namespace + metadata['dataset_id'])
     g.add((summary_uri, RDF.type, DCTYPES['Dataset']))
     g.add((summary_uri, RDFS['label'], Literal(metadata['name'] + ' dataset summary')))
     g.add((summary_uri, DC.identifier, Literal(metadata['dataset_id'])))
@@ -92,7 +94,7 @@ def create_dataset(metadata):
     g.add((summary_uri, VOID.sparqlEndpoint, URIRef(metadata['sparqlEndpoint'])))
 
     # Publisher
-    publisher_uri = URIRef(DATASET_NAMESPACE + urllib.parse.quote(metadata['publisher_name']))
+    publisher_uri = URIRef(dataset_namespace + urllib.parse.quote(metadata['publisher_name']))
     g.add((publisher_uri, RDF.type, DCTERMS.Agent))
     g.add((publisher_uri, FOAF['name'], Literal(metadata['publisher_name'])))
     g.add((publisher_uri, FOAF['page'], Literal(metadata['publisher_url'])))
@@ -100,14 +102,14 @@ def create_dataset(metadata):
 
     # Version
     version = '1'
-    version_uri = URIRef(DATASET_NAMESPACE + metadata['dataset_id'] + '/version/' + version)
+    version_uri = URIRef(dataset_namespace + metadata['dataset_id'] + '/version/' + version)
     g.add((version_uri, RDF.type, DCTYPES['Dataset']))
     g.add((version_uri, RDFS['label'], Literal(metadata['name'] + ' dataset version')))
     g.add((version_uri, DCTERMS.isVersionOf, summary_uri))
     g.add((version_uri, PAV['version'], Literal(version)))
 
     # Source distribution
-    source_uri = URIRef(DATASET_NAMESPACE + metadata['dataset_id'] + '/version/' + version + '/distribution/source')
+    source_uri = URIRef(dataset_namespace + metadata['dataset_id'] + '/version/' + version + '/distribution/source')
     g.add((source_uri, RDF.type, DCAT['Distribution']))
     g.add((source_uri, RDFS['label'], Literal(metadata['name'] + ' source distribution')))
     g.add((source_uri, DCTERMS['format'], Literal(metadata['format'])))
@@ -115,7 +117,7 @@ def create_dataset(metadata):
     # g.add((source_uri, DCTERMS.issued, Literal(str(date.today()),datatype=XSD.date)))
 
     # RDF Distribution description
-    rdf_uri_string = DATASET_NAMESPACE + metadata['dataset_id'] + '/version/' + version + '/distribution/rdf'
+    rdf_uri_string = dataset_namespace + metadata['dataset_id'] + '/version/' + version + '/distribution/rdf'
     rdf_uri = URIRef(rdf_uri_string)
     g.add((rdf_uri, RDF.type, DCAT['Distribution']))
     g.add((rdf_uri, RDF.type, VOID.Dataset))
@@ -208,9 +210,7 @@ PREFIX void-ext: <http://ldf.fi/void-ext#>\n"""
                     # g.parse(data=results, format="turtle")
                     # g.parse(data=results, format="json-ld")
 
-                    hcls_graph = Graph()
-                    hcls_graph.parse(data=results, format="turtle")
-                    g += hcls_graph
+                    g.parse(data=results, format="turtle")
                     with open(root / '../REPORT_SUCCESS.md', 'a') as f:
                         # f.write('## Returned RDF \n\n```turtle\n' + results.decode('utf-8') + "\n```\n\n"
                         f.write('## Successfull query \n\n'

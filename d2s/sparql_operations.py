@@ -80,7 +80,7 @@ def insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, grap
         list_of_strings = ['\n'.join(load_triples.split("\n")[i:i + chunks_size]) for i in range(0, len(load_triples.split("\n")), chunks_size)]
 
     for rdf_chunk in list_of_strings:
-        print(rdf_chunk)
+        # print(rdf_chunk)
         try:
             query = """{operation} DATA {{ 
             {graph_start}
