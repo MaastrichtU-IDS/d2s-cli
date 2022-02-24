@@ -5,6 +5,7 @@ from rdflib import Graph, Literal, RDF, XSD, URIRef, Namespace
 from rdflib.namespace import RDFS, DC, DCTERMS, VOID
 from SPARQLWrapper import SPARQLWrapper, TURTLE, POST, JSON, JSONLD
 from d2s.utils import init_d2s_java, get_base_dir
+import requests
 
 # DATASET_NAMESPACE = 'https://w3id.org/d2s/dataset/'
 
@@ -58,54 +59,66 @@ def insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, grap
     :param g: rdflib graph to insert
     :return: SPARQL update query result
     """
-    # print(g.serialize(format='nt').decode('utf-8'))
-    sparql = SPARQLWrapper(sparql_endpoint)
-    sparql.setMethod(POST)
-    # sparql.setHTTPAuth(BASIC) or DIGEST
-    sparql.setCredentials(username, password)
-    graph_start = ''
-    graph_end = ''
-    if graph_uri:
-        graph_start = 'GRAPH  <' + graph_uri + '> {'
-        graph_end = ' } '
+    # print(g.serialize(format='nt'))
+    # graph_endpoint = f'{sparql_endpoint}/rdf-graphs/{graph_uri}'
+    # graph_endpoint = 'https://graphdb.dumontierlab.com/repositories/shapes-registry/rdf-graphs/shapes:github'
 
-    # load_triples = g.serialize(format='nt').decode('utf-8')
-    load_triples = str(g.serialize(format='nt'))
-    print(load_triples)
-    print(operation + ' ' + str(len(load_triples.split("\n"))) + ' statements per chunks of ' + str(chunks_size) + ' statements')
-    chunks_size = int(chunks_size)
-    if chunks_size < 5:
-        # Load all in one shot
-        list_of_strings = [load_triples]
-    else:
-        list_of_strings = ['\n'.join(load_triples.split("\n")[i:i + chunks_size]) for i in range(0, len(load_triples.split("\n")), chunks_size)]
+    # Post RDF file to SPARQL endpoint using basic auth (works for GraphDB)
+    resp = requests.post(f"{sparql_endpoint}", 
+        headers={ 'Content-Type': 'text/turtle' },
+        data=str(g.serialize(format='turtle')),
+        auth=(username, password),
+    )
+    print(resp)
+    # print(resp.request.body)
 
-    for rdf_chunk in list_of_strings:
-        # print(rdf_chunk)
-        try:
-            query = """{operation} DATA {{ 
-            {graph_start}
-            {ntriples}
-            {graph_end}
-            }}
-            """.format(ntriples=rdf_chunk, graph_start=graph_start, graph_end=graph_end, operation=operation)
-            sparql.setQuery(query)
-            query_results = sparql.query()
-        except:
-            print('INSERT DATA failed, trying INSERT')
-            # If blank nodes, we need to do INSERT for Virtuoso
-            # TODO: split ntriples in chunk to load less than 10000 lines
-            query = """{operation} {{ 
-            {graph_start}
-            {ntriples}
-            {graph_end}
-            }}
-            """.format(ntriples=rdf_chunk, graph_start=graph_start, graph_end=graph_end)
-            sparql.setQuery(query)
-            query_results = sparql.query()
-        # print('Done')
-        print(query_results.response.read())
+    # sparql = SPARQLWrapper(sparql_endpoint)
+    # sparql.setMethod(POST)
+    # # sparql.setHTTPAuth(BASIC) or DIGEST
+    # sparql.setCredentials(username, password)
+    # graph_start = ''
+    # graph_end = ''
+    # if graph_uri:
+    #     graph_start = 'GRAPH  <' + graph_uri + '> {'
+    #     graph_end = ' } '
+
+    # # load_triples = g.serialize(format='nt').decode('utf-8')
+    # load_triples = str(g.serialize(format='nt'))
+    # print(operation + ' ' + str(len(load_triples.split("\n"))) + ' statements per chunks of ' + str(chunks_size) + ' statements')
+    # chunks_size = int(chunks_size)
+    # if chunks_size < 5:
+    #     # Load all in one shot
+    #     list_of_strings = [load_triples]
+    # else:
+    #     list_of_strings = ['\n'.join(load_triples.split("\n")[i:i + chunks_size]) for i in range(0, len(load_triples.split("\n")), chunks_size)]
+
+    # for rdf_chunk in list_of_strings:
+    #     # print(rdf_chunk)
+    #     try:
+    #         query = """{operation} DATA {{ 
+    #         {graph_start}
+    #         {ntriples}
+    #         {graph_end}
+    #         }}
+    #         """.format(ntriples=rdf_chunk, graph_start=graph_start, graph_end=graph_end, operation=operation)
+    #         sparql.setQuery(query)
+    #         query_results = sparql.query()
+    #     except:
+    #         print('INSERT DATA failed, trying INSERT')
+    #         # If blank nodes, we need to do INSERT for Virtuoso
+    #         # TODO: split ntriples in chunk to load less than 10000 lines
+    #         query = """{operation} {{ 
+    #         {graph_start}
+    #         {ntriples}
+    #         {graph_end}
+    #         }}
+    #         """.format(ntriples=rdf_chunk, graph_start=graph_start, graph_end=graph_end)
+    #         sparql.setQuery(query)
+    #         query_results = sparql.query()
+    #     # print('Done')
+    #     print(query_results.response.read())
     
+
 def sparql_update_instance(subject_uri, new_graph, sparql_endpoint, username, password, depth=1, graph_uri=None):
     """Run a construct query to get a RDF graph with all triples for the subject_uri
     Use rdflib to compare this graph to the new graph we just generated
