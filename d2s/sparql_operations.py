@@ -69,7 +69,8 @@ def insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, grap
         graph_start = 'GRAPH  <' + graph_uri + '> {'
         graph_end = ' } '
 
-    load_triples = g.serialize(format='nt').decode('utf-8')
+    # load_triples = g.serialize(format='nt').decode('utf-8')
+    load_triples = str(g.serialize(format='nt'))
     print(load_triples)
     print(operation + ' ' + str(len(load_triples.split("\n"))) + ' statements per chunks of ' + str(chunks_size) + ' statements')
     chunks_size = int(chunks_size)
