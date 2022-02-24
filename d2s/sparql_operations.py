@@ -64,12 +64,15 @@ def insert_graph_in_sparql_endpoint(g, sparql_endpoint, username, password, grap
     # graph_endpoint = 'https://graphdb.dumontierlab.com/repositories/shapes-registry/rdf-graphs/shapes:github'
 
     # Post RDF file to SPARQL endpoint using basic auth (works for GraphDB)
-    resp = requests.post(f"{sparql_endpoint}", 
-        headers={ 'Content-Type': 'text/turtle' },
-        data=str(g.serialize(format='turtle')),
-        auth=(username, password),
-    )
-    print(resp)
+    try:
+        resp = requests.post(f"{sparql_endpoint}", 
+            headers={ 'Content-Type': 'text/turtle' },
+            data=str(g.serialize(format='turtle')).encode('utf-8'),
+            auth=(username, password),
+        )
+        print(resp)
+    except Exception as e:
+        print(e)
     # print(resp.request.body)
 
     # sparql = SPARQLWrapper(sparql_endpoint)
