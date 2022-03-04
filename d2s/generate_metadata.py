@@ -5,7 +5,7 @@ import pathlib
 import urllib.parse
 from datetime import date, datetime
 import pkg_resources
-from rdflib import Graph, Literal, RDF, XSD, URIRef, Namespace
+from rdflib import Graph, Literal, XSD, URIRef, Namespace
 from rdflib.namespace import RDFS, DC, DCTERMS, VOID, SKOS, DCAT, PROV, FOAF
 from SPARQLWrapper import SPARQLWrapper, TURTLE, POST, JSON, JSONLD
 
@@ -16,38 +16,41 @@ DCTYPES = Namespace("http://purl.org/dc/dcmitype/")
 PAV = Namespace("http://purl.org/pav/")
 IDOT = Namespace("http://identifiers.org/idot/")
 D2S = Namespace("https://w3id.org/d2s/vocab/")
+RDF = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
 
 
-def create_dataset_prompt(dataset_uri, g=Graph(), output_file=None):
+def create_dataset_prompt(sparql_endpoint, distribution_uri, g=Graph(), output_file=None):
     """Create a new dataset from questions asked in the prompt"""
     metadataArray = []
-    metadataArray.append({'id': 'dataset_id', 'description': 'Enter the identifier of your datasets, e.g. drugbank (lowercase, no space or weird characters)'})
-    metadataArray.append({'id': 'name', 'description': 'Enter a human-readable name for your datasets, e.g. DrugBank'})
+    # metadataArray.append({'id': 'dataset_id', 'description': 'Enter the identifier of your datasets, e.g. drugbank (lowercase, no space or weird characters)'})
+    metadataArray.append({'id': 'name', 'description': 'Enter a human-readable name for this dataset, e.g. DrugBank'})
     metadataArray.append({'id': 'description', 'description': 'Enter a description for this dataset'})
-    metadataArray.append({'id': 'downloadURL', 'default': 'https://www.drugbank.ca/releases/5-1-1/downloads/all-full-database', 'description': 'Enter the URL to download the source file to be transformed'})
+    metadataArray.append({'id': 'downloadURL', 'default': 'https://www.drugbank.ca/releases/5-1-1/downloads/all-full-database', 'description': 'Enter the URL of the source data'})
     metadataArray.append({'id': 'license', 'default': 'http://creativecommons.org/licenses/by-nc/4.0/legalcode', 'description': 'Enter a valid URL to the license informations about the original dataset'})
-    metadataArray.append({'id': 'publisher_name', 'default': 'Institute of Data Science at Maastricht University', 'description': 'Enter complete name for the institutions publishing the data and its affiliation, e.g. Institute of Data Science at Maastricht University'})
-    metadataArray.append({'id': 'publisher_url', 'default': 'https://maastrichtuniversity.nl/ids', 'description': 'Enter a valid URL for the publisher homepage. Default'})
-    metadataArray.append({'id': 'format', 'default': 'application/xml', 'description': 'Enter the format of the source file to transform'})
+    metadataArray.append({'id': 'publisher_name', 'default': 'Institute of Data Science at Maastricht University', 'description': 'Enter the name of the institution publishing the data and its affiliation, e.g. Institute of Data Science at Maastricht University'})
+    metadataArray.append({'id': 'publisher_url', 'default': 'https://maastrichtuniversity.nl/ids', 'description': 'Enter a valid URL for the publisher homepage.'})
+    metadataArray.append({'id': 'created', 'default': date.today(), 'description': 'Enter the date at which the data has been published'})
+    metadataArray.append({'id': 'format', 'default': 'application/xml', 'description': 'Enter the format of the source data'})
+    metadataArray.append({'id': 'language', 'default': 'http://lexvo.org/id/iso639-3/eng', 'description': 'Enter the lexvo URI for the language of the data'})
     metadataArray.append({'id': 'homepage', 'default': 'http://d2s.semanticscience.org/', 'description': 'Enter the URL of the dataset homepage'})
     # metadataArray.append({'id': 'accessURL', 'default': 'https://www.drugbank.ca/releases/latest', 'description': 'Specify URL of the directory containing the file(s) of interest (not the direct file URL)'})
     metadataArray.append({'id': 'references', 'default': 'https://www.ncbi.nlm.nih.gov/pubmed/29126136', 'description': 'Enter the URL of a publication supporting the dataset'})
     metadataArray.append({'id': 'keyword', 'default': 'drug', 'description': 'Enter a keyword to describe the dataset'})
-    metadataArray.append({'id': 'sparqlEndpoint', 'description': 'Enter the URL of the final SPARQL endpoint to access the integrated dataset',
-        'default': 'https://graphdb.dumontierlab.com/repositories/test-vincent'})
+    # metadataArray.append({'id': 'sparqlEndpoint', 'description': 'Enter the URL of the final SPARQL endpoint to access the integrated dataset',
+    #     'default': 'https://graphdb.dumontierlab.com/repositories/test-vincent'})
     # metadataArray.append({'id': 'theme', 'default': 'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C54708', 'description': 'Enter the URL to an ontology concept describing the dataset theme'})
 
     metadata_answers = {}
     for metadataObject in metadataArray:
         if 'default' in metadataObject:
             metadata_answers[metadataObject['id']] = click.prompt(click.style('[?]', bold=True) 
-            + ' ' + metadataObject['description'] + '. Default',
+            + ' ' + metadataObject['description'] + ' e.g.',
             default=metadataObject['default'])
         else:
             metadata_answers[metadataObject['id']] = click.prompt(click.style('[?]', bold=True) 
             + ' ' + metadataObject['description'])
 
-    g = create_dataset(metadata_answers, dataset_uri, g)
+    g = create_dataset(metadata_answers, sparql_endpoint, distribution_uri, g)
 
     if output_file:
         g.serialize(destination=output_file, format='turtle')
@@ -58,7 +61,7 @@ def create_dataset_prompt(dataset_uri, g=Graph(), output_file=None):
     return g, metadata_answers
 
 
-def create_dataset(metadata, dataset_namespace, g):
+def create_dataset(metadata, sparql_endpoint, distribution_uri, g):
     """Create a new dataset from provided metadata JSON object"""
     g.bind("foaf", FOAF)
     g.bind("rdf", RDF)
@@ -69,32 +72,33 @@ def create_dataset(metadata, dataset_namespace, g):
     g.bind("prov", PROV)
     g.bind("dc", DC)
     g.bind("dctypes", DCTYPES)
-    g.bind("dcterms", DCTERMS)
+    g.bind("dct", DCTERMS)
     g.bind("pav", PAV)
     g.bind("idot", IDOT)
     g.bind("void", VOID)
     g.bind("d2s", D2S)
     # g.bind("owl", OWL)
 
-    dataset_namespace = dataset_namespace + '/'
+    distribution_uri_slash = distribution_uri + '/' if not distribution_uri.endswith('/') else distribution_uri
+    created_date = Literal(metadata['created'], datatype=XSD.date)
+    # created_date = Literal(date.today(),datatype=XSD.date)
 
     # Summary
-    summary_uri = URIRef(dataset_namespace + metadata['dataset_id'])
+    summary_uri = URIRef(f"{distribution_uri_slash}summary")
     g.add((summary_uri, RDF.type, DCTYPES['Dataset']))
-    g.add((summary_uri, RDFS['label'], Literal(metadata['name'] + ' dataset summary')))
-    g.add((summary_uri, DC.identifier, Literal(metadata['dataset_id'])))
-    g.add((summary_uri, DC.description, Literal(metadata['description'])))
+    # g.add((summary_uri, RDFS['label'], Literal(metadata['name'] + ' dataset summary')))
+    # g.add((summary_uri, DC.identifier, Literal(metadata['dataset_id'])))
+    # g.add((summary_uri, IDOT['preferredPrefix'], Literal(metadata['dataset_id'])))
+    g.add((summary_uri, DCTERMS.description, Literal(metadata['description'])))
     g.add((summary_uri, DCTERMS.title, Literal(metadata['name'])))
-    g.add((summary_uri, IDOT['preferredPrefix'], Literal(metadata['dataset_id'])))
-    g.add((summary_uri, DCTERMS.license, URIRef(metadata['license'])))
     g.add((summary_uri, FOAF['page'], URIRef(metadata['homepage'])))
     # g.add((summary_uri, DCAT['accessURL'], URIRef(metadata['accessURL'])))
     g.add((summary_uri, DCTERMS.references, URIRef(metadata['references'])))
     g.add((summary_uri, DCAT['keyword'], Literal(metadata['keyword'])))
-    g.add((summary_uri, VOID.sparqlEndpoint, URIRef(metadata['sparqlEndpoint'])))
+    g.add((summary_uri, VOID.sparqlEndpoint, URIRef(sparql_endpoint)))
 
     # Publisher
-    publisher_uri = URIRef(dataset_namespace + urllib.parse.quote(metadata['publisher_name']))
+    publisher_uri = URIRef(f"{distribution_uri_slash}agent/{urllib.parse.quote(metadata['publisher_name'])}")
     g.add((publisher_uri, RDF.type, DCTERMS.Agent))
     g.add((publisher_uri, FOAF['name'], Literal(metadata['publisher_name'])))
     g.add((publisher_uri, FOAF['page'], Literal(metadata['publisher_url'])))
@@ -102,41 +106,59 @@ def create_dataset(metadata, dataset_namespace, g):
 
     # Version
     version = '1'
-    version_uri = URIRef(dataset_namespace + metadata['dataset_id'] + '/version/' + version)
+    version_uri = URIRef(f"{distribution_uri_slash}version/{version}")
     g.add((version_uri, RDF.type, DCTYPES['Dataset']))
-    g.add((version_uri, RDFS['label'], Literal(metadata['name'] + ' dataset version')))
+    g.add((version_uri, DCTERMS.title, Literal(metadata['name'] + ' dataset version')))
+    g.add((version_uri, DCTERMS.description, Literal(metadata['name'] + ' dataset version')))
     g.add((version_uri, DCTERMS.isVersionOf, summary_uri))
     g.add((version_uri, PAV['version'], Literal(version)))
+    g.add((version_uri, DCTERMS.creator, publisher_uri))
+    g.add((version_uri, DCTERMS.publisher, publisher_uri))
+    g.add((version_uri, DCTERMS.license, URIRef(metadata['license'])))
+    g.add((version_uri, DCTERMS.language, URIRef(metadata['language'])))
+    # g.add((version_uri, DCTERMS.created, created_date))
 
+    # TODO: Add language?? With lexvo URI
     # Source distribution
-    source_uri = URIRef(dataset_namespace + metadata['dataset_id'] + '/version/' + version + '/distribution/source')
+    source_uri = URIRef(f"{distribution_uri_slash}version/{version}/source")
     g.add((source_uri, RDF.type, DCAT['Distribution']))
-    g.add((source_uri, RDFS['label'], Literal(metadata['name'] + ' source distribution')))
+    g.add((source_uri, DCTERMS.title, Literal(metadata['name'] + ' source distribution')))
+    g.add((source_uri, DCTERMS.description, Literal(metadata['name'] + ' source distribution')))
     g.add((source_uri, DCTERMS['format'], Literal(metadata['format'])))
-    g.add((source_uri, DCAT['downloadURL'], Literal(metadata['downloadURL'])))
-    # g.add((source_uri, DCTERMS.issued, Literal(str(date.today()),datatype=XSD.date)))
+    g.add((source_uri, DCAT['downloadURL'], URIRef(metadata['downloadURL'])))
+    g.add((source_uri, DCTERMS.creator, publisher_uri))
+    g.add((source_uri, DCTERMS.publisher, publisher_uri))
+    g.add((source_uri, DCTERMS.license, URIRef(metadata['license'])))
+    g.add((source_uri, DCTERMS.language, URIRef(metadata['language'])))
+    g.add((source_uri, DCTERMS.created, created_date))
+    g.add((source_uri, DCTERMS.issued, created_date))
 
     # RDF Distribution description
-    rdf_uri_string = dataset_namespace + metadata['dataset_id'] + '/version/' + version + '/distribution/rdf'
-    rdf_uri = URIRef(rdf_uri_string)
+    rdf_uri = URIRef(distribution_uri)
+    # rdf_uri_string = dataset_namespace + metadata['dataset_id'] + '/version/' + version + '/distribution/rdf'
+    # rdf_uri = URIRef(rdf_uri_string)
     g.add((rdf_uri, RDF.type, DCAT['Distribution']))
     g.add((rdf_uri, RDF.type, VOID.Dataset))
-    g.add((rdf_uri, RDFS['label'], Literal(metadata['name'] + ' RDF distribution')))
+    g.add((rdf_uri, DCTERMS.title, Literal(metadata['name'])))
+    g.add((rdf_uri, DCTERMS.description, Literal(metadata['name'] + ' RDF distribution')))
     g.add((rdf_uri, DCTERMS.source, source_uri))
-    g.add((rdf_uri, DCTERMS.created, Literal(date.today(),datatype=XSD.date)))
+    g.add((rdf_uri, DCTERMS.creator, publisher_uri))
+    g.add((rdf_uri, DCTERMS.publisher, publisher_uri))
+    g.add((rdf_uri, DCTERMS.license, URIRef(metadata['license'])))
+    g.add((rdf_uri, DCTERMS.format, Literal('application/sparql-results+json')))
+    g.add((rdf_uri, DCTERMS.language, URIRef(metadata['language'])))
+    g.add((rdf_uri, DCTERMS.created, created_date))
+    g.add((rdf_uri, DCTERMS.issued, created_date))
 
     g.add((version_uri, DCAT['distribution'], source_uri))
     g.add((version_uri, DCAT['distribution'], rdf_uri))
 
-    # print(g.serialize(format='turtle'))
-
-    if metadata['sparqlEndpoint']:
-        g.add((rdf_uri, DCAT['accessURL'], Literal(metadata['sparqlEndpoint'])))
-        # g = generate_hcls_from_sparql(metadata['sparqlEndpoint'], rdf_uri_string, g)
+    if sparql_endpoint:
+        g.add((rdf_uri, DCAT['accessURL'], URIRef(sparql_endpoint)))
     
     return g
 
-def generate_hcls_from_sparql(sparql_endpoint, rdf_distribution_uri, metadata_type, graph, g=Graph()):
+def generate_hcls_from_sparql(sparql_endpoint, rdf_distribution_uri, metadata_type, graph, g=Graph(), create_dataset=False):
     """Query the provided SPARQL endpoint to compute HCLS metadata"""
     sparql = SPARQLWrapper(sparql_endpoint)
     root = pathlib.Path(__file__).parent.resolve()
@@ -224,6 +246,11 @@ PREFIX void-ext: <http://ldf.fi/void-ext#>\n"""
                         f.write('## Query failed \n\n```sparql\n' + complete_query + "\n```\n\n"
                             + 'In SPARQL endpoint: ' + sparql_endpoint + "\n> " 
                             + str(e) + "\n\n---\n")
+
+        if create_dataset:
+            g, metadata_answers = create_dataset_prompt(sparql_endpoint, graph, g)
+            # dataset_uri = f"{graph}/dataset"
+            # g, metadata_answers = create_dataset_prompt(dataset_uri, g)
 
     # print(g.serialize(format='json-ld', indent=4))
     # print(g.serialize(format='turtle', indent=4))

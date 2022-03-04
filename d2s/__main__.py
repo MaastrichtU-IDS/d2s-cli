@@ -47,15 +47,15 @@ def metadata():
     """Generate HCLS descriptive metadata for RDF datasets"""
     pass
 
-@metadata.command(help='Create HCLS metadata for a dataset in the terminal prompt (summary, version and distributions)')
-@click.option(
-    '-o', '--output', default='', 
-    help='Write RDF to output file')
-@click.option(
-    '-u', '--dataset-uri', 
-    help='URI of the dataset distribution to describe')
-def create(output, dataset_uri):
-    create_dataset_prompt(dataset_uri, output=output)
+# @metadata.command(help='Create HCLS metadata for a dataset in the terminal prompt (summary, version and distributions)')
+# @click.option(
+#     '-o', '--output', default='', 
+#     help='Write RDF to output file')
+# @click.option(
+#     '-u', '--dataset-uri', 
+#     help='URI of the dataset distribution to describe')
+# def create(output, dataset_uri):
+#     create_dataset_prompt(dataset_uri, output=output)
 
 
 
@@ -74,16 +74,17 @@ def create(output, dataset_uri):
     '-g', '--graph', default='', 
     help='Compute metadata only for the specified graph in the triplestore (compute for all graphs by default)')
 @click.option(
-    '--create-dataset/--analyze-only', default=True, 
+    '--create-dataset/--analyze-only', default=False, 
     help='Prompt questions to generate the dataset metadata and analyze the endpoint (default), or only analyze')
 def analyze(sparql_endpoint, dataset_uri, output, metadata_type, graph, create_dataset):
 
-    if not dataset_uri:
-        dataset_uri = 'https://w3id.org/d2s/distribution/default'
+    # if not dataset_uri:
+    #     dataset_uri = 'https://w3id.org/d2s/distribution/default'
+        
     g = Graph()
-    if create_dataset:
-        g, metadata_answers = create_dataset_prompt(dataset_uri, g)
-    g = generate_hcls_from_sparql(sparql_endpoint, dataset_uri, metadata_type, graph, g)
+    # if create_dataset:
+    #     g, metadata_answers = create_dataset_prompt(dataset_uri, g)
+    g = generate_hcls_from_sparql(sparql_endpoint, dataset_uri, metadata_type, graph, g, create_dataset)
     if output:
         g.serialize(destination=output, format='turtle')
         print(f"Metadata stored to {output} 📝")

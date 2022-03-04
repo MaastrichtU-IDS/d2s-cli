@@ -147,10 +147,16 @@ def new_dataset():
     os.makedirs('datasets', exist_ok=True)
     os.makedirs('.github/workflows', exist_ok=True)
 
-    # Ask dataset metadata to the user and generate rdflib graph
-    g, dataset_metadata = create_dataset_prompt()
+    sparql_endpoint = click.prompt(click.style('[?]', bold=True) 
+            + ' Provide the SPARQL endpoint where to access the dataset')
+    dataset_id = click.prompt(click.style('[?]', bold=True) 
+            + ' Enter the identifier of your datasets, e.g. drugbank (lowercase, no space or weird characters)')
+    distribution_uri = click.prompt(click.style('[?]', bold=True) 
+            + ' Provide the URI of the dataset distribution')
 
-    dataset_id = dataset_metadata['dataset_id']
+    # Ask dataset metadata to the user and generate rdflib graph
+    g, dataset_metadata = create_dataset_prompt(sparql_endpoint, distribution_uri)
+
     dataset_folder_path = 'datasets/' + dataset_id
 
     # Copy template folder with example mappings
@@ -172,7 +178,7 @@ def new_dataset():
             with open(fpath) as f:
                 file_content = f.read()
             for metadata_id, metadata_value in dataset_metadata.items():
-                file_content = file_content.replace("$" + metadata_id, metadata_value)
+                file_content = file_content.replace("$" + metadata_id, str(metadata_value))
             with open(fpath, "w") as f:
                 f.write(file_content)
 
