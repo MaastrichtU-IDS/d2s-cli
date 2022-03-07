@@ -81,6 +81,7 @@ def create_dataset(metadata, sparql_endpoint, distribution_uri, g):
 
     distribution_uri_slash = distribution_uri + '/' if not distribution_uri.endswith('/') else distribution_uri
     created_date = Literal(metadata['created'], datatype=XSD.date)
+    lang = 'en'
     # created_date = Literal(date.today(),datatype=XSD.date)
 
     # Summary
@@ -89,8 +90,8 @@ def create_dataset(metadata, sparql_endpoint, distribution_uri, g):
     # g.add((summary_uri, RDFS['label'], Literal(metadata['name'] + ' dataset summary')))
     # g.add((summary_uri, DC.identifier, Literal(metadata['dataset_id'])))
     # g.add((summary_uri, IDOT['preferredPrefix'], Literal(metadata['dataset_id'])))
-    g.add((summary_uri, DCTERMS.description, Literal(metadata['description'])))
-    g.add((summary_uri, DCTERMS.title, Literal(metadata['name'])))
+    g.add((summary_uri, DCTERMS.description, Literal(metadata['description'], lang=lang)))
+    g.add((summary_uri, DCTERMS.title, Literal(metadata['name'], lang=lang)))
     g.add((summary_uri, FOAF['page'], URIRef(metadata['homepage'])))
     # g.add((summary_uri, DCAT['accessURL'], URIRef(metadata['accessURL'])))
     g.add((summary_uri, DCTERMS.references, URIRef(metadata['references'])))
@@ -108,8 +109,8 @@ def create_dataset(metadata, sparql_endpoint, distribution_uri, g):
     version = '1'
     version_uri = URIRef(f"{distribution_uri_slash}version/{version}")
     g.add((version_uri, RDF.type, DCTYPES['Dataset']))
-    g.add((version_uri, DCTERMS.title, Literal(metadata['name'] + ' dataset version')))
-    g.add((version_uri, DCTERMS.description, Literal(metadata['name'] + ' dataset version')))
+    g.add((version_uri, DCTERMS.title, Literal(f"{metadata['name']} dataset version", lang=lang)))
+    g.add((version_uri, DCTERMS.description, Literal(f"{metadata['name']} dataset version", lang=lang)))
     g.add((version_uri, DCTERMS.isVersionOf, summary_uri))
     g.add((version_uri, PAV['version'], Literal(version)))
     g.add((version_uri, DCTERMS.creator, publisher_uri))
@@ -122,8 +123,8 @@ def create_dataset(metadata, sparql_endpoint, distribution_uri, g):
     # Source distribution
     source_uri = URIRef(f"{distribution_uri_slash}version/{version}/source")
     g.add((source_uri, RDF.type, DCAT['Distribution']))
-    g.add((source_uri, DCTERMS.title, Literal(metadata['name'] + ' source distribution')))
-    g.add((source_uri, DCTERMS.description, Literal(metadata['name'] + ' source distribution')))
+    g.add((source_uri, DCTERMS.title, Literal(f"{metadata['name']} source distribution", lang=lang)))
+    g.add((source_uri, DCTERMS.description, Literal(f"{metadata['name']} source distribution", lang=lang)))
     g.add((source_uri, DCTERMS['format'], Literal(metadata['format'])))
     g.add((source_uri, DCAT['downloadURL'], URIRef(metadata['downloadURL'])))
     g.add((source_uri, DCTERMS.creator, publisher_uri))
@@ -139,13 +140,14 @@ def create_dataset(metadata, sparql_endpoint, distribution_uri, g):
     # rdf_uri = URIRef(rdf_uri_string)
     g.add((rdf_uri, RDF.type, DCAT['Distribution']))
     g.add((rdf_uri, RDF.type, VOID.Dataset))
-    g.add((rdf_uri, DCTERMS.title, Literal(metadata['name'])))
-    g.add((rdf_uri, DCTERMS.description, Literal(metadata['name'] + ' RDF distribution')))
+    g.add((rdf_uri, DCTERMS.title, Literal(metadata['name'], lang=lang)))
+    g.add((rdf_uri, DCTERMS.description, Literal(f"{metadata['name']} RDF distribution", lang=lang)))
     g.add((rdf_uri, DCTERMS.source, source_uri))
     g.add((rdf_uri, DCTERMS.creator, publisher_uri))
     g.add((rdf_uri, DCTERMS.publisher, publisher_uri))
     g.add((rdf_uri, DCTERMS.license, URIRef(metadata['license'])))
-    g.add((rdf_uri, DCTERMS.format, Literal('application/sparql-results+json')))
+    # g.add((rdf_uri, DCTERMS.format, Literal('application/sparql-results+json')))
+    g.add((rdf_uri, DCTERMS.format, URIRef('http://www.w3.org/ns/formats/Turtle')))
     g.add((rdf_uri, DCTERMS.language, URIRef(metadata['language'])))
     g.add((rdf_uri, DCTERMS.created, created_date))
     g.add((rdf_uri, DCTERMS.issued, created_date))
