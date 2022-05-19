@@ -22,7 +22,7 @@ def cli():
 # def init(ctx, projectname):
 @cli.command()
 def init():
-    """Initialize a project in the provided folder name"""
+    """Initialize a project within a folder"""
     init_folder()
 
 @cli.command()
