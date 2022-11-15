@@ -43,11 +43,11 @@ def create_dataset_prompt(sparql_endpoint, distribution_uri, g=Graph(), output_f
     metadata_answers = {}
     for metadataObject in metadataArray:
         if 'default' in metadataObject:
-            metadata_answers[metadataObject['id']] = click.prompt(click.style('[?]', bold=True) 
+            metadata_answers[metadataObject['id']] = click.prompt(click.style('[?]', bold=True)
             + ' ' + metadataObject['description'] + ' e.g.',
             default=metadataObject['default'])
         else:
-            metadata_answers[metadataObject['id']] = click.prompt(click.style('[?]', bold=True) 
+            metadata_answers[metadataObject['id']] = click.prompt(click.style('[?]', bold=True)
             + ' ' + metadataObject['description'])
 
     g = create_dataset(metadata_answers, sparql_endpoint, distribution_uri, g)
@@ -157,7 +157,7 @@ def create_dataset(metadata, sparql_endpoint, distribution_uri, g):
 
     if sparql_endpoint:
         g.add((rdf_uri, DCAT['accessURL'], URIRef(sparql_endpoint)))
-    
+
     return g
 
 def generate_hcls_from_sparql(sparql_endpoint, rdf_distribution_uri, metadata_type, graph, g=Graph(), create_dataset=False):
@@ -188,7 +188,7 @@ PREFIX void-ext: <http://ldf.fi/void-ext#>\n"""
         # print('Get all graphs query Results:')
         # print(results)
         select_all_graphs_results = results["results"]["bindings"]
-    else: 
+    else:
         # Just query the single provided graph
         select_all_graphs_results = [{ 'graph': {'value': str(graph)}}]
 
@@ -223,7 +223,7 @@ PREFIX void-ext: <http://ldf.fi/void-ext#>\n"""
                         sparql_query = sparql_query.replace('<?_graph_start>', '')
                         sparql_query = sparql_query.replace('<?_graph_end>', '')
 
-                complete_query = query_prefixes + sparql_query 
+                complete_query = query_prefixes + sparql_query
                 # print(complete_query)
 
                 try:
@@ -246,7 +246,7 @@ PREFIX void-ext: <http://ldf.fi/void-ext#>\n"""
                     print(e)
                     with open(root / '../REPORT_FAIL.md', 'a') as f:
                         f.write('## Query failed \n\n```sparql\n' + complete_query + "\n```\n\n"
-                            + 'In SPARQL endpoint: ' + sparql_endpoint + "\n> " 
+                            + 'In SPARQL endpoint: ' + sparql_endpoint + "\n> "
                             + str(e) + "\n\n---\n")
 
         if create_dataset:

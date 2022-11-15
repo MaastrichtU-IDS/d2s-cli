@@ -49,10 +49,10 @@ def metadata():
 
 # @metadata.command(help='Create HCLS metadata for a dataset in the terminal prompt (summary, version and distributions)')
 # @click.option(
-#     '-o', '--output', default='', 
+#     '-o', '--output', default='',
 #     help='Write RDF to output file')
 # @click.option(
-#     '-u', '--dataset-uri', 
+#     '-u', '--dataset-uri',
 #     help='URI of the dataset distribution to describe')
 # def create(output, dataset_uri):
 #     create_dataset_prompt(dataset_uri, output=output)
@@ -62,25 +62,25 @@ def metadata():
 @metadata.command(help='Generate HCLS descriptive metadata (about types and relations) for the graphs in a SPARQL endpoint')
 @click.argument('sparql_endpoint')
 @click.option(
-    '-u', '--dataset-uri', 
+    '-u', '--dataset-uri',
     help='URI of the dataset distribution to describe')
 @click.option(
-    '-o', '--output', default='', 
+    '-o', '--output', default='',
     help='Write RDF to output file')
 @click.option(
-    '-m', '--metadata-type', default='hcls', 
+    '-m', '--metadata-type', default='hcls',
     help='Type of metadata to generate (hcls, bio2rdf). Default is hcls')
 @click.option(
-    '-g', '--graph', default='', 
+    '-g', '--graph', default='',
     help='Compute metadata only for the specified graph in the triplestore (compute for all graphs by default)')
 @click.option(
-    '--create-dataset/--analyze-only', default=False, 
+    '--create-dataset/--analyze-only', default=False,
     help='Prompt questions to generate the dataset metadata and analyze the endpoint (default), or only analyze')
 def analyze(sparql_endpoint, dataset_uri, output, metadata_type, graph, create_dataset):
 
     # if not dataset_uri:
     #     dataset_uri = 'https://w3id.org/d2s/distribution/default'
-        
+
     g = Graph()
     # if create_dataset:
     #     g, metadata_answers = create_dataset_prompt(dataset_uri, g)
@@ -96,28 +96,28 @@ def analyze(sparql_endpoint, dataset_uri, output, metadata_type, graph, create_d
 
 @cli.command(help='Download and convert a dataset to RDF based on its metadata file')
 @click.option(
-    '-i', '--input-file', default=None, 
+    '-i', '--input-file', default=None,
     help='Input datasets metadata file to process. If not provided d2s will search for a .ttl or .jsonld file in the current folder.')
 # @click.option(
-#     '-o', '--output', default='', 
+#     '-o', '--output', default='',
 #     help='Write RDF to the given output file')
 @click.option(
-    '--dryrun/--publish', default=True, 
+    '--dryrun/--publish', default=True,
     help='Dry run, only generate RDF and does not publish to a triplestore')
 @click.option(
-    '--staging/--production', default=True, 
+    '--staging/--production', default=True,
     help='If --publish enabled: publish in the staging triplestore(default), or publish to the production triplestore. And generate metadata about the graph')
 @click.option(
-    '-s', '--sample', default=0, 
+    '-s', '--sample', default=0,
     help='Produce a sample file with given number of lines for TSV/CSV files (e.g. --sample 100).')
 @click.option(
-    '--report/--no-report', default=False, 
+    '--report/--no-report', default=False,
     help='Activate the generation of a HTML report to explore downloaded tabular files')
 @click.option(
-    '-m', '--memory', default='4g', 
+    '-m', '--memory', default='4g',
     help='Memory given to the processing, e.g. for java -Xmx. Default: 4g')
 @click.option(
-    '--rmlstreamer/--local', default=False, 
+    '--rmlstreamer/--local', default=False,
     help='Activate the generation of a HTML report to explore downloaded tabular files')
 def run(input_file, dryrun, staging, sample, report, memory, rmlstreamer):
     process_datasets_metadata(input_file, dryrun, staging, sample, report, memory, rmlstreamer)
@@ -149,16 +149,16 @@ def sparql():
 @click.argument('file_pattern')
 @click.argument('sparql_endpoint')
 @click.option(
-    '-u', '--username', default='dba', 
+    '-u', '--username', default='dba',
     help='Username for the SPARQL endpoint')
 @click.option(
-    '-p', '--password', default='dba', 
+    '-p', '--password', default='dba',
     help='Password for the SPARQL endpoint')
 @click.option(
-    '-g', '--graph', default='', 
+    '-g', '--graph', default='',
     help='Graph where to load the RDF')
 @click.option(
-    '--chunks-size', default='1000', 
+    '--chunks-size', default='1000',
     help='Number of statements per chunks inserted. Use -1 to load all in one shot.')
 def insert(file_pattern, sparql_endpoint, username, password, graph, chunks_size):
     sparql_insert_files(file_pattern, sparql_endpoint, username, password, graph, chunks_size)
@@ -167,13 +167,13 @@ def insert(file_pattern, sparql_endpoint, username, password, graph, chunks_size
 @click.argument('file_pattern')
 @click.argument('sparql_endpoint')
 @click.option(
-    '-u', '--username', default='dba', 
+    '-u', '--username', default='dba',
     help='Username for the SPARQL endpoint')
 @click.option(
-    '-p', '--password', default='dba', 
+    '-p', '--password', default='dba',
     help='Password for the SPARQL endpoint')
 @click.option(
-    '-g', '--graph', default='', 
+    '-g', '--graph', default='',
     help='Graph where to load the RDF')
 def upload(file_pattern, sparql_endpoint, username, password, graph):
     java_upload_files(file_pattern, sparql_endpoint, username, password, graph)
@@ -213,7 +213,7 @@ def get_running_processes(ctx, args, incomplete):
     # Show running processes to be stopped
     return [os.system("ps ax | grep '[c]wl-runner' | awk '{print $1}'")]
 
-# Change permissions to 777 recursively. 
+# Change permissions to 777 recursively.
 # See https://stackoverflow.com/questions/16249440/changing-file-permission-in-python
 def chmod777(path):
     for dirpath, dirnames, filenames in os.walk(path):
@@ -224,7 +224,7 @@ def chmod777(path):
             shutil.chown(dirpath, user=os.getuid(), group=os.getgid())
         except:
             click.echo(click.style('[d2s]', bold=True) + ' Issue while updating permissions for ' + dirpath + '.')
-        
+
         for filename in filenames:
             try:
                 os.chmod(os.path.join(dirpath, filename), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
@@ -232,20 +232,20 @@ def chmod777(path):
             except:
                 click.echo(click.style('[d2s]', bold=True) + ' Issue while updating permissions for ' + os.path.join(dirpath, filename))
 
-
+# , autocompletion=get_datasets_list
 @cli.command()
-@click.argument('dataset', autocompletion=get_datasets_list)
+@click.argument('dataset')
 @click.option(
-    '--yarrrml/--turtle-rml', default=False, 
+    '--yarrrml/--turtle-rml', default=False,
     help='Use yarrrml mappings')
 @click.option(
-    '--mapper/--streamer', default=False, 
+    '--mapper/--streamer', default=False,
     help='Run RML Streamer or Mapper')
 @click.option(
-    '--detached/--watch', default=True, 
+    '--detached/--watch', default=True,
     help='Run in detached mode or watch workflow')
 @click.option(
-    '--openshift/--local', default=False, 
+    '--openshift/--local', default=False,
     help='Run RML Streamer on OpenShift')
 @click.option(
     '-p', '--parallelism', default='8',
@@ -264,7 +264,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
         rml_file_extension = '.yarrr.rml.ttl'
         for file in os.listdir('./datasets/' + dataset + '/mapping'):
             mapping_filename = os.fsdecode(file)
-            if mapping_filename.endswith(".yarrr.yml"): 
+            if mapping_filename.endswith(".yarrr.yml"):
                 # Run rmlmapper docker image
                 output_filename = mapping_filename.replace('.yarrr.yml', rml_file_extension)
                 click.echo(click.style('[d2s]', bold=True) + ' Converting YARRRML file: ' + mapping_filename + ' to datasets/' + dataset + '/mapping/' + output_filename)
@@ -276,7 +276,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
         # Ask if need to copy file on OpenShift cluster
         click.echo(click.style('[d2s]', bold=True) + ' Running RMLStreamer on OpenShift. Make sure your logged in and in the right project.')
         flink_manager_pod = os.popen('oc get pod --selector app=flink --selector component=jobmanager --no-headers -o=custom-columns=NAME:.metadata.name').read().strip()
-        click.echo(click.style('[d2s]', bold=True) + ' ID of the Apache Flink pod used: ' 
+        click.echo(click.style('[d2s]', bold=True) + ' ID of the Apache Flink pod used: '
             + click.style(flink_manager_pod, bold=True))
         if click.confirm(click.style('[?]', bold=True) + ' It is required to copy (rsync) the workspace to the OpenShift cluster the first time your run it. Do you want to do it?'):
             # rsync input files and mapping files
@@ -286,10 +286,10 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 
     for file in os.listdir('./datasets/' + dataset + '/mapping'):
         mapping_filename = os.fsdecode(file)
-        if mapping_filename.endswith(rml_file_extension): 
+        if mapping_filename.endswith(rml_file_extension):
             # print(os.path.join(directory, filename))
             mapping_filepath = 'datasets/' + dataset + '/mapping/' + mapping_filename
-            click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from ' 
+            click.echo(click.style('[d2s]', bold=True) + ' Execute mappings from '
                 + click.style(mapping_filepath, bold=True))
 
             output_filename = 'rml'
@@ -310,23 +310,23 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
                     # Run RMLStreamer in running Apache Flink
                     output_filename = 'rmlstreamer-' + mapping_filename.replace('.', '_') + '-' + dataset + '.nt'
                     rml_cmd = 'docker exec ' + detached_arg + ' d2s-rmlstreamer /opt/flink/bin/flink run -p ' + str(parallelism) + ' -c io.rml.framework.Main /opt/RMLStreamer.jar toFile -m /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' -o /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '"'
-                    click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at ' 
+                    click.echo(click.style('[d2s]', bold=True) + ' Check the jobs running at '
                         + click.style('http://localhost:8078/#/job/running', bold=True))
                     ## Try parallelism:
                     # rml_cmd = 'docker exec ' + detached_arg + ' d2s-rmlstreamer /opt/flink/bin/flink run -p ' + parallelism + ' -c io.rml.framework.Main /opt/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/' + mapping_filename + ' --outputPath /mnt/workspace/import/' + output_filename + ' --job-name "[d2s] RMLStreamer ' + mapping_filename + ' - ' + dataset + '" --parallelism ' + parallelism + ' --enable-local-parallel'
-            
+
             # Run RML processor
             print(rml_cmd)
             os.system(rml_cmd)
             # TODO: store logs in a file and get the run time. Use subprocess.call
             # with open('workspace/logs/' + output_filename + '.log', 'a') as output:
-            #     process = subprocess.call(rml_cmd, shell=True, 
+            #     process = subprocess.call(rml_cmd, shell=True,
             #         stdout=output, stderr=output)
 
             # click.echo(click.style('[d2s]', bold=True) + ' PID of running process: ' + str(process.pid))
             click.echo(click.style('[d2s]', bold=True) + ' Output file in ')
             click.secho('workspace/import/' + output_filename, bold=True)
-    
+
     # Try parallelism:
     # rmlstreamer_cmd = 'docker exec -d d2s-rmlstreamer /opt/flink/bin/flink run -p 4 /opt/RMLStreamer.jar --path /mnt/datasets/' + dataset + '/mapping/rml-mappings.ttl --outputPath /mnt/workspace/import/rml-output-' + dataset + '.nt --job-name "[d2s] RMLStreamer ' + dataset + '" --enable-local-parallel'
     # Try to use docker-compose, but exec dont resolve from the -f file
@@ -338,13 +338,13 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 # @cli.command()
 # @click.argument('services', nargs=-1, autocompletion=get_services_list)
 # @click.option(
-#     '--images/--no-images', default=False, 
+#     '--images/--no-images', default=False,
 #     help='Update files permissions (Docker images by default)')
 # @click.option(
-#     '--permissions/--no-permissions', default=False, 
+#     '--permissions/--no-permissions', default=False,
 #     help='Update files permissions (Docker images by default)')
 # @click.option(
-#     '--submodules/--no-submodule', default=False, 
+#     '--submodules/--no-submodule', default=False,
 #     help='Update the Git submodules (d2s-core)')
 # def update(services, images, permissions, submodules):
 #     """Update d2s (images, permissions, submodules)"""
@@ -377,7 +377,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 # @cli.command()
 # @click.argument('services', nargs=-1, autocompletion=get_services_list)
 # @click.option(
-#     '-d', '--deploy', default='', 
+#     '-d', '--deploy', default='',
 #     help='Use custom deployment config')
 # def start(services, deploy):
 #     """Start services"""
@@ -387,7 +387,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 #         click.echo(click.style('[d2s] ', bold=True) + ' Starting the services for the demo: ' + services_string)
 #     else:
 #         services_string = " ".join(services)
-    
+
 #     # Run docker-compose:
 #     if deploy:
 #         os.system(docker_compose_cmd + '-f d2s-core/deployments/'
@@ -398,23 +398,23 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 #     # Ask user to create the GraphDB test repository
 #     click.echo(click.style('[d2s] ', bold=True) + services_string + ' started.')
 #     if 'graphdb' in services or 'demo' in services:
-#         click.echo(click.style('[d2s] ', bold=True) 
+#         click.echo(click.style('[d2s] ', bold=True)
 #                 + 'Create repository on GraphDB: http://localhost:7200/repository')
 #         # TODO: Creating GraphDB repo by posting multiform with urllib needs to be changed
-#         # if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the ' 
+#         # if click.confirm(click.style('[?]', bold=True) + ' Do you want to create the '
 #         # + click.style('demo repository', bold=True) + ' in GraphDB?'):
-#         #     click.echo(click.style('[d2s] ', bold=True) 
+#         #     click.echo(click.style('[d2s] ', bold=True)
 #         #         + 'Creating the repository, it should take about 20s.')
 #         #     time.sleep(10)
 #         #     localGraphdbUrl = 'http://localhost:7200/rest/repositories'
 #         #     headers = {'Content-Type': 'multipart/form-data'}
-#         #     request = urllib.request.Request(localGraphdbUrl, 
+#         #     request = urllib.request.Request(localGraphdbUrl,
 #         #         open('d2s-core/support/graphdb-repo-config.ttl', 'rb'),
 #         #                             headers=headers)
 #         #     response = urllib.request.urlopen(request)
 #         #     os.system('curl -X POST http://localhost:7200/rest/repositories -F "config=@d2s-core/support/graphdb-repo-config.ttl" -H "Content-Type: multipart/form-data"')
 #     click.echo()
-#     click.echo(click.style('[d2s]', bold=True) 
+#     click.echo(click.style('[d2s]', bold=True)
 #         + ' You can now download data to run a first workflow:')
 #     click.secho('d2s download', bold=True)
 
@@ -422,7 +422,7 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 # @cli.command()
 # @click.argument('services', nargs=-1, autocompletion=get_services_list)
 # @click.option(
-#     '--all/--no-all', default=False, 
+#     '--all/--no-all', default=False,
 #     help='Stop all services')
 # def stop(services, all):
 #     """Stop services (--all to stop all services)"""
@@ -480,10 +480,10 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 #         os.system('docker run -it -v ' + os.getcwd() + ':/srv \
 #             umids/d2s-bash-exec:latest \
 #             /srv/datasets/' + dataset + '/download/download.sh workspace/input/' + dataset)
-#         click.echo(click.style('[d2s] ' + dataset, bold=True) + ' dataset downloaded at ' 
+#         click.echo(click.style('[d2s] ' + dataset, bold=True) + ' dataset downloaded at '
 #         + click.style('workspace/input/' + dataset, bold=True))
 #     run_time = datetime.datetime.now() - start_time
-#     click.echo(click.style('[d2s] ', bold=True) 
+#     click.echo(click.style('[d2s] ', bold=True)
 #             + 'Datasets downloaded in: '
 #             + click.style(str(datetime.timedelta(seconds=run_time.total_seconds())), bold=True))
 #     click.echo()
@@ -494,10 +494,10 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 # @click.argument('workflow', autocompletion=get_workflows_list)
 # @click.argument('dataset', autocompletion=get_datasets_list)
 # @click.option(
-#     '--get-mappings/--no-copy', default=False, 
+#     '--get-mappings/--no-copy', default=False,
 #     help='Copy the mappings generated by the workflow to our datasets folder')
 # @click.option(
-#     '--detached/--watch', default=True, 
+#     '--detached/--watch', default=True,
 #     help='Run in detached mode or watch workflow')
 # def run(workflow, dataset, get_mappings, detached):
 #     """Run CWL workflows"""
@@ -507,13 +507,13 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 
 #     # TODO: Trying to fix issue where virtuoso bulk load only the first dataset we run
 #     # It needs restart to work a second time
-#     # click.echo(click.style('[d2s] ', bold=True) 
+#     # click.echo(click.style('[d2s] ', bold=True)
 #     #     + 'Restart tmp Virtuoso and delete file in '
 #     #     + click.style('workspace/output', bold=True))
 #     # os.system(docker_compose_cmd + 'stop tmp-virtuoso')
 #     # shutil.rmtree('workspace/tmp-virtuoso', ignore_errors=True, onerror=None)
 #     # os.system(docker_compose_cmd + 'up -d --force-recreate tmp-virtuoso')
-#     # TODO: fix this dirty Virtuoso deployment 
+#     # TODO: fix this dirty Virtuoso deployment
 #     # Virtuoso unable to handle successive bulk load + permission issues + load.sh in the virtuoso containers
 #     # I don't know how, they managed to not put it in the container... They had one job...
 
@@ -535,35 +535,35 @@ def rml(dataset, detached, yarrrml, mapper, openshift, parallelism):
 #         log_filename = workflow + '-' + dataset + '-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.txt'
 #         cwl_command = cwl_command + ' > workspace/logs/' + log_filename + ' &'
 #     click.echo()
-#     click.echo(click.style('[d2s] ', bold=True) 
+#     click.echo(click.style('[d2s] ', bold=True)
 #         + 'Running CWL worklow...')
 #     click.echo(cwl_command)
 #     os.system(cwl_command)
 
 #     # Copy mappings generated by the workflow to datasets folder
 #     if (get_mappings):
-#         os.system('cp workspace/output/sparql_mapping_templates/* datasets/' 
+#         os.system('cp workspace/output/sparql_mapping_templates/* datasets/'
 #         + dataset + '/mapping/')
 #         click.echo()
-#         click.echo(click.style('[d2s] ', bold=True) 
+#         click.echo(click.style('[d2s] ', bold=True)
 #             + 'Browse the generated mappings files in '
 #             + click.style('datasets/' + dataset + '/mapping', bold=True))
 #     else:
 #         click.echo()
-#         click.echo(click.style('[d2s] ', bold=True) + 'Browse the file generated by the workflow in ' 
+#         click.echo(click.style('[d2s] ', bold=True) + 'Browse the file generated by the workflow in '
 #             + click.style('workspace/output/' + dataset, bold=True))
 
 #     if (detached):
 #         click.echo()
-#         click.echo(click.style('[d2s] ', bold=True) 
+#         click.echo(click.style('[d2s] ', bold=True)
 #             + 'Watch your workflow running: ')
 #         click.secho('d2s watch ' + log_filename, bold=True)
-#         click.echo(click.style('[d2s] ', bold=True) 
+#         click.echo(click.style('[d2s] ', bold=True)
 #             + 'Or display the complete workflow logs: ')
 #         click.secho('d2s log ' + log_filename, bold=True)
 #     else:
 #         run_time = datetime.datetime.now() - start_time
-#         click.echo(click.style('[d2s] ', bold=True) 
+#         click.echo(click.style('[d2s] ', bold=True)
 #                 + 'Workflow runtime: '
 #                 + click.style(str(datetime.timedelta(seconds=run_time.total_seconds())), bold=True))
 
